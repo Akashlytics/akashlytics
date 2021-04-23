@@ -3,6 +3,7 @@
 const express = require("express");
 const path = require("path");
 const blockchainAnalyzer = require("./blockchainAnalyzer");
+const marketDataProvider = require("./marketDataProvider");
 
 // Constants
 const PORT = 3080;
@@ -21,9 +22,10 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
   const deploymentCount = blockchainAnalyzer.getDeploymentCount();
   const averagePrice = blockchainAnalyzer.getAveragePrice();
   const lastRefreshDate = blockchainAnalyzer.getLastRefreshDate();
+  const marketData = marketDataProvider.getAktMarketData();
 
   if (activeDeploymentCount != null) {
-    res.send({ activeDeploymentCount, deploymentCount, averagePrice, lastRefreshDate });
+    res.send({ activeDeploymentCount, deploymentCount, averagePrice, marketData, lastRefreshDate });
   } else {
     res.send(null);
   }
@@ -45,3 +47,4 @@ app.listen(PORT, () => {
 
 blockchainAnalyzer.initialize();
 blockchainAnalyzer.startAutoRefresh();
+marketDataProvider.syncAtInterval();
