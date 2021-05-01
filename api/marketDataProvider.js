@@ -15,7 +15,7 @@ async function fetchLatestData() {
     const endpointUrl = "https://ascendex.com/api/pro/v1/ticker?symbol=AKT%2FUSDT";
 
     console.log("Fetching latest market data from " + endpointUrl);
-
+    
     const response = await fetch(endpointUrl);
     const data = await response.json();
 

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import ReactTooltip from "react-tooltip";
 import clsx from 'clsx';
 import { FormattedNumber } from "react-intl";
+import AktAmount from "./AktAmount";
 
 function App() {
   const [deploymentCounts, setDeploymentCounts] = useState(null);
@@ -21,7 +22,16 @@ function App() {
     getDeploymentCounts();
   }, []);
 
-  const showAveragePrice = deploymentCounts && deploymentCounts.averagePrice > 0;
+  const showAktPrice = deploymentCounts && deploymentCounts.marketData;
+  const showAveragePrice = deploymentCounts && deploymentCounts.marketData && deploymentCounts.averagePrice > 0;
+
+  let tileClassName = "col-lg-6";
+  if (showAktPrice) {
+    tileClassName = "col-lg-4";
+  }
+  if (showAveragePrice) {
+    tileClassName = "col-lg-3";
+  }
 
   return (
     <div className="App">
@@ -33,7 +43,7 @@ function App() {
       <div className="container App-body">
         {deploymentCounts !== null && (
           <div className="row">
-            <div className={clsx("col-xs-12", { "col-lg-4": showAveragePrice, "col-lg-6": !showAveragePrice })}>
+            <div className={clsx("col-xs-12", tileClassName)}>
               <div className="Card">
                 <p className="Number">
                   <FormattedNumber value={deploymentCounts.activeDeploymentCount} />
@@ -42,7 +52,7 @@ function App() {
               </div>
             </div>
 
-            <div className={clsx("col-xs-12", { "col-lg-4": showAveragePrice, "col-lg-6": !showAveragePrice })}>
+            <div className={clsx("col-xs-12", tileClassName)}>
               <div className="Card">
                 <p className="Number">
                   <FormattedNumber value={deploymentCounts.deploymentCount} />
@@ -51,12 +61,23 @@ function App() {
               </div>
             </div>
 
-            {showAveragePrice && (
-              <div className="col-xs-12 col-lg-4">
+            {deploymentCounts.marketData && (
+              <div className={clsx("col-xs-12", tileClassName)}>
                 <div className="Card">
                   <p className="Number">
-                    <FormattedNumber value={deploymentCounts.averagePrice / 1000000} /> akt
-                </p>
+                    <FormattedNumber style="currency" currency="USD" value={deploymentCounts.marketData.computedPrice} />
+                  </p>
+                  <p className="Text">Current AKT Price</p>
+                </div>
+              </div>
+            )}
+
+            {showAveragePrice && (
+              <div className={clsx("col-xs-12", tileClassName)}>
+                <div className="Card">
+                  <p className="Number">
+                    <AktAmount uakt={deploymentCounts.averagePrice} usdPrice={deploymentCounts.marketData.computedPrice} showInUSD={true} />
+                  </p>
                   <p className="Text">
                     Monthly cost for a small instance{" "}
                     <i className="bi bi-question-circle-fill" data-tip data-for="instanceDef"></i>
