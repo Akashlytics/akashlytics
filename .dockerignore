@@ -2,3 +2,4 @@ node_modules
 npm-debug.log
 MakeFile
 deploy.yml
+api/cache/*
