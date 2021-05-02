@@ -9,7 +9,7 @@ const cacheFolder = "./cache/";
 const leasesCachePath = cacheFolder + "leases.json";
 const deploymentsCachePath = cacheFolder + "deployments.json";
 const bidsCachePath = cacheFolder + "bids.json";
-const paginationLimit = 5000;
+const paginationLimit = 7000;
 const autoRefreshInterval = 10 * 60 * 1000; // 10 min
 
 let deploymentCount = null;
@@ -30,7 +30,7 @@ exports.startAutoRefresh = () => {
     console.log("Auto-refreshing...");
     await exports.refreshData();
   }, autoRefreshInterval);
-}
+};
 
 exports.refreshData = async () => {
   const minRefreshInterval = 60 * 1000; // 60secs
@@ -57,7 +57,7 @@ exports.refreshData = async () => {
   await exports.initialize();
 
   return true;
-}
+};
 
 exports.initialize = async () => {
   isLoadingData = true;
@@ -79,9 +79,7 @@ exports.initialize = async () => {
 
     await dbProvider.init();
 
-    console.log(
-      `Inserting ${deployments.length} deployments into the database`
-    );
+    console.log(`Inserting ${deployments.length} deployments into the database`);
     for (const deployment of deployments) {
       await dbProvider.addDeployment(deployment);
     }
@@ -104,7 +102,7 @@ exports.initialize = async () => {
     const averagePriceByBlock = await dbProvider.getPricingAverage();
     console.log(`The average price for a small instance is: ${averagePriceByBlock} uakt / block`);
 
-    averagePrice = averagePriceByBlock * 31 * 24 * 60 * 60 / averageBlockTime;
+    averagePrice = (averagePriceByBlock * 31 * 24 * 60 * 60) / averageBlockTime;
     const roundedPriceAkt = Math.round((averagePrice / 1000000 + Number.EPSILON) * 100) / 100;
 
     console.log(`That is ${roundedPriceAkt} AKT / month`);
@@ -122,10 +120,7 @@ async function loadLeases(node) {
     data = require(leasesCachePath);
     console.log("Loaded leases from cache");
   } else {
-    const queryUrl =
-      node +
-      "/akash/market/v1beta1/leases/list?pagination.limit=" +
-      paginationLimit;
+    const queryUrl = node + "/akash/market/v1beta1/leases/list?pagination.limit=" + paginationLimit;
     console.log("Querying leases from: " + queryUrl);
     const response = await fetch(queryUrl);
     data = await response.json();
@@ -145,9 +140,7 @@ async function loadDeployments(node) {
     console.log("Loaded deployments from cache");
   } else {
     const queryUrl =
-      node +
-      "/akash/deployment/v1beta1/deployments/list?pagination.limit=" +
-      paginationLimit;
+      node + "/akash/deployment/v1beta1/deployments/list?pagination.limit=" + paginationLimit;
     console.log("Querying deployments from: " + queryUrl);
     const response = await fetch(queryUrl);
     data = await response.json();
