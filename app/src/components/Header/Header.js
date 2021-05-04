@@ -29,8 +29,6 @@ const useStyles = makeStyles((theme) => ({
   toolbar: {
     minHeight: 80,
     alignItems: "center",
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(2),
   },
   logoContainer: {
     display: "flex",
@@ -40,21 +38,19 @@ const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
     fontWeight: "bold",
+    alignSelf: "baseline",
   },
 
   // nav
-  navbarDisplayFlex: {
-    display: `flex`,
-    justifyContent: `space-between`,
-  },
   navDisplayFlex: {
-    display: `flex`,
-    justifyContent: `space-between`,
+    display: "flex",
+    justifyContent: "flex-end",
+    flexGrow: 1,
   },
   linkText: {
-    textDecoration: `none`,
-    textTransform: `uppercase`,
-    color: `white`,
+    textDecoration: "none",
+    textTransform: "uppercase",
+    color: "white",
   },
 }));
 

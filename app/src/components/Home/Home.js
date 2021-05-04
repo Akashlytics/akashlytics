@@ -71,7 +71,14 @@ export function Home() {
                     usdPrice={deploymentCounts.marketData.computedPrice}
                     showInUSD={true}
                   />
-                  <small style={{ fontWeight: "bold", fontSize: 16 }}>
+                  <small
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 12,
+                      display: "block",
+                      marginTop: "-10px",
+                    }}
+                  >
                     | <AktAmount uakt={deploymentCounts.averagePrice} />
                   </small>
                 </p>
