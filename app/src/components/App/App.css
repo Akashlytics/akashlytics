@@ -12,6 +12,15 @@
   }
 }
 
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .App-header {
   height: 60px;
   display: flex;
@@ -30,15 +39,6 @@
 
 .App-link {
   color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .App-body {
@@ -91,7 +91,7 @@
 }
 
 a {
-  color: #00c9c8;
+  color: white;
   text-decoration: none;
 }
 
@@ -100,8 +100,8 @@ a {
 }
 
 a:hover {
-  color: #00c9c8;
-  text-decoration: underline;
+  color: white;
+  text-decoration: none;
 }
 
 .tooltip {

@@ -1,18 +1,47 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import App from "./App";
+import App from "./components/App/App";
 import reportWebVitals from "./reportWebVitals";
 import { IntlProvider } from "react-intl";
 import { SnackbarProvider } from "notistack";
+import MediaQueryProvider from "./context/MediaQueryProvider";
+import { createMuiTheme, makeStyles, ThemeProvider } from "@material-ui/core/styles";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+
+const theme = createMuiTheme({
+  palette: {
+    type: "dark",
+  },
+  typography: {
+    fontFamily: [
+      "-apple-system",
+      "BlinkMacSystemFont",
+      '"Segoe UI"',
+      "Roboto",
+      '"Helvetica Neue"',
+      "Arial",
+      "sans-serif",
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(","),
+  },
+});
 
 ReactDOM.render(
   <React.StrictMode>
-    <IntlProvider locale={navigator.language}>
-      <SnackbarProvider maxSnack={3} dense hideIconVariant>
-        <App />
-      </SnackbarProvider>
-    </IntlProvider>
+    <ThemeProvider theme={theme}>
+      <IntlProvider locale={navigator.language}>
+        <SnackbarProvider maxSnack={3} dense hideIconVariant>
+          <MediaQueryProvider>
+            <Router>
+              <App />
+            </Router>
+          </MediaQueryProvider>
+        </SnackbarProvider>
+      </IntlProvider>
+    </ThemeProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

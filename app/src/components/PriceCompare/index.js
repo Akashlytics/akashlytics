@@ -1,0 +1,1 @@
+export { PriceCompare } from "./PriceCompare";
