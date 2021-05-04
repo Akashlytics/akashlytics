@@ -1,0 +1,158 @@
+{
+  "providers": [
+    { "key": 1, "title": "akash", "description": "Akash Network" },
+    { "key": 2, "title": "aws", "description": "Amazon Web Services" },
+    { "key": 3, "title": "gcp", "description": "Google cloud platform" },
+    { "key": 4, "title": "azure", "description": "Microsoft Azure" }
+  ],
+  "rows": [
+    {
+      "type": "nano",
+      "cells": [
+        {
+          "provider": "akash",
+          "amount": 1,
+          "unit": "uakt",
+          "cpu": 0.1,
+          "ram": "512Mi",
+          "storage": "512Mi"
+        },
+        {
+          "provider": "aws",
+          "amount": 4.25,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "500Mb",
+          "machineType": "t2.nano"
+        },
+        {
+          "provider": "gcp",
+          "amount": 6.11,
+          "unit": "usd",
+          "cpu": 0.25,
+          "ram": "1Gb",
+          "machineType": "e2.micro"
+        },
+        {
+          "provider": "azure",
+          "amount": 4.58,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "500mb",
+          "machineType": "B1LS"
+        }
+      ]
+    },
+    {
+      "type": "micro",
+      "cells": [
+        {
+          "provider": "akash",
+          "amount": 2,
+          "unit": "uakt",
+          "cpu": 1,
+          "ram": "1Gi",
+          "storage": "1Gi"
+        },
+        {
+          "provider": "aws",
+          "amount": 8.5,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "1Gb",
+          "machineType": "t2.micro"
+        },
+        {
+          "provider": "gcp",
+          "amount": 19.22,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "1Gb",
+          "machineType": "n1-custom"
+        },
+        {
+          "provider": "azure",
+          "amount": 9.11,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "1Gb",
+          "machineType": "B1S"
+        }
+      ]
+    },
+    {
+      "type": "small",
+      "cells": [
+        {
+          "provider": "akash",
+          "amount": 3,
+          "unit": "uakt",
+          "cpu": 1,
+          "ram": "2Gi",
+          "storage": "1Gi"
+        },
+        {
+          "provider": "aws",
+          "amount": 16.84,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "2Gb",
+          "machineType": "t2.small"
+        },
+        {
+          "provider": "gcp",
+          "amount": 21.5,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "2Gb",
+          "machineType": "n1-custom"
+        },
+        {
+          "provider": "azure",
+          "amount": 18.15,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "2Gb",
+          "machineType": "B1MS"
+        }
+      ]
+    },
+    {
+      "type": "medium",
+      "cells": [
+        {
+          "provider": "akash",
+          "amount": 6,
+          "unit": "uakt",
+          "cpu": 2,
+          "ram": "4Gi",
+          "storage": "512Gi"
+        },
+        {
+          "provider": "aws",
+          "amount": 16.84,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "2Gb",
+          "machineType": "t2.small"
+        },
+        {
+          "provider": "gcp",
+          "amount": 21.5,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "2Gb",
+          "machineType": "n1-custom"
+        },
+        {
+          "provider": "azure",
+          "amount": 18.15,
+          "unit": "usd",
+          "cpu": 1,
+          "ram": "2Gb",
+          "machineType": "B1MS"
+        }
+      ]
+    }
+  ]
+}
