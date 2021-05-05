@@ -79,7 +79,7 @@ export function Home() {
                       marginTop: "-10px",
                     }}
                   >
-                    | <AktAmount uakt={deploymentCounts.averagePrice} />
+                    (<AktAmount uakt={deploymentCounts.averagePrice} />)
                   </small>
                 </p>
 
