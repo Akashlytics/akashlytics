@@ -76,17 +76,17 @@ const useStyles = makeStyles((theme) => ({
 
 export function PriceCompare({ marketData }) {
   const classes = useStyles();
-  const [priceCompararions, setPriceComparasions] = useState(null);
+  const [priceComparisons, setPriceComparisons] = useState(null);
   const intl = useIntl();
 
   // get the users
   useEffect(() => {
     async function getPriceCompare() {
-      const res = await fetch("/data/price-comparasions.json");
+      const res = await fetch("/data/price-comparisons.json");
       const data = await res.json();
 
       if (data) {
-        setPriceComparasions(data);
+        setPriceComparisons(data);
       }
     }
 
@@ -101,24 +101,24 @@ export function PriceCompare({ marketData }) {
             Akash vs. Cloud giants
           </Typography>
           <Typography variant="h5" className={classes.pageSubTitle}>
-            A simple price comparasion
+            A simple price comparison
           </Typography>
         </div>
       </div>
 
       <div className="row">
         <div className="col-xs-12">
-          {!priceCompararions || !marketData ? (
+          {!priceComparisons || !marketData ? (
             <CircularProgress size={80} />
           ) : (
             <TableContainer component={Paper}>
-              <Table className={classes.table} aria-label="price comparasions">
+              <Table className={classes.table} aria-label="price comparisons">
                 <TableHead className={classes.tableHeader}>
                   <TableRow>
                     <TableCell align="center" width="10%">
                       type
                     </TableCell>
-                    {priceCompararions.providers.map((provider) => (
+                    {priceComparisons.providers.map((provider) => (
                       <TableCell key={provider.key} align="center">
                         {provider.title}
                       </TableCell>
@@ -126,7 +126,7 @@ export function PriceCompare({ marketData }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {priceCompararions.rows.map((row, rowIndex) => {
+                  {priceComparisons.rows.map((row, rowIndex) => {
                     const akashCell = row.cells.filter((c) => c.provider === "akash")[0];
                     const akashPrice = akashCell.amount * 0.432 * marketData.computedPrice;
 
@@ -204,7 +204,7 @@ export function PriceCompare({ marketData }) {
               have miss-calculated some of the providers pricing.
             </li>
             <li>
-              The specifications used for comparasions are mostly focused on CPU and RAM as storage
+              The specifications used for comparisons are mostly focused on CPU and RAM as storage
               is usually rather cheap.
             </li>
             <li>
