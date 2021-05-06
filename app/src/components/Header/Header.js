@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     left: 0,
   },
-  logo: { height: "2.5rem", marginRight: 15 },
+  logo: { height: "2.5rem", width: "2.5rem", marginRight: 15 },
   title: {
     flexGrow: 1,
     fontWeight: "bold",
@@ -88,18 +88,20 @@ export function Header() {
     <AppBar position="static" className={classes.appBar}>
       <Toolbar className={clsx(classes.toolbar, { container: !mediaQuery.smallScreen })}>
         {mediaQuery.smallScreen && (
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="open drawer"
-            onClick={toggleDrawer(true)}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
+          <>
+            <IconButton
+              edge="start"
+              className={classes.menuButton}
+              color="inherit"
+              aria-label="open drawer"
+              onClick={toggleDrawer(true)}
+            >
+              <MenuIcon />
+            </IconButton>
 
-        <NavDrawer toggleDrawer={toggleDrawer} isDrawerOpen={isDrawerOpen} />
+            <NavDrawer toggleDrawer={toggleDrawer} isDrawerOpen={isDrawerOpen} />
+          </>
+        )}
 
         <div
           className={clsx(classes.logoContainer, {

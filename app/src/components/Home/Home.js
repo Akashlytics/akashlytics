@@ -5,23 +5,7 @@ import { FormattedNumber } from "react-intl";
 import AktAmount from "../AktAmount/AktAmount";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
-export function Home() {
-  const [deploymentCounts, setDeploymentCounts] = useState(null);
-
-  // get the users
-  useEffect(() => {
-    async function getDeploymentCounts() {
-      const res = await fetch("/api/getDeploymentCounts");
-      const data = await res.json();
-
-      if (data) {
-        setDeploymentCounts(data);
-      }
-    }
-
-    getDeploymentCounts();
-  }, []);
-
+export function Home({ deploymentCounts }) {
   const showAktPrice = deploymentCounts && deploymentCounts.marketData;
   const showAveragePrice =
     deploymentCounts && deploymentCounts.marketData && deploymentCounts.averagePrice > 0;
@@ -66,10 +50,10 @@ export function Home() {
             <div className={clsx("col-xs-12", tileClassName)}>
               <div className="Card">
                 <p className="Number">
-                  <AktAmount
-                    uakt={deploymentCounts.averagePrice}
-                    usdPrice={deploymentCounts.marketData.computedPrice}
-                    showInUSD={true}
+                  <FormattedNumber
+                    style="currency"
+                    currency="USD"
+                    value={0.432 * deploymentCounts.marketData.computedPrice}
                   />
                   <small
                     style={{
@@ -79,7 +63,7 @@ export function Home() {
                       marginTop: "-10px",
                     }}
                   >
-                    (<AktAmount uakt={deploymentCounts.averagePrice} />)
+                    (.432akt)
                   </small>
                 </p>
 

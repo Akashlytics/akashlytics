@@ -126,31 +126,31 @@
           "unit": "uakt",
           "cpu": 2,
           "ram": "4Gi",
-          "storage": "512Gi"
+          "storage": "1Gi"
         },
         {
           "provider": "aws",
-          "amount": 16.84,
+          "amount": 33.97,
           "unit": "usd",
-          "cpu": 1,
-          "ram": "2Gb",
-          "machineType": "t2.small"
+          "cpu": 2,
+          "ram": "4Gb",
+          "machineType": "t2.medium"
         },
         {
           "provider": "gcp",
-          "amount": 21.5,
+          "amount": 42.99,
           "unit": "usd",
-          "cpu": 1,
-          "ram": "2Gb",
+          "cpu": 2,
+          "ram": "4Gb",
           "machineType": "n1-custom"
         },
         {
           "provider": "azure",
-          "amount": 18.15,
+          "amount": 36.26,
           "unit": "usd",
-          "cpu": 1,
-          "ram": "2Gb",
-          "machineType": "B1MS"
+          "cpu": 2,
+          "ram": "4Gb",
+          "machineType": "B2S"
         }
       ]
     }

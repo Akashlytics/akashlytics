@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme) => ({
   },
   listSubHeaderLogo: {
     height: 30,
+    width: 30,
     marginRight: 25,
   },
   listSubHeaderTitle: {
@@ -57,7 +58,8 @@ export function NavDrawer({ isDrawerOpen, toggleDrawer }) {
           <List
             subheader={
               <ListSubheader
-                component="div"
+                component={Link}
+                to="/"
                 id="nested-list-subheader"
                 className={classes.listSubHeader}
               >

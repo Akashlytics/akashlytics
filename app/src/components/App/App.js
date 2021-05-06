@@ -14,6 +14,21 @@ const donationAddress = "akash13265twfqejnma6cc93rw5dxk4cldyz2zyy8cdm";
 
 function App() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const [deploymentCounts, setDeploymentCounts] = useState(null);
+
+  // get the users
+  useEffect(() => {
+    async function getDeploymentCounts() {
+      const res = await fetch("/api/getDeploymentCounts");
+      const data = await res.json();
+
+      if (data) {
+        setDeploymentCounts(data);
+      }
+    }
+
+    getDeploymentCounts();
+  }, []);
 
   const onDonationClick = () => {
     copyTextToClipboard(donationAddress);
@@ -45,10 +60,10 @@ function App() {
 
       <Switch>
         <Route path="/price-compare">
-          <PriceCompare />
+          <PriceCompare marketData={deploymentCounts && deploymentCounts.marketData} />
         </Route>
         <Route path="/">
-          <Home />
+          <Home deploymentCounts={deploymentCounts} />
         </Route>
       </Switch>
 
