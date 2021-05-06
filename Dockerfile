@@ -15,13 +15,11 @@ COPY . .
 
 WORKDIR /app/app
 
-RUN npm install
+RUN npm ci --only=production
 RUN npm run build
-# If you are building your code for production
-# RUN npm ci --only=production
 
 WORKDIR /app/api
-RUN npm install
+RUN npm ci --only=production
 
 RUN npm rebuild
 

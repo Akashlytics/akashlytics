@@ -1,5 +1,6 @@
-node_modules
+**/node_modules
 npm-debug.log
 MakeFile
 deploy.yml
-api/cache/*
+**/cache
+.git
