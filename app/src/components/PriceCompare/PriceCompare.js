@@ -80,7 +80,6 @@ export function PriceCompare({ marketData }) {
   const [priceComparisons, setPriceComparisons] = useState(null);
   const intl = useIntl();
 
-  // get the users
   useEffect(() => {
     async function getPriceCompare() {
       const res = await fetch("/data/price-comparisons.json");
