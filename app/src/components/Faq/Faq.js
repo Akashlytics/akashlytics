@@ -20,58 +20,6 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: 30,
     paddingBottom: 100,
   },
-  table: {
-    minWidth: 650,
-  },
-  pageTitle: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  pageSubTitle: {
-    color: "white",
-    marginBottom: "3rem",
-  },
-  tableHeader: {
-    textTransform: "uppercase",
-  },
-  dataCell: {
-    verticalAlign: "initial",
-    borderBottom: "none",
-  },
-  discountCell: {
-    padding: 8,
-  },
-  discountChip: {
-    backgroundColor: "#0d900d",
-    fontWeight: "bold",
-  },
-  discountLabel: {
-    fontWeight: "bold",
-    fontSize: "1rem",
-  },
-  tableRow: {
-    "&:last-child td": {
-      paddingBottom: 20,
-    },
-  },
-  disclaimerRow: {
-    marginTop: 50,
-  },
-  disclaimerTitle: {
-    color: "white",
-    fontWeight: "bold",
-    marginBottom: "1rem",
-    textAlign: "left",
-  },
-  disclaimerList: {
-    color: "white",
-    textDecoration: "none",
-    textAlign: "left",
-  },
-  link: {
-    fontWeight: "bold",
-    textDecoration: "underline",
-  },
 }));
 
 export function PriceCompare({ marketData }) {
@@ -79,7 +27,6 @@ export function PriceCompare({ marketData }) {
   const [priceComparisons, setPriceComparisons] = useState(null);
   const intl = useIntl();
 
-  
   // useEffect(() => {
   //   async function getPriceCompare() {
   //     const res = await fetch("/data/price-comparisons.json");
@@ -93,9 +40,5 @@ export function PriceCompare({ marketData }) {
   //   getPriceCompare();
   // }, []);
 
-  return (
-    <div className={clsx(classes.root, "container")}>
-      
-    </div>
-  );
+  return <div className={clsx(classes.root, "container")}></div>;
 }
