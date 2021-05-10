@@ -68,7 +68,7 @@ const useStyles = makeStyles((theme) => ({
 const navLinks = [
   // { title: `about us`, path: `/about-us` },
   { title: `price compare`, path: `/price-compare` },
-  // { title: `faq`, path: `/faq` },
+  { title: `faq`, path: `/faq` },
 ];
 
 export function Header() {

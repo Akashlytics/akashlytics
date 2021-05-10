@@ -1,6 +1,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
+import DashboardIcon from '@material-ui/icons/Dashboard';
 import clsx from "clsx";
 import {
   Typography,
@@ -71,6 +72,12 @@ export function NavDrawer({ isDrawerOpen, toggleDrawer }) {
               </ListSubheader>
             }
           >
+            <ListItem button component={Link} to="/">
+              <ListItemIcon>
+                <DashboardIcon />
+              </ListItemIcon>
+              <ListItemText primary="Dashboard" />
+            </ListItem>
             <ListItem button component={Link} to="/price-compare">
               <ListItemIcon>
                 <AttachMoneyIcon />

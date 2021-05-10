@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
   tooltipIcon: {
     position: "absolute",
     top: 5,
-    left: 10,
+    right: 10,
     fontSize: "1.2rem"
   },
   tooltip: {
@@ -263,7 +263,7 @@ export function Home({ deploymentCounts }) {
                       variant="h1"
                       className={clsx(classes.title, { "text-center": mediaQuery.smallScreen })}
                     >
-                      Daily active deployments
+                      Average number of daily active deployments
                     </Typography>
                   </div>
                 </div>

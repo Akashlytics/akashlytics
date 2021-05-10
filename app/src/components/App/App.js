@@ -10,6 +10,7 @@ import { Header } from "../Header";
 import { Switch, Route } from "react-router-dom";
 import { Home } from "../Home";
 import { PriceCompare } from "../PriceCompare";
+import { Faq } from "../Faq";
 
 const donationAddress = "akash13265twfqejnma6cc93rw5dxk4cldyz2zyy8cdm";
 
@@ -62,6 +63,9 @@ function App() {
       <Header />
 
       <Switch>
+        <Route path="/faq">
+          <Faq />
+        </Route>
         <Route path="/price-compare">
           <PriceCompare marketData={deploymentCounts && deploymentCounts.marketData} />
         </Route>
