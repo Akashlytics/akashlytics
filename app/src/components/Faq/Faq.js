@@ -64,6 +64,45 @@ export function Faq({ marketData }) {
     },
   ];
 
+  const howToDeployLinks = [
+    { title: "Official documentation", url: "https://docs.akash.network/" },
+    { title: "Dev & Tech Support Discord", url: "https://discord.akash.network" },
+    { title: "Akash Network Github", url: "https://github.com/ovrclk" },
+    { title: "Hello world example", url: "https://github.com/tombeynon/akash-hello-world" },
+    { title: "Deploy ui tool", url: "https://github.com/tombeynon/akash-deploy" },
+    {
+      title: "Unstoppable stack (Handshake + Skynet + Akash)",
+      url: "https://github.com/bcfus/unstoppable-stack",
+    },
+    { title: "Ssh ubuntu image on Akash", url: "https://github.com/coffeeroaster/akash-ubuntu" },
+    { title: "Akash deployer", url: "https://github.com/lhennerley/akash-deployer" },
+    { title: "Akash node example", url: "https://github.com/tombeynon/akash-archive-node" },
+    {
+      title: "How to deploy a wordpress blog",
+      url: "https://medium.com/@zJ_/how-to-deploy-a-decentralized-blog-3a5a13a6a827",
+    },
+    {
+      title: "How I hosted my personal site on Akash for $2/month",
+      url:
+        "https://teeyeeyang.medium.com/how-i-hosted-my-personal-site-on-akash-for-2-month-cf07768aa0a2",
+    },
+  ];
+
+  const communitiesLinks = [
+    { title: "Akash Network Telegram", url: "https://t.me/AkashNW" },
+    { title: "Akashians | Price & Staking", url: "https://t.me/akashianspricingstaking" },
+    { title: "Akash Network Devs", url: "https://discord.gg/W8FgHENp" },
+    { title: "Twitter", url: "https://twitter.com/akashnet_" },
+    { title: "Reddit", url: "https://www.reddit.com/r/akashnetwork/" },
+    { title: "Facebook", url: "https://www.facebook.com/akashnw" },
+    { title: "Akash Russia Telegram", url: "https://t.me/akash_ru" },
+    { title: "Akash Korea", url: "https://t.me/AkashNW_KR" },
+    {
+      title: "Akash Chinese Community",
+      url: "https://akash.network/blog/akash-network-launch-chinese-community/",
+    },
+  ];
+
   return (
     <div className={clsx(classes.root, "container")}>
       <Helmet title="Frequently Asked Questions">
@@ -88,13 +127,21 @@ export function Faq({ marketData }) {
           </Typography>
 
           <p className={classes.paragraph}>
-            Akash Network is the world’s first decentralized open source cloud. Almost every website
-            or app you go to are hosted on the “cloud”, meaning servers leased by big companies like
-            Amazon, Google or Microsoft. Akash is aiming to disrupt this centralization of resources
-            by providing a decentralized network of server providers, giving the possibility for
-            anyone to rent their spare server capacity to earn an extra income. Think AirBnb for the
-            cloud! On the other hand, anyone who wants to host an app or a website can now do it at
-            a{" "}
+            <a
+              href="https://akash.network/"
+              target="_blank"
+              rel="noopener"
+              className={classes.link}
+            >
+              Akash Network
+            </a>{" "}
+            is the world’s first decentralized open source cloud. Almost every website or app you go
+            to are hosted on the “cloud”, meaning servers leased by big companies like Amazon,
+            Google or Microsoft. Akash is aiming to disrupt this centralization of resources by
+            providing a decentralized network of server providers, giving the possibility for anyone
+            capable to rent their spare server capacity to earn an extra income. Think AirBnb for
+            the cloud! On the other hand, anyone who wants to host an app or a website can now do it
+            at a{" "}
             <Link to="/price-compare" className={classes.link}>
               fraction of the cost.
             </Link>{" "}
@@ -107,7 +154,7 @@ export function Faq({ marketData }) {
             >
               blockchain technology
             </a>{" "}
-            so that all the transactions are transparent and global in an instant.
+            so that all the transactions are transparent, fast, global and cheap.
           </p>
 
           <Typography variant="h3" className={classes.subTitle}>
@@ -160,8 +207,7 @@ export function Faq({ marketData }) {
 
           <p>
             Any app, website, blockchain node, video game server, etc. You name it! As long as you
-            have a docker image ready, you can run it on Akash! :
-            https://github.com/ovrclk/awesome-akash
+            have a docker image ready, you can run it on Akash!
           </p>
           <p className={classes.paragraph}>
             <a
@@ -224,6 +270,46 @@ export function Faq({ marketData }) {
 
           <ul>
             {howToStakeLinks.map((link) => (
+              <li>
+                <a
+                  key={link.title}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener"
+                  className={classes.link}
+                >
+                  {link.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <Typography variant="h5" className={clsx(classes.resourcesTitle)}>
+            #3: How to deploy
+          </Typography>
+
+          <ul>
+            {howToDeployLinks.map((link) => (
+              <li>
+                <a
+                  key={link.title}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener"
+                  className={classes.link}
+                >
+                  {link.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <Typography variant="h3" className={clsx(classes.pageTitle, "mb-4", "mt-4")}>
+            Community
+          </Typography>
+
+          <ul>
+            {communitiesLinks.map((link) => (
               <li>
                 <a
                   key={link.title}
