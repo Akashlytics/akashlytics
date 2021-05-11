@@ -105,7 +105,7 @@ export function Faq({ marketData }) {
 
   return (
     <div className={clsx(classes.root, "container")}>
-      <Helmet title="Frequently Asked Questions">
+      <Helmet title="FAQ">
         <meta
           name="description"
           content="Learn more about the akash network and get answers to the most frequently asked questions."
