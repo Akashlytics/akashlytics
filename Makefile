@@ -1,6 +1,7 @@
 AKASH_NET := https://raw.githubusercontent.com/ovrclk/net/master/mainnet
 AKASH_VERSION=$(shell curl -s "$(AKASH_NET)/version.txt")
-AKASH_NODE=$(shell curl -s "$(AKASH_NET)/rpc-nodes.txt" | sort -R | head -1)
+# AKASH_NODE=$(shell curl -s "$(AKASH_NET)/rpc-nodes.txt" | sort -R | head -1)
+AKASH_NODE="public-rpc2.akash.vitwit.com:80"
 AKASH_CHAIN_ID=$(shell curl -s "$(AKASH_NET)/chain-id.txt")
 
 AKASH_SERVICE_NAME="web"
