@@ -86,6 +86,15 @@ export function Faq({ marketData }) {
       url:
         "https://teeyeeyang.medium.com/how-i-hosted-my-personal-site-on-akash-for-2-month-cf07768aa0a2",
     },
+    {
+      title: "A step-by-step guide to deploying a SPA to Akash Network",
+      url: "https://github.com/xtrip15/akash-deploy-spa",
+    },
+    {
+      title: "Running Sovryn Node on Decentralized Cloud",
+      url: "https://www.youtube.com/watch?v=Iinsjgolmu8&t=313s",
+    },
+    { title: "Deploying WordPress on Akash", url: "https://decentralize.sirags.us/tools/" },
   ];
 
   const communitiesLinks = [
@@ -137,15 +146,15 @@ export function Faq({ marketData }) {
             </a>{" "}
             is the world’s first decentralized open source cloud. Almost every website or app you go
             to are hosted on the “cloud”, meaning servers leased by big companies like Amazon,
-            Google or Microsoft. Akash is aiming to disrupt this centralization of resources by
-            providing a decentralized network of server providers, giving the possibility for anyone
-            capable to rent their spare server capacity to earn an extra income. Think AirBnb for
-            the cloud! On the other hand, anyone who wants to host an app or a website can now do it
-            at a{" "}
+            Google, Microsoft or others. Akash is aiming to disrupt this centralization of resources
+            by providing a decentralized network of server providers, giving the possibility for
+            anyone capable to rent their spare server capacity and earn an extra income. Think
+            AirBnb, but for cloud computing! On the other hand, anyone who wants to host an app or a
+            website can now do it at a{" "}
             <Link to="/price-compare" className={classes.link}>
               fraction of the cost.
             </Link>{" "}
-            To fulfil the transactions done between the parties, Akash uses the{" "}
+            To fulfill the transactions done between the parties, Akash uses the{" "}
             <a
               href="https://coinmarketcap.com/currencies/akash-network/"
               target="_blank"
@@ -154,7 +163,16 @@ export function Faq({ marketData }) {
             >
               blockchain technology
             </a>{" "}
-            so that all the transactions are transparent, fast, global and cheap.
+            so that all the transactions are transparent, fast, global and cheap. Akash is part of
+            the cosmos ecosystem as it is built with the{" "}
+            <a
+              href="https://v1.cosmos.network/sdk"
+              target="_blank"
+              rel="noopener"
+              className={classes.link}
+            >
+              Cosmos SDK.
+            </a>
           </p>
 
           <Typography variant="h3" className={classes.subTitle}>
@@ -229,7 +247,7 @@ export function Faq({ marketData }) {
           </Typography>
           <Typography variant="h3" className={clsx(classes.resourcesTitle, "mb-5")}>
             Here's a list of of useful links from the community that could help to get from buying
-            the token to deploying an app!
+            the currency to deploying an app!
           </Typography>
         </div>
       </div>

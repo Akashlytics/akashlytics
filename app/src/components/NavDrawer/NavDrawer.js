@@ -1,7 +1,8 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
-import DashboardIcon from '@material-ui/icons/Dashboard';
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import HelpIcon from "@material-ui/icons/Help";
 import clsx from "clsx";
 import {
   Typography,
@@ -83,6 +84,12 @@ export function NavDrawer({ isDrawerOpen, toggleDrawer }) {
                 <AttachMoneyIcon />
               </ListItemIcon>
               <ListItemText primary="Compare price" />
+            </ListItem>
+            <ListItem button component={Link} to="/faq">
+              <ListItemIcon>
+                <HelpIcon />
+              </ListItemIcon>
+              <ListItemText primary="FAQ" />
             </ListItem>
           </List>
         </div>

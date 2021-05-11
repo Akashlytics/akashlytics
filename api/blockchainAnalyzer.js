@@ -10,7 +10,7 @@ const cacheFolder = "./cache/";
 const leasesCachePath = cacheFolder + "leases.json";
 const deploymentsCachePath = cacheFolder + "deployments.json";
 const bidsCachePath = cacheFolder + "bids.json";
-const paginationLimit = 7000;
+const paginationLimit = 10000;
 const autoRefreshInterval = 10 * 60 * 1000; // 10 min
 
 let deploymentCount = null;
@@ -117,7 +117,9 @@ exports.initialize = async (firstInit) => {
     console.log(`There was ${roundedAKTSpent} akt spent on cloud resources`);
 
     totalResourcesLeased = await dbProvider.getTotalResourcesLeased();
-    console.log(`Total resources leased: ${totalResourcesLeased.cpuSum} cpu / ${totalResourcesLeased.memorySum} memory / ${totalResourcesLeased.storageSum} storage`);
+    console.log(
+      `Total resources leased: ${totalResourcesLeased.cpuSum} cpu / ${totalResourcesLeased.memorySum} memory / ${totalResourcesLeased.storageSum} storage`
+    );
 
     const averagePriceByBlock = await dbProvider.getPricingAverage();
     console.log(`The average price for a small instance is: ${averagePriceByBlock} uakt / block`);
@@ -127,7 +129,14 @@ exports.initialize = async (firstInit) => {
 
     console.log(`That is ${roundedPriceAkt} AKT / month`);
 
-    await dataSnapshotsHandler.takeSnapshot(activeDeploymentCount, totalResourcesLeased.cpuSum, totalResourcesLeased.memorySum, totalResourcesLeased.storageSum, deploymentCount, totalAKTSpent);
+    await dataSnapshotsHandler.takeSnapshot(
+      activeDeploymentCount,
+      totalResourcesLeased.cpuSum,
+      totalResourcesLeased.memorySum,
+      totalResourcesLeased.storageSum,
+      deploymentCount,
+      totalAKTSpent
+    );
   } catch (err) {
     console.error("Could not initialize", err);
   } finally {
@@ -220,5 +229,6 @@ async function loadNodeList() {
 
   console.log(`Found ${nodeList.length} nodes`);
 
-  return nodeList;
+  return ["http://public-rpc2.akash.vitwit.com:1317"];
+  // return nodeList;
 }

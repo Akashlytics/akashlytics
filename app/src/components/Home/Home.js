@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
     maxWidth: 300,
     fontSize: "1rem",
     borderRadius: ".5rem",
+    fontWeight: "normal",
   },
   graphExplanation: {
     fontSize: ".8rem",
@@ -111,6 +112,8 @@ export function Home({ deploymentCounts }) {
 
                     <Tooltip
                       arrow
+                      enterTouchDelay={0}
+                      leaveTouchDelay={10000}
                       classes={{ tooltip: classes.tooltip }}
                       title={
                         <>
