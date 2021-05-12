@@ -10,7 +10,7 @@ const cacheFolder = "./cache/";
 const leasesCachePath = cacheFolder + "leases.json";
 const deploymentsCachePath = cacheFolder + "deployments.json";
 const bidsCachePath = cacheFolder + "bids.json";
-const paginationLimit = 10000;
+const paginationLimit = 1000;
 const autoRefreshInterval = 10 * 60 * 1000; // 10 min
 
 let deploymentCount = null;
@@ -145,20 +145,15 @@ exports.initialize = async (firstInit) => {
 };
 
 async function loadLeases(node) {
-  let data = null;
+  let leases = null;
 
   if (fs.existsSync(leasesCachePath)) {
-    data = require(leasesCachePath);
+    leases = require(leasesCachePath);
     console.log("Loaded leases from cache");
   } else {
-    const queryUrl = node + "/akash/market/v1beta1/leases/list?pagination.limit=" + paginationLimit;
-    console.log("Querying leases from: " + queryUrl);
-    const response = await fetch(queryUrl);
-    data = await response.json();
-    fs.writeFileSync(leasesCachePath, JSON.stringify(data));
+    leases = await loadWithPagination(node + "/akash/market/v1beta1/leases/list", "leases", paginationLimit);
+    fs.writeFileSync(leasesCachePath, JSON.stringify(leases));
   }
-
-  const leases = data.leases;
 
   console.log(`Found ${leases.length} leases`);
 
@@ -166,19 +161,15 @@ async function loadLeases(node) {
 }
 
 async function loadDeployments(node) {
+  let deployments = null;
+
   if (fs.existsSync(deploymentsCachePath)) {
-    data = require(deploymentsCachePath);
+    deployments = require(deploymentsCachePath);
     console.log("Loaded deployments from cache");
   } else {
-    const queryUrl =
-      node + "/akash/deployment/v1beta1/deployments/list?pagination.limit=" + paginationLimit;
-    console.log("Querying deployments from: " + queryUrl);
-    const response = await fetch(queryUrl);
-    data = await response.json();
-    fs.writeFileSync(deploymentsCachePath, JSON.stringify(data));
+    deployments = await loadWithPagination(node + "/akash/deployment/v1beta1/deployments/list", "deployments", paginationLimit);
+    fs.writeFileSync(deploymentsCachePath, JSON.stringify(deployments));
   }
-
-  const deployments = data.deployments;
 
   console.log(`Found ${deployments.length} deployments`);
 
@@ -186,18 +177,15 @@ async function loadDeployments(node) {
 }
 
 async function loadBids(node) {
+  let bids = null;
+
   if (fs.existsSync(bidsCachePath)) {
-    data = require(bidsCachePath);
+    bids = require(bidsCachePath);
     console.log("Loaded bids from cache");
   } else {
-    const queryUrl = node + "/akash/market/v1beta1/bids/list?pagination.limit=" + paginationLimit;
-    console.log("Querying bids from: " + queryUrl);
-    const response = await fetch(queryUrl);
-    data = await response.json();
-    fs.writeFileSync(bidsCachePath, JSON.stringify(data));
+    bids = await loadWithPagination(node + "/akash/market/v1beta1/bids/list", "bids", paginationLimit);
+    fs.writeFileSync(bidsCachePath, JSON.stringify(bids));
   }
-
-  const bids = data.bids;
 
   console.log(`Found ${bids.length} bids`);
 
@@ -231,4 +219,33 @@ async function loadNodeList() {
 
   return ["http://public-rpc2.akash.vitwit.com:1317"];
   // return nodeList;
+}
+
+async function loadWithPagination(baseUrl, dataKey, limit) {
+  let items = [];
+  let nextKey = null;
+  let callCount = 1;
+  let totalCount = null;
+
+  do {
+    let queryUrl = baseUrl + "?pagination.limit=" + limit + "&pagination.count_total=true";
+    if (nextKey) {
+      queryUrl += "&pagination.key=" + nextKey;
+    }
+    console.log(`Querying ${dataKey} [${callCount}] from : ${queryUrl}`);
+    const response = await fetch(queryUrl);
+    data = await response.json();
+
+    if (!nextKey) {
+      totalCount = data.pagination.total;
+    }
+
+    items = items.concat(data[dataKey]);
+    nextKey = data.pagination.next_key;
+    callCount++;
+
+    console.log(`Got ${items.length} of ${totalCount}`);
+  } while (nextKey)
+
+  return items;
 }
