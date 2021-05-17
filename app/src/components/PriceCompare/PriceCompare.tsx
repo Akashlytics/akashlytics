@@ -156,7 +156,7 @@ export function PriceCompare({ marketData }) {
                           ))}
                         </TableRow>
 
-                        <TableRow size="small" className={classes.tableRow}>
+                        <TableRow className={classes.tableRow}>
                           <TableCell
                             align="center"
                             component="th"

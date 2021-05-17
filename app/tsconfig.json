@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": false,
+    "removeComments": false,
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "target": "ES5",
+    "jsx": "react",
+    "module": "ESNext",
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "watch": false,
+    "lib": ["es6", "dom"],
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@src/*": ["*"],
+      "@app/*": ["app/*"],
+      "@testing/*": ["testing/*"],
+      "@models/*": ["models/*"],
+      "@MdxComponents/*": ["app/storybook/MdxComponents/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "wwwroot", "dist"],
+  "compileOnSave": false
+}

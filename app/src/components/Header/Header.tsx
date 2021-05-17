@@ -72,6 +72,7 @@ const navLinks = [
   // { title: `about us`, path: `/about-us` },
   { title: `price compare`, path: `/price-compare` },
   { title: `faq`, path: `/faq` },
+  { title: `tools`, path: `/tools` },
 ];
 
 export function Header() {

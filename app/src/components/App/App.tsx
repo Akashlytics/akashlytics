@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function App() {
+export function App() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [deploymentCounts, setDeploymentCounts] = useState(null);
   const classes = useStyles();
@@ -115,5 +115,3 @@ function App() {
     </div>
   );
 }
-
-export default App;

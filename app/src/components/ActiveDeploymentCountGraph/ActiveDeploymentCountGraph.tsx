@@ -67,6 +67,7 @@ export function ActiveDeploymentCountGraph(props) {
           xScale={{ type: "point" }}
           yScale={{ type: "linear", min: 0, max: maxValue + 5 }}
           yFormat=" >-1d"
+          // @ts-ignore will be fixed in 0.69.1
           axisBottom={{
             tickRotation: mediaQuery.mobileView ? 45 : 0,
             format: (dateStr) => (

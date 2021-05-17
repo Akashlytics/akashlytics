@@ -14,9 +14,9 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, "../app/build")));
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../app/build/index.html"));
-});
+// app.get("/", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../app/dist/index.html"));
+// });
 
 app.get("/api/getDeploymentCounts/", async (req, res) => {
   const activeDeploymentCount = blockchainAnalyzer.getActiveDeploymentCount();
@@ -52,7 +52,7 @@ app.get("/api/refreshData", async (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../app/build/index.html"));
+  res.sendFile(path.join(__dirname, "../app/dist/index.html"));
 });
 
 app.listen(PORT, () => {

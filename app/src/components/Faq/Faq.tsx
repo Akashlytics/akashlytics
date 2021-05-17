@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function Faq({ marketData }) {
+export function Faq() {
   const classes = useStyles();
 
   const howToBuyLinks = [

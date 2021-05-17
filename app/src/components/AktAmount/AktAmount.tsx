@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedNumber } from "react-intl";
 
-export default function AktAmount(props) {
+export function AktAmount(props) {
   if (props.showInUSD) {
     return (
       <>
