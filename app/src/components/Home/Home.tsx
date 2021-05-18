@@ -38,7 +38,6 @@ const useStyles = makeStyles((theme) => ({
     fontSize: ".8rem",
     paddingTop: "1rem",
     fontStyle: "italic",
-    fontSize: "1.1rem",
   },
 }));
 
