@@ -4,7 +4,7 @@ const express = require("express");
 const path = require("path");
 const blockchainAnalyzer = require("./blockchainAnalyzer");
 const marketDataProvider = require("./marketDataProvider");
-const dbProvider = require('./dbProvider');
+const dbProvider = require("./dbProvider");
 
 // Constants
 const PORT = 3080;
@@ -12,11 +12,12 @@ const PORT = 3080;
 // App
 const app = express();
 
-app.use(express.static(path.join(__dirname, "../app/build")));
+app.use("/dist", express.static(path.join(__dirname, "../app/dist")));
+app.use(express.static(path.join(__dirname, "../app/dist")));
 
-// app.get("/", (req, res) => {
-//   res.sendFile(path.join(__dirname, "../app/dist/index.html"));
-// });
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../app/dist/index.html"));
+});
 
 app.get("/api/getDeploymentCounts/", async (req, res) => {
   const activeDeploymentCount = blockchainAnalyzer.getActiveDeploymentCount();
@@ -29,7 +30,16 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
   const marketData = marketDataProvider.getAktMarketData();
 
   if (activeDeploymentCount != null) {
-    res.send({ activeDeploymentCount, deploymentCount, averagePrice, marketData, totalAKTSpent, totalResourcesLeased, snapshots, lastRefreshDate });
+    res.send({
+      activeDeploymentCount,
+      deploymentCount,
+      averagePrice,
+      marketData,
+      totalAKTSpent,
+      totalResourcesLeased,
+      snapshots,
+      lastRefreshDate,
+    });
   } else {
     res.send(null);
   }

@@ -267,10 +267,9 @@ export function Faq() {
           </Typography>
 
           <ul>
-            {howToBuyLinks.map((link) => (
-              <li>
+            {howToBuyLinks.map((link, i) => (
+              <li key={i}>
                 <a
-                  key={link.title}
                   href={link.url}
                   target="_blank"
                   rel="noopener"
@@ -287,10 +286,9 @@ export function Faq() {
           </Typography>
 
           <ul>
-            {howToStakeLinks.map((link) => (
-              <li>
+            {howToStakeLinks.map((link, i) => (
+              <li key={i}>
                 <a
-                  key={link.title}
                   href={link.url}
                   target="_blank"
                   rel="noopener"
@@ -307,10 +305,9 @@ export function Faq() {
           </Typography>
 
           <ul>
-            {howToDeployLinks.map((link) => (
-              <li>
+            {howToDeployLinks.map((link, i) => (
+              <li key={i}>
                 <a
-                  key={link.title}
                   href={link.url}
                   target="_blank"
                   rel="noopener"
@@ -327,10 +324,9 @@ export function Faq() {
           </Typography>
 
           <ul>
-            {communitiesLinks.map((link) => (
-              <li>
+            {communitiesLinks.map((link, i) => (
+              <li key={i}>
                 <a
-                  key={link.title}
                   href={link.url}
                   target="_blank"
                   rel="noopener"

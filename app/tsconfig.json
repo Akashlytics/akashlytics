@@ -20,10 +20,7 @@
     "baseUrl": "./src",
     "paths": {
       "@src/*": ["*"],
-      "@app/*": ["app/*"],
-      "@testing/*": ["testing/*"],
-      "@models/*": ["models/*"],
-      "@MdxComponents/*": ["app/storybook/MdxComponents/*"]
+      "@app/*": ["app/*"]
     }
   },
   "include": ["src/**/*"],

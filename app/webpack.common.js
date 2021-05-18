@@ -4,10 +4,11 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: {
-    maint: ["./src/index"],
+    main: ["./src/index"],
   },
   output: {
     filename: "[name].bundle.js",
@@ -53,9 +54,12 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      template: "./public/index.html",
+      template: "./index.html",
       inject: "body",
       hash: true,
+    }),
+    new CopyPlugin({
+      patterns: [{ from: "public", to: "" }],
     }),
 
     // Uncomment to view the stats on bundles

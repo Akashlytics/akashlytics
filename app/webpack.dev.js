@@ -6,8 +6,8 @@ module.exports = merge(commonConfig, {
   mode: "development",
   devtool: "eval-source-map",
   devServer: {
-    contentBase: path.join(__dirname, "./dist"),
-    publicPath: "/dist",
+    contentBase: path.join(__dirname, "dist"),
+    publicPath: "/",
     compress: true,
     port: 3000,
     proxy: {

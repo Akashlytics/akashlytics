@@ -39,3 +39,5 @@ api/cache
 
 .DS_Store
 .vim
+
+dist
