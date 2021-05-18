@@ -15,7 +15,7 @@ COPY . .
 
 WORKDIR /app/app
 
-RUN npm ci --only=production
+RUN npm ci
 RUN npm run build
 
 WORKDIR /app/api

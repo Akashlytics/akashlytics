@@ -6,9 +6,7 @@
   "scripts": {
     "start": "webpack serve --config webpack.dev.js --open",
     "dev": "webpack --config webpack.dev.js --watch",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
-    "eject": "react-app-rewired eject"
+    "build": "webpack --config webpack.prod.js"
   },
   "proxy": "http://localhost:3080",
   "eslintConfig": {
@@ -77,6 +75,7 @@
     "prettier": "^2.3.0",
     "react-is": "^17.0.2",
     "style-loader": "^2.0.0",
+    "terser-webpack-plugin": "^5.1.2",
     "ts-loader": "^9.1.2",
     "tsconfig-paths-webpack-plugin": "^3.5.1",
     "typescript": "^4.2.4",
