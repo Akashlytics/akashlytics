@@ -10,7 +10,7 @@ const mediaQueries = {
   prefersReducedMotion: "(prefers-reduced-motion: reduce)",
 };
 
-export default function MediaQueryProvider({ children }) {
+export function MediaQueryProvider({ children }) {
   const phoneView = useMedia(mediaQueries.phone);
   const mobileView = useMedia(mediaQueries.mobile);
   const smallScreen = useMedia(mediaQueries.small);

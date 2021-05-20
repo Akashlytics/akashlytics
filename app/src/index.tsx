@@ -1,21 +1,30 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import {App} from "./components/App";
+import { App } from "./components/App";
 import reportWebVitals from "./reportWebVitals";
 import { IntlProvider } from "react-intl";
 import { SnackbarProvider } from "notistack";
-import MediaQueryProvider from "./context/MediaQueryProvider";
+import { MediaQueryProvider } from "./context/MediaQueryProvider";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { BrowserRouter as Router } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import TagManager from "react-gtm-module";
+
+const tagManagerArgs = {
+  gtmId: "GTM-W2QM5ZH",
+};
+
+if (process.env.NODE_ENV === "production") {
+  TagManager.initialize(tagManagerArgs);
+}
 
 const theme = createMuiTheme({
   palette: {
     type: "dark",
     primary: {
-      main: "#e41e13"
-    }
+      main: "#e41e13",
+    },
   },
   typography: {
     fontFamily: [
