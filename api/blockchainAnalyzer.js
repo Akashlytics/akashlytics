@@ -268,7 +268,7 @@ async function loadWithPagination(baseUrl, dataKey, limit) {
     }
 
     items = items.concat(data[dataKey]);
-    nextKey = data.pagination ? data.pagination.next_key : null;
+    nextKey = data.pagination.next_key;
     callCount++;
 
     console.log(`Got ${items.length} of ${totalCount}`);
