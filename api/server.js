@@ -26,7 +26,6 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
   const totalResourcesLeased = blockchainAnalyzer.getTotalResourcesLeased();
   const lastRefreshDate = blockchainAnalyzer.getLastRefreshDate();
   const totalAKTSpent = blockchainAnalyzer.getTotalAKTSpent();
-  const snapshots = blockchainAnalyzer.getSnapshots();
   const marketData = marketDataProvider.getAktMarketData();
 
   if (activeDeploymentCount != null) {
@@ -37,9 +36,48 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
       marketData,
       totalAKTSpent,
       totalResourcesLeased,
-      snapshots,
       lastRefreshDate,
     });
+  } else {
+    res.send(null);
+  }
+});
+
+app.get("/api/getSnapshot/:id", async (req, res) => {
+  if (!req.params) return res.send("Must specify a param.");
+
+  console.log(req.params);
+  const id = req.params.id;
+  let snapshots = null;
+
+  if (!id) return res.send("Must specify a valid snapshot.");
+
+  switch (id) {
+    case "activeDeployment":
+      snapshots = blockchainAnalyzer.activeDeploymentSnapshots();
+      break;
+    case "totalAKTSpent":
+      snapshots = blockchainAnalyzer.getTotalAKTSpentSnapshots();
+      break;
+    case "allTimeDeploymentCount":
+      snapshots = blockchainAnalyzer.getAllTimeDeploymentCountSnapshots();
+      break;
+    case "compute":
+      snapshots = blockchainAnalyzer.getComputeSnapshots();
+      break;
+    case "memory":
+      snapshots = blockchainAnalyzer.getMemorySnapshots();
+      break;
+    case "storage":
+      snapshots = blockchainAnalyzer.getStorageSnapshots();
+      break;
+
+    default:
+      break;
+  }
+
+  if (snapshots != null) {
+    res.send(snapshots);
   } else {
     res.send(null);
   }

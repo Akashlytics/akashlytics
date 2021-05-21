@@ -18,7 +18,12 @@ let activeDeploymentCount = null;
 let averagePrice = null;
 let totalAKTSpent = null;
 let totalResourcesLeased = null;
-let snapshots = null;
+let activeDeploymentSnapshots = null;
+let totalAKTSpentSnapshots = null;
+let allTimeDeploymentCountSnapshots = null;
+let computeSnapshots = null;
+let memorySnapshots = null;
+let storageSnapshots = null;
 
 let lastRefreshDate = null;
 let isLoadingData = false;
@@ -29,7 +34,12 @@ exports.getAveragePrice = () => averagePrice;
 exports.getTotalResourcesLeased = () => totalResourcesLeased;
 exports.getLastRefreshDate = () => lastRefreshDate;
 exports.getTotalAKTSpent = () => totalAKTSpent;
-exports.getSnapshots = () => snapshots;
+exports.getActiveDeploymentSnapshots = () => activeDeploymentSnapshots;
+exports.getTotalAKTSpentSnapshots = () => totalAKTSpentSnapshots;
+exports.getAllTimeDeploymentCountSnapshots = () => allTimeDeploymentCountSnapshots;
+exports.getComputeSnapshots = () => computeSnapshots;
+exports.getMemorySnapshots = () => memorySnapshots;
+exports.getStorageSnapshots = () => storageSnapshots;
 
 exports.startAutoRefresh = () => {
   console.log(`Will auto-refresh at an interval of ${Math.round(autoRefreshInterval / 1000)} secs`);
@@ -110,7 +120,12 @@ exports.initialize = async (firstInit) => {
     console.log(`There is ${activeDeploymentCount} active deployments`);
     console.log(`There was ${deploymentCount} total deployments`);
 
-    snapshots = await dbProvider.getActiveDeploymentSnapshots();
+    activeDeploymentSnapshots = await dbProvider.getActiveDeploymentSnapshots();
+    totalAKTSpentSnapshots = await dbProvider.getTotalAKTSpentSnapshots();
+    allTimeDeploymentCountSnapshots = await dbProvider.getAllTimeDeploymentCountSnapshots();
+    computeSnapshots = await dbProvider.getComputeSnapshots();
+    memorySnapshots = await dbProvider.getMemorySnapshots();
+    storageSnapshots = await dbProvider.getStorageSnapshots();
 
     totalAKTSpent = await dbProvider.getTotalAKTSpent();
     const roundedAKTSpent = Math.round((totalAKTSpent / 1000000 + Number.EPSILON) * 100) / 100;
@@ -253,11 +268,11 @@ async function loadWithPagination(baseUrl, dataKey, limit) {
     }
 
     items = items.concat(data[dataKey]);
-    nextKey = data.pagination.next_key;
+    nextKey = data.pagination ? data.pagination.next_key : null;
     callCount++;
 
     console.log(`Got ${items.length} of ${totalCount}`);
   } while (nextKey);
 
-  return items;
+  return items.filter((item) => item);
 }

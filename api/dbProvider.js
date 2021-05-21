@@ -7,60 +7,56 @@ const sequelize = new Sequelize("sqlite::memory:", {
   logging: false,
   define: {
     freezeTableName: true,
-  }
+  },
 });
 
-const Lease = sequelize.define(
-  "lease",
-  {
-    deploymentId: {
-      type: DataTypes.UUID,
-      references: { model: "deployment", key: "id" }
-    },
-    owner: { type: DataTypes.STRING, allowNull: false },
-    dseq: { type: DataTypes.STRING, allowNull: false },
-    state: { type: DataTypes.STRING, allowNull: false },
-    price: { type: DataTypes.NUMBER, allowNull: false },
-    datetime: { type: DataTypes.DATE, allowNull: false }
-  });
+const Lease = sequelize.define("lease", {
+  deploymentId: {
+    type: DataTypes.UUID,
+    references: { model: "deployment", key: "id" },
+  },
+  owner: { type: DataTypes.STRING, allowNull: false },
+  dseq: { type: DataTypes.STRING, allowNull: false },
+  state: { type: DataTypes.STRING, allowNull: false },
+  price: { type: DataTypes.NUMBER, allowNull: false },
+  datetime: { type: DataTypes.DATE, allowNull: false },
+});
 
-const Deployment = sequelize.define(
-  "deployment",
-  {
-    id: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true, allowNull: false },
-    owner: { type: DataTypes.STRING, allowNull: false },
-    dseq: { type: DataTypes.STRING, allowNull: false },
-    state: { type: DataTypes.STRING, allowNull: false },
-    escrowAccountTransferredAmount: { type: DataTypes.NUMBER, allowNull: false },
-    datetime: { type: DataTypes.DATE, allowNull: false }
-  });
+const Deployment = sequelize.define("deployment", {
+  id: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true, allowNull: false },
+  owner: { type: DataTypes.STRING, allowNull: false },
+  dseq: { type: DataTypes.STRING, allowNull: false },
+  state: { type: DataTypes.STRING, allowNull: false },
+  escrowAccountTransferredAmount: { type: DataTypes.NUMBER, allowNull: false },
+  datetime: { type: DataTypes.DATE, allowNull: false },
+});
 
-const DeploymentGroup = sequelize.define('deploymentGroup', {
+const DeploymentGroup = sequelize.define("deploymentGroup", {
   id: { type: DataTypes.UUID, defaultValue: Sequelize.UUIDV4, primaryKey: true, allowNull: false },
   deploymentId: {
     type: DataTypes.UUID,
-    references: { model: "deployment", key: "id" }
+    references: { model: "deployment", key: "id" },
   },
   owner: { type: DataTypes.STRING, allowNull: false },
   dseq: { type: DataTypes.STRING, allowNull: false },
   gseq: { type: DataTypes.NUMBER, allowNull: false },
   state: { type: DataTypes.STRING, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false }
+  datetime: { type: DataTypes.DATE, allowNull: false },
 });
 
-const DeploymentGroupResource = sequelize.define('deploymentGroupResource', {
+const DeploymentGroupResource = sequelize.define("deploymentGroupResource", {
   deploymentGroupId: {
     type: DataTypes.UUID,
-    references: { model: "deploymentGroup", key: "id" }
+    references: { model: "deploymentGroup", key: "id" },
   },
   cpuUnits: { type: DataTypes.STRING, allowNull: true },
   memoryQuantity: { type: DataTypes.STRING, allowNull: true },
   storageQuantity: { type: DataTypes.STRING, allowNull: true },
   count: { type: DataTypes.NUMBER, allowNull: false },
-  price: { type: DataTypes.NUMBER, allowNull: false }
+  price: { type: DataTypes.NUMBER, allowNull: false },
 });
 
-const Bid = sequelize.define('bid', {
+const Bid = sequelize.define("bid", {
   owner: { type: DataTypes.STRING, allowNull: false },
   dseq: { type: DataTypes.STRING, allowNull: false },
   gseq: { type: DataTypes.NUMBER, allowNull: false },
@@ -68,10 +64,10 @@ const Bid = sequelize.define('bid', {
   provider: { type: DataTypes.STRING, allowNull: false },
   state: { type: DataTypes.STRING, allowNull: false },
   price: { type: DataTypes.NUMBER, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false }
+  datetime: { type: DataTypes.DATE, allowNull: false },
 });
 
-const StatsSnapshot = sequelize.define('statsSnapshot', {
+const StatsSnapshot = sequelize.define("statsSnapshot", {
   date: { type: DataTypes.STRING, allowNull: false },
   minActiveDeploymentCount: { type: DataTypes.NUMBER, allowNull: true },
   maxActiveDeploymentCount: { type: DataTypes.NUMBER, allowNull: true },
@@ -95,7 +91,7 @@ exports.clearDatabase = async () => {
   await Deployment.drop();
 
   await exports.init();
-}
+};
 
 exports.init = async () => {
   try {
@@ -105,7 +101,7 @@ exports.init = async () => {
     console.error("Unable to connect to the database:", error);
   }
 
-  await Lease.sync({ force: true })
+  await Lease.sync({ force: true });
   await Deployment.sync({ force: true });
   await DeploymentGroup.sync({ force: true });
   await DeploymentGroupResource.sync({ force: true });
@@ -120,7 +116,7 @@ exports.init = async () => {
 
   Deployment.hasOne(Lease, { foreignKey: "deploymentId" });
   Lease.belongsTo(Deployment);
-}
+};
 
 exports.addLease = async (lease) => {
   const createdLease = await Lease.create({
@@ -128,15 +124,17 @@ exports.addLease = async (lease) => {
     dseq: lease.lease.lease_id.dseq,
     state: lease.lease.state,
     price: convertPrice(lease.lease.price),
-    datetime: blockHeightToDatetime(lease.lease.created_at)
+    datetime: blockHeightToDatetime(lease.lease.created_at),
   });
 
-  createdLease.setDeployment(await Deployment.findOne({
-    where: {
-      owner: lease.lease.lease_id.owner,
-      dseq: lease.lease.lease_id.dseq
-    }
-  }));
+  createdLease.setDeployment(
+    await Deployment.findOne({
+      where: {
+        owner: lease.lease.lease_id.owner,
+        dseq: lease.lease.lease_id.dseq,
+      },
+    })
+  );
 };
 
 exports.addDeployment = async (deployment) => {
@@ -145,7 +143,7 @@ exports.addDeployment = async (deployment) => {
     dseq: deployment.deployment.deployment_id.dseq,
     state: deployment.deployment.state,
     escrowAccountTransferredAmount: deployment.escrow_account.transferred.amount,
-    datetime: blockHeightToDatetime(deployment.deployment.created_at)
+    datetime: blockHeightToDatetime(deployment.deployment.created_at),
   });
 
   for (const group of deployment.groups) {
@@ -154,7 +152,7 @@ exports.addDeployment = async (deployment) => {
       dseq: group.group_id.dseq,
       gseq: group.group_id.gseq,
       state: group.state,
-      datetime: blockHeightToDatetime(group.created_at)
+      datetime: blockHeightToDatetime(group.created_at),
     });
 
     for (const resource of group.group_spec.resources) {
@@ -163,7 +161,7 @@ exports.addDeployment = async (deployment) => {
         memoryQuantity: resource.resources.memory.quantity.val,
         storageQuantity: resource.resources.storage.quantity.val,
         count: resource.count,
-        price: convertPrice(resource.price)
+        price: convertPrice(resource.price),
       });
     }
   }
@@ -178,9 +176,9 @@ exports.addBid = async (bid) => {
     provider: bid.bid.bid_id.provider,
     state: bid.bid.state,
     price: convertPrice(bid.bid.price),
-    datetime: blockHeightToDatetime(bid.bid.created_at)
+    datetime: blockHeightToDatetime(bid.bid.created_at),
   });
-}
+};
 
 function convertPrice(priceObj) {
   if (priceObj.denom === "uakt") {
@@ -205,29 +203,26 @@ exports.getActiveDeploymentCount = async () => {
   return await Deployment.count({
     where: {
       state: "active",
-      "$lease.state$": "active"
+      "$lease.state$": "active",
     },
-    include: Lease
+    include: Lease,
   });
 };
 
 exports.getDeploymentCount = async () => {
   return await Deployment.count({
     distinct: true,
-    include:
-    {
+    include: {
       model: Lease,
-      required: true
-    }
+      required: true,
+    },
   });
 };
 
 function blockHeightToDatetime(blockHeight) {
   const firstBlockDate = new Date("2021-03-08 15:00:00 UTC");
   let blockDate = new Date("2021-03-08 15:00:00 UTC");
-  blockDate.setSeconds(
-    firstBlockDate.getSeconds() + averageBlockTime * (blockHeight - 1)
-  );
+  blockDate.setSeconds(firstBlockDate.getSeconds() + averageBlockTime * (blockHeight - 1));
 
   blockDate.setHours(0, 0, 0, 0);
 
@@ -239,10 +234,10 @@ exports.getPricingAverage = async () => {
     where: {
       "$deploymentGroup.deployment.state$": "active",
       "$deploymentGroup.deployment.lease.state$": "active",
-      cpuUnits: '100',
-      memoryQuantity: '536870912',  // 512Mi
-      storageQuantity: '536870912', // 512Mi
-      count: 1
+      cpuUnits: "100",
+      memoryQuantity: "536870912", // 512Mi
+      storageQuantity: "536870912", // 512Mi
+      count: 1,
     },
     include: {
       model: DeploymentGroup,
@@ -250,35 +245,35 @@ exports.getPricingAverage = async () => {
         model: Deployment,
         include: {
           model: Lease,
-          required: true
-        }
-      }
-    }
+          required: true,
+        },
+      },
+    },
   });
 
   if (activeDeploymentResources.length === 0) return 0;
 
-  const priceSum = activeDeploymentResources.map(x => x.deploymentGroup.deployment.lease.price).reduce((a, b) => a + b);
+  const priceSum = activeDeploymentResources
+    .map((x) => x.deploymentGroup.deployment.lease.price)
+    .reduce((a, b) => a + b);
   const average = priceSum / activeDeploymentResources.length;
 
   //console.log(activeDeploymentResources.map(x => x.price + " / " + x.deploymentGroup.deployment.lease.price));
 
   return average;
-}
+};
 
 exports.getTotalAKTSpent = async () => {
   const total = await Deployment.sum("escrowAccountTransferredAmount");
   return total;
-}
+};
 
 exports.getTotalResourcesLeased = async () => {
   const totalResources = await DeploymentGroupResource.findAll({
-    attributes: [
-      "count", "cpuUnits", "memoryQuantity", "storageQuantity"
-    ],
+    attributes: ["count", "cpuUnits", "memoryQuantity", "storageQuantity"],
     where: {
       "$deploymentGroup.deployment.state$": "active",
-      "$deploymentGroup.deployment.lease.state$": "active"
+      "$deploymentGroup.deployment.lease.state$": "active",
     },
     include: {
       model: DeploymentGroup,
@@ -286,21 +281,21 @@ exports.getTotalResourcesLeased = async () => {
         model: Deployment,
         include: {
           model: Lease,
-          required: true
-        }
-      }
-    }
+          required: true,
+        },
+      },
+    },
   });
 
   return {
-    cpuSum: totalResources.map(x => x.cpuUnits * x.count).reduce((a, b) => a + b),
-    memorySum: totalResources.map(x => x.memoryQuantity * x.count).reduce((a, b) => a + b),
-    storageSum: totalResources.map(x => x.storageQuantity * x.count).reduce((a, b) => a + b)
-  }
-}
+    cpuSum: totalResources.map((x) => x.cpuUnits * x.count).reduce((a, b) => a + b),
+    memorySum: totalResources.map((x) => x.memoryQuantity * x.count).reduce((a, b) => a + b),
+    storageSum: totalResources.map((x) => x.storageQuantity * x.count).reduce((a, b) => a + b),
+  };
+};
 
 exports.updateDaySnapshot = async (date, snapshot) => {
-  const dateStr = date.toISOString().split('T')[0];
+  const dateStr = date.toISOString().split("T")[0];
 
   const existingSnapshot = await this.getSnapshot(date);
 
@@ -309,26 +304,26 @@ exports.updateDaySnapshot = async (date, snapshot) => {
   if (existingSnapshot) {
     await StatsSnapshot.update(stats, {
       where: {
-        date: dateStr
-      }
+        date: dateStr,
+      },
     });
   } else {
     await StatsSnapshot.create({
       date: dateStr,
-      ...stats
+      ...stats,
     });
   }
-}
+};
 
 exports.getSnapshot = async (date) => {
-  const dateStr = date.toISOString().split('T')[0];
+  const dateStr = date.toISOString().split("T")[0];
 
   return await StatsSnapshot.findOne({
     where: {
-      date: dateStr
-    }
+      date: dateStr,
+    },
   });
-}
+};
 
 exports.getActiveDeploymentSnapshots = async () => {
   const results = await StatsSnapshot.findAll({
@@ -336,26 +331,140 @@ exports.getActiveDeploymentSnapshots = async () => {
     order: [["date", "DESC"]],
     where: {
       date: {
-        [Op.not]: dataSnapshotsHandler.getDayStr()
-      }
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
     },
-    limit: 10
+    limit: 10,
   });
 
-  return results.map(x => x.toJSON()).map(x => ({
-    date: x.date,
-    min: x.minActiveDeploymentCount,
-    max: x.maxActiveDeploymentCount,
-    average: Math.round((x.minActiveDeploymentCount + x.maxActiveDeploymentCount) / 2)
-  })).reverse();
+  return results
+    .map((x) => x.toJSON())
+    .map((x) => ({
+      date: x.date,
+      min: x.minActiveDeploymentCount,
+      max: x.maxActiveDeploymentCount,
+      average: Math.round((x.minActiveDeploymentCount + x.maxActiveDeploymentCount) / 2),
+    }))
+    .reverse();
+};
+
+exports.getTotalAKTSpentSnapshots = async () => {
+  const results = await StatsSnapshot.findAll({
+    attributes: ["date", "totalAktSpent"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+    },
+    limit: 10,
+  });
+
+  return results
+    .map((x) => x.toJSON())
+    .map((x) => ({
+      date: x.date,
+      value: x.totalAktSpent,
+    }))
+    .reverse();
+};
+
+exports.getAllTimeDeploymentCountSnapshots = async () => {
+  const results = await StatsSnapshot.findAll({
+    attributes: ["date", "allTimeDeploymentCount"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+    },
+    limit: 10,
+  });
+
+  return results
+    .map((x) => x.toJSON())
+    .map((x) => ({
+      date: x.date,
+      value: x.allTimeDeploymentCount,
+    }))
+    .reverse();
+};
+
+exports.getComputeSnapshots = async () => {
+  const results = await StatsSnapshot.findAll({
+    attributes: ["date", "minCompute", "maxCompute"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+    },
+    limit: 10,
+  });
+
+  return results
+    .map((x) => x.toJSON())
+    .map((x) => ({
+      date: x.date,
+      min: x.minCompute,
+      max: x.maxCompute,
+      average: Math.round((x.minCompute + x.maxCompute) / 2),
+    }))
+    .reverse();
+};
+
+exports.getMemorySnapshots = async () => {
+  const results = await StatsSnapshot.findAll({
+    attributes: ["date", "minMemory", "maxMemory"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+    },
+    limit: 10,
+  });
+
+  return results
+    .map((x) => x.toJSON())
+    .map((x) => ({
+      date: x.date,
+      min: x.minMemory,
+      max: x.maxMemory,
+      average: Math.round((x.minMemory + x.maxMemory) / 2),
+    }))
+    .reverse();
+};
+
+exports.getStorageSnapshots = async () => {
+  const results = await StatsSnapshot.findAll({
+    attributes: ["date", "minStorage", "maxStorage"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+    },
+    limit: 10,
+  });
+
+  return results
+    .map((x) => x.toJSON())
+    .map((x) => ({
+      date: x.date,
+      min: x.minStorage,
+      max: x.maxStorage,
+      average: Math.round((x.minStorage + x.maxStorage) / 2),
+    }))
+    .reverse();
 };
 
 exports.getAllSnapshots = async () => {
   const results = await StatsSnapshot.findAll({
-    order: ["date"]
+    order: ["date"],
   });
 
-  return results.map(x => x.toJSON());
+  return results.map((x) => x.toJSON());
 };
 
 exports.initSnapshotsFromFile = async () => {
