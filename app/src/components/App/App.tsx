@@ -1,7 +1,7 @@
 import "./App.css";
 import React, { useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
-import { copyTextToClipboard } from "../../utils/copyClipboard";
+import { copyTextToClipboard } from "../../shared/utils/copyClipboard";
 import { IconButton } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
