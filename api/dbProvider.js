@@ -406,9 +406,9 @@ exports.getComputeSnapshots = async () => {
     .map((x) => x.toJSON())
     .map((x) => ({
       date: x.date,
-      min: x.minCompute,
-      max: x.maxCompute,
-      average: Math.round((x.minCompute + x.maxCompute) / 2),
+      min: x.minCompute / 1000,
+      max: x.maxCompute / 1000,
+      average: Math.round((x.minCompute + x.maxCompute) / 2) / 1000,
     }))
     .reverse();
 };
@@ -429,9 +429,9 @@ exports.getMemorySnapshots = async () => {
     .map((x) => x.toJSON())
     .map((x) => ({
       date: x.date,
-      min: x.minMemory,
-      max: x.maxMemory,
-      average: Math.round((x.minMemory + x.maxMemory) / 2),
+      min: x.minMemory / 1024 / 1024 / 1024,
+      max: x.maxMemory / 1024 / 1024 / 1024,
+      average: Math.round((x.minMemory + x.maxMemory) / 2) / 1024 / 1024 / 1024,
     }))
     .reverse();
 };
@@ -452,9 +452,9 @@ exports.getStorageSnapshots = async () => {
     .map((x) => x.toJSON())
     .map((x) => ({
       date: x.date,
-      min: x.minStorage,
-      max: x.maxStorage,
-      average: Math.round((x.minStorage + x.maxStorage) / 2),
+      min: x.minStorage / 1024 / 1024 / 1024,
+      max: x.maxStorage / 1024 / 1024 / 1024,
+      average: Math.round((x.minStorage + x.maxStorage) / 2) / 1024 / 1024 / 1024,
     }))
     .reverse();
 };

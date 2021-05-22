@@ -3,8 +3,14 @@ import { ResponsiveLine } from "@nivo/line";
 import { FormattedDate } from "react-intl";
 import { useMediaQueryContext } from "../../context/MediaQueryProvider";
 import { useStyles } from "./Graph.styles";
-import { Snapshots } from "@src/shared/models";
-import { Button } from "@material-ui/core";
+import { Snapshots, SnapshotsUrlParam } from "@src/shared/models";
+import { Button, CircularProgress, Typography } from "@material-ui/core";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import clsx from "clsx";
+import { useHistory, useLocation, useParams } from "react-router";
+import { Helmet } from "react-helmet-async";
+import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
+import { urlParamToSnapshot } from "@src/shared/utils/snapshotsUrlHelpers";
 
 interface SnapshotValue {
   date: string;
@@ -14,22 +20,22 @@ interface SnapshotValue {
   value?: number;
 }
 
-export interface IGraphProps {
-  snapshot: Snapshots;
-  onBackClick: () => void;
-}
+export interface IGraphProps {}
 
-export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot, onBackClick }) => {
+export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
+  const { snapshot: snapshotUrlParam } = useParams<{ snapshot: string }>();
+  const snapshot = urlParamToSnapshot(snapshotUrlParam as SnapshotsUrlParam);
   const [snapshotData, setSnapshotData] = useState<Array<SnapshotValue>>(null);
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
   const theme = getTheme();
   const maxValue =
     snapshotData && snapshotData.map((x) => x.max || x.value).reduce((a, b) => (a > b ? a : b));
+  const isAverage = snapshotData && snapshotData.some((x) => x.average);
   const graphData = snapshotData
     ? [
         {
-          id: "activeDeploymentCount",
+          id: snapshot,
           color: "rgb(1,0,0)",
           data: snapshotData.map((snapshot) => ({
             x: snapshot.date,
@@ -41,6 +47,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot, onBackCl
         },
       ]
     : null;
+  const title = getTitle(snapshot as Snapshots);
 
   useEffect(() => {
     async function getSnapshotData() {
@@ -60,77 +67,81 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot, onBackCl
   }, []);
 
   return (
-    // <> deploymentCounts.snapshots && deploymentCounts.snapshots.length > 0 &&
-    //             <div
-    //               className={clsx("row mt-5", {
-    //                 "mb-4": !mediaQuery.smallScreen,
-    //                 "mb-2 text-center": mediaQuery.smallScreen,
-    //               })}
-    //             >
-    //               <div className="col-xs-12">
-    //                 <Typography
-    //                   variant="h1"
-    //                   className={clsx(dashboardClasses.title, {
-    //                     "text-center": mediaQuery.smallScreen,
-    //                   })}
-    //                 >
-    //                   Average number of daily active deployments
-    //                 </Typography>
-    //               </div>
-    //             </div>
-    //             <div className="row justify-content-md-center">
-    //               <div className="col-lg-12">
-    //                 <ActiveDeploymentCountGraph data={deploymentCounts.snapshots} />
-    //               </div>
-    //             </div>
-    //             <div className="row">
-    //               <div className="col-lg-12">
-    //                 <p className={clsx("text-white", classes.graphExplanation)}>
-    //                   * The data points represent the average between the minimum and maximum active
-    //                   deployment count for the day.
-    //                 </p>
-    //               </div>
-    //             </div>
-    //           </>
-    <div className={classes.root}>
+    <div className={clsx("container", classes.root)}>
+      <Helmet title={title} />
+
       <div>
-        <Button onClick={onBackClick}>Back</Button>
+        <Button component={RouterLink} to="/" startIcon={<ArrowBackIcon />}>
+          Back
+        </Button>
       </div>
 
+      <div className={clsx("row mt-4 mb-3")}>
+        <div className="col-xs-12">
+          <Typography variant="h1" className={clsx(classes.title)}>
+            {title}
+          </Typography>
+        </div>
+      </div>
+
+      {!snapshotData && (
+        <div className={classes.loading}>
+          <CircularProgress size={80} />
+        </div>
+      )}
+
       {snapshotData && (
-        <ResponsiveLine
-          theme={theme}
-          data={graphData}
-          curve="linear"
-          margin={{ top: 30, right: 30, bottom: 50, left: 45 }}
-          xScale={{ type: "point" }}
-          yScale={{
-            type: "linear",
-            min: Math.min(...snapshotData.map((s) => s.min || s.value)) * 0.9,
-            max: maxValue * 1.05,
-          }}
-          yFormat=" >-1d"
-          // @ts-ignore will be fixed in 0.69.1
-          axisBottom={{
-            tickRotation: mediaQuery.mobileView ? 45 : 0,
-            format: (dateStr) => (
-              <FormattedDate value={new Date(dateStr)} day="numeric" month="long" timeZone="UTC" />
-            ),
-          }}
-          axisTop={null}
-          axisRight={null}
-          colors={"#e41e13"}
-          pointSize={10}
-          pointBorderColor="#e41e13"
-          pointColor={"#ffffff"}
-          pointBorderWidth={3}
-          pointLabelYOffset={-15}
-          enablePointLabel={false}
-          isInteractive={true}
-          tooltip={(props) => <div className={classes.graphTooltip}>{props.point.data.y}</div>}
-          useMesh={true}
-          enableCrosshair={false}
-        />
+        <div className={classes.graphContainer}>
+          <ResponsiveLine
+            theme={theme}
+            data={graphData}
+            curve="linear"
+            margin={{ top: 30, right: 30, bottom: 50, left: 45 }}
+            xScale={{ type: "point" }}
+            yScale={{
+              type: "linear",
+              min: Math.max(Math.min(...snapshotData.map((s) => s.min || s.value)) * 0.9, 0),
+              max: maxValue * 1.05,
+            }}
+            yFormat=" >-1d"
+            // @ts-ignore will be fixed in 0.69.1
+            axisBottom={{
+              tickRotation: mediaQuery.mobileView ? 45 : 0,
+              format: (dateStr) => (
+                <FormattedDate
+                  value={new Date(dateStr)}
+                  day="numeric"
+                  month="long"
+                  timeZone="UTC"
+                />
+              ),
+            }}
+            axisTop={null}
+            axisRight={null}
+            colors={"#e41e13"}
+            pointSize={10}
+            pointBorderColor="#e41e13"
+            pointColor={"#ffffff"}
+            pointBorderWidth={3}
+            pointLabelYOffset={-15}
+            enablePointLabel={false}
+            isInteractive={true}
+            tooltip={(props) => <div className={classes.graphTooltip}>{props.point.data.y}</div>}
+            useMesh={true}
+            enableCrosshair={false}
+          />
+
+          {isAverage && (
+            <div className="row">
+              <div className="col-lg-12">
+                <p className={clsx("text-white", classes.graphExplanation)}>
+                  * The data points represent the average between the minimum and maximum value for
+                  the day.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -169,16 +180,16 @@ const getTitle = (snapshot: Snapshots) => {
       return "Average number of daily active deployments";
     case Snapshots.totalAKTSpent:
       return "Total AKT spent";
-    case Snapshots.activeDeployment:
-      return "Average number of daily active deployments";
-    case Snapshots.activeDeployment:
-      return "Average number of daily active deployments";
-    case Snapshots.activeDeployment:
-      return "Average number of daily active deployments";
-    case Snapshots.activeDeployment:
-      return "Average number of daily active deployments";
+    case Snapshots.allTimeDeploymentCount:
+      return "All-time deployment count";
+    case Snapshots.compute:
+      return "Number of vCPUs currently leased";
+    case Snapshots.memory:
+      return "Number of Gi of memory currently leased";
+    case Snapshots.storage:
+      return "Number of Gi of disk currently leased";
 
     default:
-      return "";
+      return "Graph not found.";
   }
 };

@@ -12,6 +12,9 @@ import { Home } from "../Home";
 import { PriceCompare } from "../PriceCompare";
 import { Faq } from "../Faq";
 import { makeStyles } from "@material-ui/core/styles";
+import { Graph } from "../Graph";
+import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
+import clsx from "clsx";
 
 const donationAddress = "akash13265twfqejnma6cc93rw5dxk4cldyz2zyy8cdm";
 
@@ -20,11 +23,20 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "bold",
     textDecoration: "underline",
   },
+  appBody: {
+    paddingTop: 80,
+    paddingBottom: 100,
+  },
+  appBodySmall: {
+    paddingTop: 25,
+    paddingBottom: 50,
+  },
 }));
 
 export function App() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [deploymentCounts, setDeploymentCounts] = useState(null);
+  const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
 
   // get the users
@@ -70,22 +82,27 @@ export function App() {
   };
 
   return (
-    <div className="App">
+    <div>
       <Helmet defaultTitle="Akashlytics" titleTemplate="Akashlytics - %s" />
 
       <Header />
 
-      <Switch>
-        <Route path="/faq">
-          <Faq />
-        </Route>
-        <Route path="/price-compare">
-          <PriceCompare marketData={deploymentCounts && deploymentCounts.marketData} />
-        </Route>
-        <Route path="/">
-          <Home deploymentCounts={deploymentCounts} />
-        </Route>
-      </Switch>
+      <div className={clsx(classes.appBody, { [classes.appBodySmall]: mediaQuery.smallScreen })}>
+        <Switch>
+          <Route path="/faq">
+            <Faq />
+          </Route>
+          <Route path="/price-compare">
+            <PriceCompare marketData={deploymentCounts && deploymentCounts.marketData} />
+          </Route>
+          <Route path="/graph/:snapshot">
+            <Graph />
+          </Route>
+          <Route path="/">
+            <Home deploymentCounts={deploymentCounts} />
+          </Route>
+        </Switch>
+      </div>
 
       <footer className="App-footer container">
         <img

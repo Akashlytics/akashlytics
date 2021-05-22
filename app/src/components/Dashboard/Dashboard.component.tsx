@@ -5,17 +5,13 @@ import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { Typography } from "@material-ui/core";
 import { StatsCard } from "../StatsCard";
 import { FormattedNumber } from "react-intl";
-import { Snapshots } from "@src/shared/models";
+import { Snapshots, SnapshotsUrlParam } from "@src/shared/models";
 
 interface IDashboardProps {
   deploymentCounts: any;
-  onDataClick: (snapshot: Snapshots) => void;
 }
 
-export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
-  deploymentCounts,
-  onDataClick,
-}) => {
+export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deploymentCounts }) => {
   const classes = useStyles();
   const mediaQuery = useMediaQueryContext();
   const showAktPrice = deploymentCounts && deploymentCounts.marketData;
@@ -101,7 +97,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
             }
             text="Total spent on decloud"
             tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
-            onClick={() => onDataClick(Snapshots.totalAKTSpent)}
+            graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
           />
         </div>
 
@@ -110,7 +106,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
             number={<FormattedNumber value={deploymentCounts.deploymentCount} />}
             text="All-time deployment count"
             tooltip="The all-time deployment count consists of all deployments that were live at some point. This includes deployments that were deployed for testing or that were meant to be only temporary."
-            onClick={() => onDataClick(Snapshots.allTimeDeploymentCount)}
+            graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
           />
         </div>
       </div>
@@ -149,7 +145,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                       </div>
                     </>
                   }
-                  onClick={() => onDataClick(Snapshots.activeDeployment)}
+                  graphPath={`/graph/${SnapshotsUrlParam.activeDeployment}`}
                 />
               </div>
             )}
@@ -165,7 +161,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                   </>
                 }
                 text="Compute"
-                onClick={() => onDataClick(Snapshots.compute)}
+                graphPath={`/graph/${SnapshotsUrlParam.compute}`}
               />
             </div>
 
@@ -182,7 +178,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                   </>
                 }
                 text="Memory"
-                onClick={() => onDataClick(Snapshots.memory)}
+                graphPath={`/graph/${SnapshotsUrlParam.memory}`}
               />
             </div>
 
@@ -199,7 +195,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                   </>
                 }
                 text="Storage"
-                onClick={() => onDataClick(Snapshots.storage)}
+                graphPath={`/graph/${SnapshotsUrlParam.storage}`}
               />
             </div>
           </div>

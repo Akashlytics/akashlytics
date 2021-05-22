@@ -16,5 +16,6 @@ module.exports = merge(commonConfig, {
       context: ["/api"],
       target: "http://localhost:3080",
     },
+    historyApiFallback: true,
   },
 });

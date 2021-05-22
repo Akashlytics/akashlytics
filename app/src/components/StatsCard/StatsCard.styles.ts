@@ -23,13 +23,19 @@ export const useStyles = makeStyles((theme) => ({
       0px 9px 46px 8px rgb(175 24 23 / 12%)
     `
   },
+  rootSmall: {
+    marginTop: 15,
+    marginBottom: 15,
+    height: "auto"
+  },
   number: {
     fontSize: "40px",
     fontWeight: "bold"
   },
   text: {
     fontSize: "1.2rem",
-    fontWeight: "lighter"
+    fontWeight: "lighter",
+    textAlign: "center"
   },
   extraText: {
     fontWeight: "bold",
@@ -43,10 +49,11 @@ export const useStyles = makeStyles((theme) => ({
     right: 10,
     fontSize: "1.2rem",
   },
-  tooltip: {
-    maxWidth: 300,
-    fontSize: "1rem",
-    borderRadius: ".5rem",
-    fontWeight: "normal",
-  },
+  graph: {
+    position: "absolute",
+    bottom: 3,
+    right: 3,
+    zIndex: 100,
+    color: "white"
+  }
 }));
