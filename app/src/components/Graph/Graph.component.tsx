@@ -4,6 +4,7 @@ import { FormattedDate } from "react-intl";
 import { useMediaQueryContext } from "../../context/MediaQueryProvider";
 import { useStyles } from "./Graph.styles";
 import { Snapshots } from "@src/shared/models";
+import { Button } from "@material-ui/core";
 
 interface SnapshotValue {
   date: string;
@@ -15,9 +16,10 @@ interface SnapshotValue {
 
 export interface IGraphProps {
   snapshot: Snapshots;
+  onBackClick: () => void;
 }
 
-export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot }) => {
+export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot, onBackClick }) => {
   const [snapshotData, setSnapshotData] = useState<Array<SnapshotValue>>(null);
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
@@ -31,7 +33,10 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot }) => {
           color: "rgb(1,0,0)",
           data: snapshotData.map((snapshot) => ({
             x: snapshot.date,
-            y: snapshot.average ? snapshot.average : snapshot.value,
+            y:
+              Math.round(
+                ((snapshot.average ? snapshot.average : snapshot.value) + Number.EPSILON) * 100
+              ) / 100,
           })),
         },
       ]
@@ -88,14 +93,22 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot }) => {
     //             </div>
     //           </>
     <div className={classes.root}>
+      <div>
+        <Button onClick={onBackClick}>Back</Button>
+      </div>
+
       {snapshotData && (
         <ResponsiveLine
           theme={theme}
           data={graphData}
           curve="linear"
-          margin={{ top: 30, right: 30, bottom: 50, left: 30 }}
+          margin={{ top: 30, right: 30, bottom: 50, left: 45 }}
           xScale={{ type: "point" }}
-          yScale={{ type: "linear", min: 0, max: maxValue + 5 }}
+          yScale={{
+            type: "linear",
+            min: Math.min(...snapshotData.map((s) => s.min || s.value)) * 0.9,
+            max: maxValue * 1.05,
+          }}
           yFormat=" >-1d"
           // @ts-ignore will be fixed in 0.69.1
           axisBottom={{
@@ -107,14 +120,14 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({ snapshot }) => {
           axisTop={null}
           axisRight={null}
           colors={"#e41e13"}
-          pointSize={15}
+          pointSize={10}
           pointBorderColor="#e41e13"
           pointColor={"#ffffff"}
           pointBorderWidth={3}
           pointLabelYOffset={-15}
           enablePointLabel={false}
           isInteractive={true}
-          tooltip={(props) => <div className="graphTooltip">{props.point.data.y}</div>}
+          tooltip={(props) => <div className={classes.graphTooltip}>{props.point.data.y}</div>}
           useMesh={true}
           enableCrosshair={false}
         />

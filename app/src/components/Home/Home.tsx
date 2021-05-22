@@ -32,7 +32,10 @@ export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) 
             {!currentGraphSnapshot ? (
               <Dashboard deploymentCounts={deploymentCounts} onDataClick={onDataClick} />
             ) : (
-              <Graph snapshot={currentGraphSnapshot} />
+              <Graph
+                snapshot={currentGraphSnapshot}
+                onBackClick={() => setCurrentGraphSnapshot(null)}
+              />
             )}
           </>
         ) : (

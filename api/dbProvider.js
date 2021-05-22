@@ -364,7 +364,7 @@ exports.getTotalAKTSpentSnapshots = async () => {
     .map((x) => x.toJSON())
     .map((x) => ({
       date: x.date,
-      value: x.totalAktSpent,
+      value: x.totalAktSpent * 0.000001,
     }))
     .reverse();
 };

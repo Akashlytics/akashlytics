@@ -7,4 +7,9 @@ export const useStyles = makeStyles((theme) => ({
     maxWidth: "800px",
     margin: "auto",
   },
+  graphTooltip: {
+    padding: "5px",
+    color: "white",
+    fontWeight: "bold"
+  }
 }));

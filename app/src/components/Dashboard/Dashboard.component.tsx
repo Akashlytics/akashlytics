@@ -110,6 +110,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
             number={<FormattedNumber value={deploymentCounts.deploymentCount} />}
             text="All-time deployment count"
             tooltip="The all-time deployment count consists of all deployments that were live at some point. This includes deployments that were deployed for testing or that were meant to be only temporary."
+            onClick={() => onDataClick(Snapshots.allTimeDeploymentCount)}
           />
         </div>
       </div>
@@ -148,6 +149,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                       </div>
                     </>
                   }
+                  onClick={() => onDataClick(Snapshots.activeDeployment)}
                 />
               </div>
             )}
@@ -163,6 +165,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                   </>
                 }
                 text="Compute"
+                onClick={() => onDataClick(Snapshots.compute)}
               />
             </div>
 
@@ -179,6 +182,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                   </>
                 }
                 text="Memory"
+                onClick={() => onDataClick(Snapshots.memory)}
               />
             </div>
 
@@ -195,6 +199,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({
                   </>
                 }
                 text="Storage"
+                onClick={() => onDataClick(Snapshots.storage)}
               />
             </div>
           </div>

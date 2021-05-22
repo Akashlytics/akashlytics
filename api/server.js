@@ -46,7 +46,6 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
 app.get("/api/getSnapshot/:id", async (req, res) => {
   if (!req.params) return res.send("Must specify a param.");
 
-  console.log(req.params);
   const id = req.params.id;
   let snapshots = null;
 
@@ -54,7 +53,7 @@ app.get("/api/getSnapshot/:id", async (req, res) => {
 
   switch (id) {
     case "activeDeployment":
-      snapshots = blockchainAnalyzer.activeDeploymentSnapshots();
+      snapshots = blockchainAnalyzer.getActiveDeploymentSnapshots();
       break;
     case "totalAKTSpent":
       snapshots = blockchainAnalyzer.getTotalAKTSpentSnapshots();

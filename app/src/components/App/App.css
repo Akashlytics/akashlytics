@@ -136,12 +136,6 @@ a:hover {
   transform: scale(1.05);
 }
 
-.graphTooltip {
-  padding: 5px;
-  color: white;
-  font-weight: bold;
-}
-
 @media (max-width: 991px) {
   .App-body {
     padding-top: 25px;
