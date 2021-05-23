@@ -35,7 +35,7 @@ node_modules/
 .eslintcache
 
 akash
-api/cache
+cache
 
 .DS_Store
 .vim
