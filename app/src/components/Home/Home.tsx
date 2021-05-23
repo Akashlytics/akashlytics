@@ -36,7 +36,9 @@ export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) 
             </div>
           </>
         ) : (
-          <CircularProgress size={80} />
+          <div className="text-center">
+            <CircularProgress size={80} />
+          </div>
         )}
       </div>
     </>
