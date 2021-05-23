@@ -5,10 +5,10 @@ import { Graph } from "../Graph";
 import { Helmet } from "react-helmet-async";
 import { useStyles } from "./Home.styles";
 import { Dashboard } from "../Dashboard";
-import { Snapshots } from "@src/shared/models";
+import { DashboardData } from "@src/shared/models";
 
 export interface IHomeProps {
-  deploymentCounts: any; // TODO
+  deploymentCounts: DashboardData;
 }
 
 export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) => {
@@ -18,7 +18,7 @@ export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) 
     <>
       <Helmet title="Dashboard" />
       <div className={clsx("container")}>
-        {deploymentCounts !== null ? (
+        {deploymentCounts ? (
           <Dashboard deploymentCounts={deploymentCounts} />
         ) : (
           <CircularProgress size={80} />

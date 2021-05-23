@@ -5,10 +5,10 @@ import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { Typography } from "@material-ui/core";
 import { StatsCard } from "../StatsCard";
 import { FormattedNumber } from "react-intl";
-import { Snapshots, SnapshotsUrlParam } from "@src/shared/models";
+import { DashboardData, SnapshotsUrlParam } from "@src/shared/models";
 
 interface IDashboardProps {
-  deploymentCounts: any;
+  deploymentCounts: DashboardData;
 }
 
 export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deploymentCounts }) => {

@@ -11,21 +11,14 @@ import { useHistory, useLocation, useParams } from "react-router";
 import { Helmet } from "react-helmet-async";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 import { urlParamToSnapshot } from "@src/shared/utils/snapshotsUrlHelpers";
-
-interface SnapshotValue {
-  date: string;
-  min?: number;
-  max?: number;
-  average?: number;
-  value?: number;
-}
+import { useGraphSnapshot } from "@src/hooks/queries/useGrapsQuery";
 
 export interface IGraphProps {}
 
 export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
   const { snapshot: snapshotUrlParam } = useParams<{ snapshot: string }>();
   const snapshot = urlParamToSnapshot(snapshotUrlParam as SnapshotsUrlParam);
-  const [snapshotData, setSnapshotData] = useState<Array<SnapshotValue>>(null);
+  const { data: snapshotData, status } = useGraphSnapshot(snapshot);
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
   const theme = getTheme();
@@ -49,23 +42,6 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
     : null;
   const title = getTitle(snapshot as Snapshots);
 
-  useEffect(() => {
-    async function getSnapshotData() {
-      try {
-        const res = await fetch(`/api/getSnapshot/${snapshot}`);
-        const data = await res.json();
-
-        if (data) {
-          setSnapshotData(data);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    getSnapshotData();
-  }, []);
-
   return (
     <div className={clsx("container", classes.root)}>
       <Helmet title={title} />
@@ -84,7 +60,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
         </div>
       </div>
 
-      {!snapshotData && (
+      {!snapshotData && status === "loading" && (
         <div className={classes.loading}>
           <CircularProgress size={80} />
         </div>

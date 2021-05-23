@@ -12,7 +12,7 @@ export const useStyles = makeStyles((theme) => ({
     color: "white",
     height: "100%",
     flexGrow: 1,
-    padding: "15px",
+    padding: "15px 15px 40px",
     borderRadius: "20px",
     display: "flex",
     flexDirection: "column",

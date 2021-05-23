@@ -15,6 +15,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Graph } from "../Graph";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import clsx from "clsx";
+import { useDashboardData } from "@src/hooks/queries/useDashboardData";
 
 const donationAddress = "akash13265twfqejnma6cc93rw5dxk4cldyz2zyy8cdm";
 
@@ -31,31 +32,17 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: 25,
     paddingBottom: 50,
   },
+  snackbarButton: {
+    color: "white",
+  },
 }));
 
 export function App() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const [deploymentCounts, setDeploymentCounts] = useState(null);
+  const { data: deploymentCounts, status } = useDashboardData();
+
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
-
-  // get the users
-  useEffect(() => {
-    async function getDeploymentCounts() {
-      try {
-        const res = await fetch("/api/getDeploymentCounts");
-        const data = await res.json();
-
-        if (data) {
-          setDeploymentCounts(data);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    getDeploymentCounts();
-  }, []);
 
   const onDonationClick = () => {
     copyTextToClipboard(donationAddress);
@@ -66,7 +53,7 @@ export function App() {
           onClick={() => {
             closeSnackbar(key);
           }}
-          style={{ color: "white" }}
+          className={classes.snackbarButton}
         >
           <CloseIcon />
         </IconButton>

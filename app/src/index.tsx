@@ -10,6 +10,8 @@ import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { BrowserRouter as Router } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import TagManager from "react-gtm-module";
+import { ScrollToTop } from "./shared/components/ScrollToTop";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 const tagManagerArgs = {
   gtmId: "GTM-W2QM5ZH",
@@ -42,20 +44,25 @@ const theme = createMuiTheme({
   },
 });
 
+const queryClient = new QueryClient();
+
 ReactDOM.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <IntlProvider locale={navigator.language}>
-        <HelmetProvider>
-          <SnackbarProvider maxSnack={3} dense hideIconVariant>
-            <MediaQueryProvider>
-              <Router>
-                <App />
-              </Router>
-            </MediaQueryProvider>
-          </SnackbarProvider>
-        </HelmetProvider>
-      </IntlProvider>
+      <QueryClientProvider client={queryClient}>
+        <IntlProvider locale={navigator.language}>
+          <HelmetProvider>
+            <SnackbarProvider maxSnack={3} dense hideIconVariant>
+              <MediaQueryProvider>
+                <Router>
+                  <ScrollToTop />
+                  <App />
+                </Router>
+              </MediaQueryProvider>
+            </SnackbarProvider>
+          </HelmetProvider>
+        </IntlProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   </React.StrictMode>,
   document.getElementById("root")

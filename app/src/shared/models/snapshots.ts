@@ -16,3 +16,11 @@ export enum SnapshotsUrlParam {
   memory = "memory",
   storage = "storage",
 }
+
+export interface SnapshotValue {
+  date: string;
+  min?: number;
+  max?: number;
+  average?: number;
+  value?: number;
+}
