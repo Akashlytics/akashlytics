@@ -40,6 +40,7 @@
   justify-content: center;
   flex-direction: column;
   padding-bottom: 5rem;
+  text-align: center;
 }
 
 .App-footer img {

@@ -1,6 +1,7 @@
 const path = require("path");
 const commonConfig = require("./webpack.common");
 const { merge } = require("webpack-merge");
+const webpack = require("webpack");
 
 module.exports = merge(commonConfig, {
   mode: "development",
@@ -18,4 +19,9 @@ module.exports = merge(commonConfig, {
     },
     historyApiFallback: true,
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      "process.env": { PACKAGE_VERSION: JSON.stringify(require("./package.json").version) },
+    }),
+  ],
 });

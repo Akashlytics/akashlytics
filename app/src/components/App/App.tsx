@@ -119,6 +119,10 @@ export function App() {
             ideas@akashlytics.com
           </a>
         </p>
+
+        <p className="text-on-black mt-5">
+          <small>Version: {process.env.PACKAGE_VERSION}</small>
+        </p>
       </footer>
     </div>
   );
