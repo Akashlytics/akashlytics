@@ -18,6 +18,7 @@ let activeDeploymentCount = null;
 let averagePrice = null;
 let totalAKTSpent = null;
 let totalResourcesLeased = null;
+
 let activeDeploymentSnapshots = null;
 let totalAKTSpentSnapshots = null;
 let allTimeDeploymentCountSnapshots = null;

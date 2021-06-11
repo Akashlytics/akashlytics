@@ -47,6 +47,7 @@ app.get("/api/getSnapshot/:id", async (req, res) => {
   if (!req.params) return res.send("Must specify a param.");
 
   const id = req.params.id;
+  const range = req.query.range || "7";
   let snapshots = null;
 
   if (!id) return res.send("Must specify a valid snapshot.");

@@ -333,8 +333,10 @@ exports.getActiveDeploymentSnapshots = async () => {
       date: {
         [Op.not]: dataSnapshotsHandler.getDayStr(),
       },
+      minActiveDeploymentCount: {
+        [Op.ne]: null,
+      },
     },
-    limit: 10,
   });
 
   return results
@@ -356,8 +358,10 @@ exports.getTotalAKTSpentSnapshots = async () => {
       date: {
         [Op.not]: dataSnapshotsHandler.getDayStr(),
       },
+      totalAktSpent: {
+        [Op.ne]: null,
+      },
     },
-    limit: 10,
   });
 
   return results
@@ -377,8 +381,10 @@ exports.getAllTimeDeploymentCountSnapshots = async () => {
       date: {
         [Op.not]: dataSnapshotsHandler.getDayStr(),
       },
+      allTimeDeploymentCount: {
+        [Op.ne]: null,
+      },
     },
-    limit: 10,
   });
 
   return results
@@ -398,8 +404,10 @@ exports.getComputeSnapshots = async () => {
       date: {
         [Op.not]: dataSnapshotsHandler.getDayStr(),
       },
+      minCompute: {
+        [Op.ne]: null,
+      },
     },
-    limit: 10,
   });
 
   return results
@@ -421,8 +429,10 @@ exports.getMemorySnapshots = async () => {
       date: {
         [Op.not]: dataSnapshotsHandler.getDayStr(),
       },
+      minMemory: {
+        [Op.ne]: null,
+      },
     },
-    limit: 10,
   });
 
   return results
@@ -444,8 +454,10 @@ exports.getStorageSnapshots = async () => {
       date: {
         [Op.not]: dataSnapshotsHandler.getDayStr(),
       },
+      minStorage: {
+        [Op.ne]: null,
+      },
     },
-    limit: 10,
   });
 
   return results
