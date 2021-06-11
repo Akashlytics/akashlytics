@@ -10,7 +10,7 @@ import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 interface IStatsCardProps {
   number: React.ReactNode;
   text: string;
-  extraText?: string;
+  extraText?: string | React.ReactNode;
   tooltip?: string | React.ReactNode;
   graphPath?: string;
 }

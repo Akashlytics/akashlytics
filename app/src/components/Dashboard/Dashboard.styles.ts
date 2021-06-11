@@ -9,4 +9,7 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: "left",
     borderBottom: "1px solid rgba(255,255,255,0.1)",
   },
+  link: {
+    textDecoration: "underline"
+  }
 }));

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -24,13 +25,16 @@ const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 650,
   },
+  titleContainer: {
+    textAlign: "center",
+    marginBottom: "3rem",
+  },
   pageTitle: {
     color: "white",
     fontWeight: "bold",
   },
   pageSubTitle: {
     color: "white",
-    marginBottom: "3rem",
   },
   tableHeader: {
     textTransform: "uppercase",
@@ -62,12 +66,10 @@ const useStyles = makeStyles((theme) => ({
     color: "white",
     fontWeight: "bold",
     marginBottom: "1rem",
-    textAlign: "left",
   },
   disclaimerList: {
     color: "white",
     textDecoration: "none",
-    textAlign: "left",
   },
   link: {
     fontWeight: "bold",
@@ -101,7 +103,7 @@ export function PriceCompare({ marketData }) {
           content="Compare Akash cost savings against the cloud giants like Amazon Web Services (aws), Google Cloud Platform (gcp) and Microsoft Azure."
         />
       </Helmet>
-      <div className="row">
+      <div className={clsx("row", classes.titleContainer)}>
         <div className="col-xs-12">
           <Typography variant="h3" className={classes.pageTitle}>
             Akash vs. Cloud giants
@@ -109,13 +111,18 @@ export function PriceCompare({ marketData }) {
           <Typography variant="h5" className={classes.pageSubTitle}>
             A simple price comparison
           </Typography>
+          <Typography variant="caption" className={classes.pageSubTitle}>
+            $USD price per month
+          </Typography>
         </div>
       </div>
 
       <div className="row">
         <div className="col-xs-12">
           {!priceComparisons || !marketData ? (
-            <CircularProgress size={80} />
+            <Box textAlign="center">
+              <CircularProgress size={80} />
+            </Box>
           ) : (
             <TableContainer component={Paper}>
               <Table className={classes.table} aria-label="price comparisons">

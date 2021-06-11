@@ -6,6 +6,7 @@ import { Typography } from "@material-ui/core";
 import { StatsCard } from "../StatsCard";
 import { FormattedNumber } from "react-intl";
 import { DashboardData, SnapshotsUrlParam } from "@src/shared/models";
+import { Link } from "react-router-dom";
 
 interface IDashboardProps {
   deploymentCounts: DashboardData;
@@ -71,13 +72,18 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 />
               }
               text="Monthly cost for a small instance"
-              extraText="0.432akt/month"
+              extraText={
+                <Link to="/price-compare" className={classes.link}>
+                  View price comparison
+                </Link>
+              }
               tooltip={
                 <>
                   <div style={{ fontWeight: "lighter" }}>Based on these specs:</div>
                   <div>CPU: 0.1</div>
                   <div>RAM: 512Mi</div>
                   <div>DISK: 512Mi</div>
+                  <div>0.432akt/month</div>
                 </>
               }
             />
@@ -90,9 +96,9 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
               <>
                 <FormattedNumber
                   value={deploymentCounts.totalAKTSpent / 1000000}
-                  maximumFractionDigits={0}
+                  maximumFractionDigits={2}
                 />{" "}
-                akt
+                AKT
               </>
             }
             text="Total spent on decloud"

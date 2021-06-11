@@ -29,7 +29,7 @@ export const useStyles = makeStyles((theme) => ({
     height: "auto"
   },
   number: {
-    fontSize: "40px",
+    fontSize: "2rem",
     fontWeight: "bold"
   },
   text: {

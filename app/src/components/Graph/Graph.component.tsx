@@ -81,7 +81,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
 
       {snapshotData && (
         <>
-          <Box>
+          <Box display="flex" justifyContent="center">
             <ButtonGroup size="small" aria-label="small outlined button group">
               <Button
                 variant={selectedRange === SelectedRange["7D"] ? "contained" : "outlined"}
