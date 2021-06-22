@@ -7,6 +7,20 @@ export interface DashboardData {
   totalAKTSpent: number;
   totalResourcesLeased: ResourceLeased;
   lastRefreshDate: Date
+  lastSnapshot: SnapshotData;
+}
+
+export interface SnapshotData {
+  minActiveDeploymentCount: number;
+  maxActiveDeploymentCount: number;
+  minCompute: number;
+  maxCompute: number;
+  minMemory: number;
+  maxMemory: number;
+  minStorage: number;
+  maxStorage: number;
+  allTimeDeploymentCount: number;
+  totalAktSpent: number;
 }
 
 export interface ResourceLeased {

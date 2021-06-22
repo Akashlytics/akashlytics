@@ -1,18 +1,21 @@
 import React from "react";
 import clsx from "clsx";
 import { useStyles } from "./StatsCard.styles";
-import { IconButton, Tooltip, withStyles } from "@material-ui/core";
+import { Tooltip, withStyles, Card, CardHeader, CardActions, Button, Box } from "@material-ui/core";
 import HelpIcon from "@material-ui/icons/Help";
 import TimelineIcon from "@material-ui/icons/Timeline";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
+import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
 
 interface IStatsCardProps {
   number: React.ReactNode;
   text: string;
-  extraText?: string | React.ReactNode;
+  diffNumber?: number;
+  diffPercent?: number;
   tooltip?: string | React.ReactNode;
   graphPath?: string;
+  actionButton?: string | React.ReactNode;
 }
 
 const CustomTooltip = withStyles((theme) => ({
@@ -24,32 +27,51 @@ const CustomTooltip = withStyles((theme) => ({
   },
 }))(Tooltip);
 
-export function StatsCard({ number, text, tooltip, extraText, graphPath }: IStatsCardProps) {
+export function StatsCard({
+  number,
+  text,
+  tooltip,
+  actionButton,
+  graphPath,
+  diffNumber,
+  diffPercent,
+}: IStatsCardProps) {
   const classes = useStyles();
   const mediaQuery = useMediaQueryContext();
 
   return (
-    <div className={clsx(classes.root, { [classes.rootSmall]: mediaQuery.smallScreen })}>
-      <p className={classes.number}>{number}</p>
-      <p className={classes.text}>{text}</p>
-      <small className={classes.extraText}>{extraText}</small>
+    <Card className={clsx(classes.root, { [classes.rootSmall]: mediaQuery.smallScreen })}>
+      <CardHeader
+        classes={{ title: classes.number, root: classes.cardHeader, subheader: classes.subHeader }}
+        title={number}
+        subheader={
+          <>
+            {diffNumber ? (diffNumber > 0 ? "+" : "") : null}
+            {diffNumber} {diffPercent ? <DiffPercentageChip value={diffPercent} /> : null}
+          </>
+        }
+      />
+      <div className={classes.cardContent}>
+        <p className={classes.title}>{text}</p>
+      </div>
 
-      {tooltip && (
-        <CustomTooltip arrow enterTouchDelay={0} leaveTouchDelay={10000} title={tooltip}>
-          <HelpIcon className={classes.tooltipIcon} />
-        </CustomTooltip>
-      )}
+      <CardActions>
+        {tooltip && (
+          <CustomTooltip arrow enterTouchDelay={0} leaveTouchDelay={10000} title={tooltip}>
+            <HelpIcon className={classes.tooltip} />
+          </CustomTooltip>
+        )}
+        {graphPath && (
+          <Button aria-label="graph" component={RouterLink} to={graphPath} size="small">
+            <Box component="span" marginRight=".5rem">
+              Graph
+            </Box>
+            <TimelineIcon />
+          </Button>
+        )}
 
-      {graphPath && (
-        <IconButton
-          aria-label="delete"
-          component={RouterLink}
-          to={graphPath}
-          className={classes.graph}
-        >
-          <TimelineIcon />
-        </IconButton>
-      )}
-    </div>
+        {actionButton}
+      </CardActions>
+    </Card>
   );
 }

@@ -479,6 +479,15 @@ exports.getAllSnapshots = async () => {
   return results.map((x) => x.toJSON());
 };
 
+exports.getLastSnapshot = async () => {
+  const results = await StatsSnapshot.findAll({
+    limit: 2,
+    order: [["date", "DESC"]],
+  });
+
+  return results[1];
+};
+
 exports.initSnapshotsFromFile = async () => {
   console.log("Loading " + baseSnapshots.length + " snapshots from file");
   await StatsSnapshot.bulkCreate(baseSnapshots);

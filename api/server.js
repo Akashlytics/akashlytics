@@ -27,6 +27,7 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
   const lastRefreshDate = blockchainAnalyzer.getLastRefreshDate();
   const totalAKTSpent = blockchainAnalyzer.getTotalAKTSpent();
   const marketData = marketDataProvider.getAktMarketData();
+  const lastSnapshot = await dbProvider.getLastSnapshot();
 
   if (activeDeploymentCount != null) {
     res.send({
@@ -37,6 +38,7 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
       totalAKTSpent,
       totalResourcesLeased,
       lastRefreshDate,
+      lastSnapshot
     });
   } else {
     res.send(null);

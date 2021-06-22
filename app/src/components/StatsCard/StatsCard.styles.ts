@@ -4,23 +4,20 @@ export const useStyles = makeStyles((theme) => ({
   root: {
     position: "relative",
     background: `linear-gradient(
-    90deg,
-    rgba(175, 24, 23, 1) 0%,
-    rgba(228, 30, 19, 1) 0%,
-    rgba(143, 0, 0, 1) 100%
-  )`,
+      90deg,
+      rgba(175, 24, 23, 1) 0%,
+      rgba(228, 30, 19, 1) 0%,
+      rgba(143, 0, 0, 1) 100%
+    )`,
     color: "white",
     height: "100%",
     flexGrow: 1,
-    padding: "15px 15px 40px",
-    borderRadius: "20px",
+    borderRadius: "1rem",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     boxShadow: `
-      0px 11px 15px -7px rgb(175 24 23 / 20%), 
-      0px 24px 38px 3px rgb(175 24 23 / 14%),
-      0px 9px 46px 8px rgb(175 24 23 / 12%)
+    0px 4px 8px -7px rgb(175 24 23 / 20%), 0px 4px 8px 3px rgb(175 24 23 / 14%), 0px 0px 12px 5px rgb(175 24 23 / 12%)
     `
   },
   rootSmall: {
@@ -32,16 +29,21 @@ export const useStyles = makeStyles((theme) => ({
     fontSize: "2rem",
     fontWeight: "bold"
   },
-  text: {
-    fontSize: "1.2rem",
+  cardHeader: { width: "100%", padding: "1rem", textAlign: "center" },
+  title: {
+    fontSize: "1rem",
     fontWeight: "lighter",
-    textAlign: "center"
+    margin: 0
   },
   extraText: {
     fontWeight: "bold",
     fontSize: 12,
     display: "block",
-    marginTop: "-10px",
+  },
+  cardContent: {
+    padding: "0 1rem .5rem",
+    textAlign: "center",
+    flexGrow: 1
   },
   tooltipIcon: {
     position: "absolute",
@@ -49,11 +51,14 @@ export const useStyles = makeStyles((theme) => ({
     right: 10,
     fontSize: "1.2rem",
   },
-  graph: {
-    position: "absolute",
-    bottom: 3,
-    right: 3,
-    zIndex: 100,
-    color: "white"
+  tooltip: {
+    fontSize: "1.2rem",
+    margin: "8px"
+  },
+  subHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: ".7rem"
   }
 }));

@@ -12,6 +12,7 @@ import { Helmet } from "react-helmet-async";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 import { urlParamToSnapshot } from "@src/shared/utils/snapshotsUrlHelpers";
 import { useGraphSnapshot } from "@src/hooks/queries/useGrapsQuery";
+import { round } from "@src/shared/utils/mathHelpers";
 
 enum SelectedRange {
   "7D" = 7,
@@ -44,10 +45,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
           color: "rgb(1,0,0)",
           data: rangedData.map((snapshot) => ({
             x: snapshot.date,
-            y:
-              Math.round(
-                ((snapshot.average ? snapshot.average : snapshot.value) + Number.EPSILON) * 100
-              ) / 100,
+            y: round(snapshot.average ? snapshot.average : snapshot.value),
           })),
         },
       ]

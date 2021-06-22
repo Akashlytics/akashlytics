@@ -2,11 +2,13 @@ import React from "react";
 import clsx from "clsx";
 import { useStyles } from "./Dashboard.styles";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
-import { Typography } from "@material-ui/core";
+import { Box, Button, Typography } from "@material-ui/core";
 import { StatsCard } from "../StatsCard";
 import { FormattedNumber } from "react-intl";
 import { DashboardData, SnapshotsUrlParam } from "@src/shared/models";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
+import { average, percIncrease, uaktToAKT } from "@src/shared/utils/mathHelpers";
 
 interface IDashboardProps {
   deploymentCounts: DashboardData;
@@ -72,10 +74,13 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 />
               }
               text="Monthly cost for a small instance"
-              extraText={
-                <Link to="/price-compare" className={classes.link}>
-                  View price comparison
-                </Link>
+              actionButton={
+                <Button aria-label="delete" component={RouterLink} to="/price-compare" size="small">
+                  <Box component="span" marginRight=".5rem">
+                    Compare
+                  </Box>
+                  <AttachMoneyIcon />
+                </Button>
               }
               tooltip={
                 <>
@@ -95,7 +100,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             number={
               <>
                 <FormattedNumber
-                  value={deploymentCounts.totalAKTSpent / 1000000}
+                  value={uaktToAKT(deploymentCounts.totalAKTSpent)}
                   maximumFractionDigits={2}
                 />{" "}
                 AKT
@@ -104,6 +109,13 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             text="Total spent on decloud"
             tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
             graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
+            diffNumber={uaktToAKT(
+              deploymentCounts.totalAKTSpent - deploymentCounts.lastSnapshot.totalAktSpent
+            )}
+            diffPercent={percIncrease(
+              deploymentCounts.lastSnapshot.totalAktSpent,
+              deploymentCounts.totalAKTSpent
+            )}
           />
         </div>
 
@@ -113,6 +125,14 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             text="All-time deployment count"
             tooltip="The all-time deployment count consists of all deployments that were live at some point. This includes deployments that were deployed for testing or that were meant to be only temporary."
             graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
+            diffNumber={
+              deploymentCounts.deploymentCount -
+              deploymentCounts.lastSnapshot.allTimeDeploymentCount
+            }
+            diffPercent={percIncrease(
+              deploymentCounts.lastSnapshot.allTimeDeploymentCount,
+              deploymentCounts.deploymentCount
+            )}
           />
         </div>
       </div>
@@ -152,6 +172,22 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                     </>
                   }
                   graphPath={`/graph/${SnapshotsUrlParam.activeDeployment}`}
+                  diffNumber={
+                    deploymentCounts.activeDeploymentCount -
+                    Math.ceil(
+                      average(
+                        deploymentCounts.lastSnapshot.minActiveDeploymentCount,
+                        deploymentCounts.lastSnapshot.maxActiveDeploymentCount
+                      )
+                    )
+                  }
+                  diffPercent={percIncrease(
+                    average(
+                      deploymentCounts.lastSnapshot.minActiveDeploymentCount,
+                      deploymentCounts.lastSnapshot.maxActiveDeploymentCount
+                    ),
+                    deploymentCounts.activeDeploymentCount
+                  )}
                 />
               </div>
             )}
@@ -160,7 +196,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
               <StatsCard
                 number={
                   <>
-                    <FormattedNumber value={deploymentCounts.totalResourcesLeased.cpuSum / 1000} />
+                    <FormattedNumber
+                      value={deploymentCounts.totalResourcesLeased.cpuSum / 1000}
+                      maximumFractionDigits={2}
+                    />
                     <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>
                       vCPUs
                     </small>
@@ -168,6 +207,21 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 }
                 text="Compute"
                 graphPath={`/graph/${SnapshotsUrlParam.compute}`}
+                diffNumber={
+                  (deploymentCounts.totalResourcesLeased.cpuSum -
+                    average(
+                      deploymentCounts.lastSnapshot.minCompute,
+                      deploymentCounts.lastSnapshot.maxCompute
+                    )) /
+                  1000
+                }
+                diffPercent={percIncrease(
+                  average(
+                    deploymentCounts.lastSnapshot.minCompute,
+                    deploymentCounts.lastSnapshot.maxCompute
+                  ),
+                  deploymentCounts.totalResourcesLeased.cpuSum
+                )}
               />
             </div>
 
@@ -177,6 +231,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                   <>
                     <FormattedNumber
                       value={deploymentCounts.totalResourcesLeased.memorySum / 1024 / 1024 / 1024}
+                      maximumFractionDigits={2}
                     />
                     <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>
                       Gi
@@ -185,6 +240,23 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 }
                 text="Memory"
                 graphPath={`/graph/${SnapshotsUrlParam.memory}`}
+                diffNumber={
+                  (deploymentCounts.totalResourcesLeased.memorySum -
+                    average(
+                      deploymentCounts.lastSnapshot.minMemory,
+                      deploymentCounts.lastSnapshot.maxMemory
+                    )) /
+                  1024 /
+                  1024 /
+                  1024
+                }
+                diffPercent={percIncrease(
+                  average(
+                    deploymentCounts.lastSnapshot.minMemory,
+                    deploymentCounts.lastSnapshot.maxMemory
+                  ),
+                  deploymentCounts.totalResourcesLeased.memorySum
+                )}
               />
             </div>
 
@@ -194,6 +266,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                   <>
                     <FormattedNumber
                       value={deploymentCounts.totalResourcesLeased.storageSum / 1024 / 1024 / 1024}
+                      maximumFractionDigits={2}
                     />
                     <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>
                       Gi
@@ -202,6 +275,23 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 }
                 text="Storage"
                 graphPath={`/graph/${SnapshotsUrlParam.storage}`}
+                diffNumber={
+                  (deploymentCounts.totalResourcesLeased.storageSum -
+                    average(
+                      deploymentCounts.lastSnapshot.minStorage,
+                      deploymentCounts.lastSnapshot.maxStorage
+                    )) /
+                  1024 /
+                  1024 /
+                  1024
+                }
+                diffPercent={percIncrease(
+                  average(
+                    deploymentCounts.lastSnapshot.minStorage,
+                    deploymentCounts.lastSnapshot.maxStorage
+                  ),
+                  deploymentCounts.totalResourcesLeased.storageSum
+                )}
               />
             </div>
           </div>
