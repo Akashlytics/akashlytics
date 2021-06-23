@@ -308,7 +308,7 @@ const getGraphMetadataPerRange = (
       };
     case SelectedRange["ALL"]:
       return {
-        size: 5,
+        size: 3,
         border: 1,
         xModulo: 5,
       };
