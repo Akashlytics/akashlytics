@@ -7,6 +7,7 @@ import TimelineIcon from "@material-ui/icons/Timeline";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
+import { DiffNumber } from "@src/shared/components/DiffNumber";
 
 interface IStatsCardProps {
   number: React.ReactNode;
@@ -40,14 +41,18 @@ export function StatsCard({
   const mediaQuery = useMediaQueryContext();
 
   return (
-    <Card className={clsx(classes.root, { [classes.rootSmall]: mediaQuery.smallScreen })}>
+    <Card
+      className={clsx(classes.root, { [classes.rootSmall]: mediaQuery.smallScreen })}
+      elevation={3}
+    >
       <CardHeader
         classes={{ title: classes.number, root: classes.cardHeader, subheader: classes.subHeader }}
         title={number}
         subheader={
           <>
-            {diffNumber ? (diffNumber > 0 ? "+" : "") : null}
-            {diffNumber} {diffPercent ? <DiffPercentageChip value={diffPercent} /> : null}
+            <DiffNumber value={diffNumber} />
+            &nbsp;
+            <DiffPercentageChip value={diffPercent} />
           </>
         }
       />
@@ -62,11 +67,17 @@ export function StatsCard({
           </CustomTooltip>
         )}
         {graphPath && (
-          <Button aria-label="graph" component={RouterLink} to={graphPath} size="small">
+          <Button
+            aria-label="graph"
+            component={RouterLink}
+            to={graphPath}
+            size="small"
+            classes={{ label: classes.actionButtonLabel }}
+          >
             <Box component="span" marginRight=".5rem">
               Graph
             </Box>
-            <TimelineIcon />
+            <TimelineIcon className={classes.actionIcon} />
           </Button>
         )}
 

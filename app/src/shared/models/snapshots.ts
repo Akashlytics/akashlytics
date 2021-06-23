@@ -24,3 +24,8 @@ export interface SnapshotValue {
   average?: number;
   value?: number;
 }
+
+export type GraphResponse = {
+  snapshots: SnapshotValue[];
+  currentValue: number
+}

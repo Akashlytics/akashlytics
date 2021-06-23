@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { ResponsiveLineCanvas } from "@nivo/line";
-import { FormattedDate, useIntl } from "react-intl";
+import { FormattedDate, FormattedNumber, useIntl } from "react-intl";
 import { useMediaQueryContext } from "../../context/MediaQueryProvider";
 import { useStyles } from "./Graph.styles";
-import { Snapshots, SnapshotsUrlParam } from "@src/shared/models";
+import { GraphResponse, Snapshots, SnapshotsUrlParam } from "@src/shared/models";
 import { Box, Button, ButtonGroup, CircularProgress, Typography } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import clsx from "clsx";
@@ -11,8 +11,10 @@ import { useHistory, useLocation, useParams } from "react-router";
 import { Helmet } from "react-helmet-async";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 import { urlParamToSnapshot } from "@src/shared/utils/snapshotsUrlHelpers";
-import { useGraphSnapshot } from "@src/hooks/queries/useGrapsQuery";
-import { round } from "@src/shared/utils/mathHelpers";
+import { useGraphSnapshot } from "@src/queries/useGrapsQuery";
+import { average, percIncrease, round, uaktToAKT } from "@src/shared/utils/mathHelpers";
+import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
+import { DiffNumber } from "@src/shared/components/DiffNumber";
 
 enum SelectedRange {
   "7D" = 7,
@@ -32,7 +34,11 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
   const theme = getTheme();
   const intl = useIntl();
   const rangedData =
-    snapshotData && snapshotData.slice(snapshotData.length - selectedRange, snapshotData.length);
+    snapshotData &&
+    snapshotData.snapshots.slice(
+      snapshotData.snapshots.length - selectedRange,
+      snapshotData.snapshots.length
+    );
   const minValue =
     rangedData && rangedData.map((x) => x.min || x.value).reduce((a, b) => (a < b ? a : b));
   const maxValue =
@@ -51,6 +57,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
       ]
     : null;
   const title = getTitle(snapshot as Snapshots);
+  const snapshotMetadata = snapshotData && getSnapshotMetadata(snapshot as Snapshots, snapshotData);
   const graphMetadata = getGraphMetadataPerRange(selectedRange);
 
   return (
@@ -63,7 +70,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
         </Button>
       </div>
 
-      <div className={clsx("row mt-4 mb-3")}>
+      <div className={clsx("row mt-4 mb-2")}>
         <div className="col-xs-12">
           <Typography variant="h1" className={clsx(classes.title)}>
             {title}
@@ -79,8 +86,22 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
 
       {snapshotData && (
         <>
-          <Box display="flex" justifyContent="center">
-            <ButtonGroup size="small" aria-label="small outlined button group">
+          <Box className={classes.subTitle}>
+            <Box className={classes.subTitleValues}>
+              <Typography variant="h3" className={classes.titleValue}>
+                <FormattedNumber value={snapshotMetadata.value} maximumFractionDigits={2} />
+                &nbsp;
+                <DiffPercentageChip value={snapshotMetadata.diffPercent} size="medium" />
+                &nbsp;
+                <DiffNumber value={snapshotMetadata.diffNumber} className={classes.diffNumber} />
+              </Typography>
+            </Box>
+
+            <ButtonGroup
+              size="small"
+              aria-label="Graph range select"
+              className={classes.graphRangeSelect}
+            >
               <Button
                 variant={selectedRange === SelectedRange["7D"] ? "contained" : "outlined"}
                 onClick={() => setSelectedRange(SelectedRange["7D"])}
@@ -194,10 +215,65 @@ const getTheme = () => {
   };
 };
 
-const getTitle = (snapshot: Snapshots) => {
+const getSnapshotMetadata = (
+  snapshot: Snapshots,
+  snapshotData: GraphResponse
+): { value?: number; diffNumber?: number; diffPercent?: number } => {
+  const lastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 1];
   switch (snapshot) {
     case Snapshots.activeDeployment:
-      return "Average number of daily active deployments";
+      return {
+        value: snapshotData.currentValue,
+        diffPercent: percIncrease(
+          average(lastSnapshot.min, lastSnapshot.max),
+          snapshotData.currentValue
+        ),
+        diffNumber:
+          snapshotData.currentValue - Math.ceil(average(lastSnapshot.min, lastSnapshot.max)),
+      };
+    case Snapshots.totalAKTSpent:
+      return {
+        value: uaktToAKT(snapshotData.currentValue),
+        diffPercent: percIncrease(lastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
+        diffNumber: uaktToAKT(snapshotData.currentValue) - lastSnapshot.value,
+      };
+    case Snapshots.allTimeDeploymentCount:
+      return {
+        value: snapshotData.currentValue,
+        diffPercent: percIncrease(lastSnapshot.value, snapshotData.currentValue),
+        diffNumber: snapshotData.currentValue - lastSnapshot.value,
+      };
+    case Snapshots.compute:
+      return {
+        value: snapshotData.currentValue / 1000,
+        diffPercent: percIncrease(
+          average(lastSnapshot.min, lastSnapshot.max),
+          snapshotData.currentValue / 1000
+        ),
+        diffNumber: snapshotData.currentValue / 1000 - average(lastSnapshot.min, lastSnapshot.max),
+      };
+    case Snapshots.memory:
+    case Snapshots.storage:
+      return {
+        value: snapshotData.currentValue / 1024 / 1024 / 1024,
+        diffPercent: percIncrease(
+          average(lastSnapshot.min, lastSnapshot.max),
+          snapshotData.currentValue / 1024 / 1024 / 1024
+        ),
+        diffNumber:
+          snapshotData.currentValue / 1024 / 1024 / 1024 -
+          average(lastSnapshot.min, lastSnapshot.max),
+      };
+
+    default:
+      return { value: 0, diffNumber: 0, diffPercent: 0 };
+  }
+};
+
+const getTitle = (snapshot: Snapshots): string => {
+  switch (snapshot) {
+    case Snapshots.activeDeployment:
+      return "Daily active deployments";
     case Snapshots.totalAKTSpent:
       return "Total AKT spent";
     case Snapshots.allTimeDeploymentCount:

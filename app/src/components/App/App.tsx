@@ -15,7 +15,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Graph } from "../Graph";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import clsx from "clsx";
-import { useDashboardData } from "@src/hooks/queries/useDashboardData";
+import { useDashboardData } from "@src/queries/useDashboardData";
 
 const donationAddress = "akash13265twfqejnma6cc93rw5dxk4cldyz2zyy8cdm";
 
@@ -25,8 +25,8 @@ const useStyles = makeStyles((theme) => ({
     textDecoration: "underline",
   },
   appBody: {
-    paddingTop: 80,
-    paddingBottom: 100,
+    paddingTop: 60,
+    paddingBottom: 80,
   },
   appBodySmall: {
     paddingTop: 25,

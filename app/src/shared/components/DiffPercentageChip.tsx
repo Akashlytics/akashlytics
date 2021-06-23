@@ -7,34 +7,52 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 
 export interface DiffPercentageChipProps {
   value: number;
+  size?: "small" | "medium";
 }
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    marginLeft: ".5rem",
+  },
+  small: {
     fontSize: ".7rem",
     height: "1rem",
-    marginLeft: ".5rem",
+  },
+  medium: {
+    fontSize: ".8rem",
+    height: "1.2rem",
   },
   green: {
     backgroundColor: "#00945c",
   },
   red: {
-    backgroundColor: "#840000",
+    // backgroundColor: "#840000",
+    backgroundColor: "transparent",
   },
   label: {
     paddingLeft: "4px",
   },
 }));
 
-export const DiffPercentageChip: React.FunctionComponent<DiffPercentageChipProps> = ({ value }) => {
+export const DiffPercentageChip: React.FunctionComponent<DiffPercentageChipProps> = ({
+  value,
+  size = "small",
+}) => {
+  if (typeof value !== "number") return null;
+
   const classes = useStyles();
-  const isPositiveDiff = value && value > 0;
+  const isPositiveDiff = value >= 0;
 
   return (
     <Chip
-      size="small"
+      size={size}
       className={clsx(
-        { [classes.green]: isPositiveDiff, [classes.red]: !isPositiveDiff },
+        {
+          [classes.green]: isPositiveDiff,
+          [classes.red]: !isPositiveDiff,
+          [classes.small]: size === "small",
+          [classes.medium]: size === "medium",
+        },
         classes.root
       )}
       classes={{ label: classes.label }}

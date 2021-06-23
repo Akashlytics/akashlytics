@@ -16,24 +16,23 @@ export const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    boxShadow: `
-    0px 4px 8px -7px rgb(175 24 23 / 20%), 0px 4px 8px 3px rgb(175 24 23 / 14%), 0px 0px 12px 5px rgb(175 24 23 / 12%)
-    `
   },
   rootSmall: {
-    marginTop: 15,
-    marginBottom: 15,
+    marginTop: 12,
+    marginBottom: 12,
     height: "auto"
   },
   number: {
-    fontSize: "2rem",
+    fontSize: "1.8rem",
     fontWeight: "bold"
   },
   cardHeader: { width: "100%", padding: "1rem", textAlign: "center" },
   title: {
     fontSize: "1rem",
     fontWeight: "lighter",
-    margin: 0
+    margin: 0,
+    borderBottom: "1px solid rgba(255,255,255,0.25)",
+    paddingBottom: "3px"
   },
   extraText: {
     fontWeight: "bold",
@@ -45,20 +44,23 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: "center",
     flexGrow: 1
   },
-  tooltipIcon: {
-    position: "absolute",
-    top: 5,
-    right: 10,
-    fontSize: "1.2rem",
-  },
   tooltip: {
-    fontSize: "1.2rem",
-    margin: "8px"
+    fontSize: "1.1rem",
+    margin: "8px",
+    position: "absolute",
+    top: 0,
+    right: 0
   },
   subHeader: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    fontSize: ".7rem"
+  },
+  actionIcon: {
+    fontSize: "1rem"
+  },
+  actionButtonLabel: {
     fontSize: ".7rem"
   }
 }));

@@ -24,7 +24,42 @@ export const useStyles = makeStyles((theme) => ({
   title: {
     color: "white",
     fontSize: "2rem",
-    textAlign: "center",
     fontWeight: "bold",
+    [theme.breakpoints.down("xs")]: {
+      textAlign: "center"
+    }
+  },
+  subTitle: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    [theme.breakpoints.down("xs")]: {
+      flexWrap: "wrap"
+    }
+  },
+  subTitleValues: {
+    color: "white",
+    [theme.breakpoints.down("xs")]: {
+      flexBasis: "100%",
+      marginBottom: "1rem"
+    }
+  },
+  titleValue: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    [theme.breakpoints.down("xs")]: {
+      justifyContent: "center"
+    }
+  },
+  diffNumber: {
+    fontSize: ".7rem",
+    fontWeight: "lighter"
+  },
+  graphRangeSelect: {
+    [theme.breakpoints.down("xs")]: {
+      margin: "0 auto"
+    }
   }
 }));

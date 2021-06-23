@@ -76,10 +76,9 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
               text="Monthly cost for a small instance"
               actionButton={
                 <Button aria-label="delete" component={RouterLink} to="/price-compare" size="small">
-                  <Box component="span" marginRight=".5rem">
-                    Compare
+                  <Box component="span" fontSize=".7rem">
+                    Compare price
                   </Box>
-                  <AttachMoneyIcon />
                 </Button>
               }
               tooltip={

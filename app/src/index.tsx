@@ -11,7 +11,9 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import TagManager from "react-gtm-module";
 import { ScrollToTop } from "./shared/components/ScrollToTop";
+
 import { QueryClient, QueryClientProvider } from "react-query";
+import createBreakpoints from "@material-ui/core/styles/createBreakpoints";
 
 const tagManagerArgs = {
   gtmId: "GTM-W2QM5ZH",
