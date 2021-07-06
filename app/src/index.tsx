@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import { App } from "./components/App";
+import { App } from "./routes/App";
 import reportWebVitals from "./reportWebVitals";
 import { IntlProvider } from "react-intl";
 import { SnackbarProvider } from "notistack";

@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { CircularProgress } from "@material-ui/core";
 import { Helmet } from "react-helmet-async";
 import { useStyles } from "./Home.styles";
-import { Dashboard } from "../Dashboard";
+import { Dashboard } from "../../components/Dashboard";
 import { DashboardData } from "@src/shared/models";
 import { FormattedDate, FormattedTime } from "react-intl";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
