@@ -23,10 +23,9 @@ const useStyles = makeStyles((theme) => ({
     height: "1.2rem",
   },
   green: {
-    backgroundColor: "#00945c",
+    backgroundColor: "#00945c", // TODO Theme
   },
   red: {
-    // backgroundColor: "#840000",
     backgroundColor: "transparent",
   },
   label: {

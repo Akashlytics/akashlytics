@@ -2,13 +2,13 @@ import React from "react";
 import clsx from "clsx";
 import { useStyles } from "./Dashboard.styles";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
-import { Box, Button, Typography } from "@material-ui/core";
+import { Box, Button, Chip, Typography } from "@material-ui/core";
 import { StatsCard } from "../StatsCard";
 import { FormattedNumber } from "react-intl";
 import { DashboardData, SnapshotsUrlParam } from "@src/shared/models";
 import { Link as RouterLink } from "react-router-dom";
-import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
 import { average, percIncrease, uaktToAKT } from "@src/shared/utils/mathHelpers";
+import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
 interface IDashboardProps {
   deploymentCounts: DashboardData;
@@ -150,6 +150,12 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 className={clsx(classes.title, { "text-center": mediaQuery.smallScreen })}
               >
                 Total resources currently leased
+                <Chip
+                  size="small"
+                  label="Live"
+                  icon={<FiberManualRecordIcon />}
+                  classes={{ root: classes.liveChip, icon: classes.liveChipIcon }}
+                />
               </Typography>
             </div>
           </div>
