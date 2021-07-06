@@ -225,7 +225,7 @@ const getSnapshotMetadata = (
       return {
         value: snapshotData.currentValue,
         diffPercent: percIncrease(
-          average(lastSnapshot.min, lastSnapshot.max),
+          Math.ceil(average(lastSnapshot.min, lastSnapshot.max)),
           snapshotData.currentValue
         ),
         diffNumber:
@@ -328,9 +328,7 @@ const getTickValues = (rangedData: SnapshotValue[], modulo: number) => {
 
   if (values.length > maxLength) {
     const mod = Math.round(rangedData.length / maxLength);
-    return rangedData
-      .filter((data, i) => i % mod === 0)
-      .map((data) => data.date);
+    return rangedData.filter((data, i) => i % mod === 0).map((data) => data.date);
   } else {
     return values.map((data) => data.date);
   }
