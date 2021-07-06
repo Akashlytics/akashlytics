@@ -3,7 +3,7 @@ import { ResponsiveLineCanvas } from "@nivo/line";
 import { FormattedDate, FormattedNumber, useIntl } from "react-intl";
 import { useMediaQueryContext } from "../../context/MediaQueryProvider";
 import { useStyles } from "./Graph.styles";
-import { GraphResponse, Snapshots, SnapshotsUrlParam } from "@src/shared/models";
+import { GraphResponse, Snapshots, SnapshotsUrlParam, SnapshotValue } from "@src/shared/models";
 import { Box, Button, ButtonGroup, CircularProgress, Typography } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import clsx from "clsx";
@@ -141,9 +141,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
                 tickRotation: mediaQuery.mobileView ? 45 : 0,
                 format: (dateStr) =>
                   intl.formatDate(dateStr, { day: "numeric", month: "long", timeZone: "utc" }),
-                tickValues: rangedData
-                  .filter((data, i) => i % graphMetadata.xModulo === 0)
-                  .map((data) => data.date),
+                tickValues: getTickValues(rangedData, graphMetadata.xModulo),
               }}
               axisTop={null}
               axisRight={null}
@@ -157,18 +155,20 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               isInteractive={true}
               tooltip={(props) => (
                 <div className={classes.graphTooltip}>
-                  {props.point.data.y}&nbsp;on&nbsp;
-                  <FormattedDate
-                    value={new Date(props.point.data.x)}
-                    day="numeric"
-                    month="long"
-                    timeZone="UTC"
-                  />
+                  <Typography variant="caption">
+                    <FormattedDate
+                      value={new Date(props.point.data.x)}
+                      day="numeric"
+                      month="long"
+                      timeZone="UTC"
+                    />
+                  </Typography>
+                  <Box>{props.point.data.y}</Box>
                 </div>
               )}
               useMesh={true}
               enableGridX={false}
-              enableCrosshair={false}
+              enableCrosshair={true}
             />
           </div>
 
@@ -319,5 +319,19 @@ const getGraphMetadataPerRange = (
         border: 3,
         xModulo: 1,
       };
+  }
+};
+
+const getTickValues = (rangedData: SnapshotValue[], modulo: number) => {
+  const values = rangedData.reverse().filter((data, i) => i % modulo === 0);
+  const maxLength = 10;
+
+  if (values.length > maxLength) {
+    const mod = Math.round(rangedData.length / maxLength);
+    return rangedData
+      .filter((data, i) => i % mod === 0)
+      .map((data) => data.date);
+  } else {
+    return values.map((data) => data.date);
   }
 };
