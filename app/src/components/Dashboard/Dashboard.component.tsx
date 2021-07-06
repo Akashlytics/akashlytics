@@ -187,9 +187,11 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                     )
                   }
                   diffPercent={percIncrease(
-                    average(
-                      deploymentCounts.lastSnapshot.minActiveDeploymentCount,
-                      deploymentCounts.lastSnapshot.maxActiveDeploymentCount
+                    Math.ceil(
+                      average(
+                        deploymentCounts.lastSnapshot.minActiveDeploymentCount,
+                        deploymentCounts.lastSnapshot.maxActiveDeploymentCount
+                      )
                     ),
                     deploymentCounts.activeDeploymentCount
                   )}
