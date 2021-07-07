@@ -1,14 +1,10 @@
 import { makeStyles } from "@material-ui/core/styles";
+import { akashRedGradient } from "@src/shared/utils/colorUtils";
 
 export const useStyles = makeStyles((theme) => ({
   root: {
     position: "relative",
-    background: `linear-gradient(
-      90deg,
-      rgba(175, 24, 23, 1) 0%,
-      rgba(228, 30, 19, 1) 0%,
-      rgba(143, 0, 0, 1) 100%
-    )`,
+    background: akashRedGradient,
     color: "white",
     height: "100%",
     flexGrow: 1,

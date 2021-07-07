@@ -8,6 +8,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Button,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import MenuIcon from "@material-ui/icons/Menu";
@@ -15,6 +16,7 @@ import { useMediaQueryContext } from "../../context/MediaQueryProvider";
 import clsx from "clsx";
 import { NavDrawer } from "../NavDrawer";
 import { Link, useLocation } from "react-router-dom";
+import { akashRedGradient } from "@src/shared/utils/colorUtils";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -66,12 +68,19 @@ const useStyles = makeStyles((theme) => ({
   navButton: {
     borderRadius: "5px",
   },
+  actionButtonBase: {
+    height: "38px",
+  },
+  actionButton: {
+    background: akashRedGradient,
+    color: "#ffffff",
+  },
 }));
 
 const navLinks = [
-  // { title: `about us`, path: `/about-us` },
+  // { title: `deploy`, path: `/deploy` },
   { title: `price compare`, path: `/price-compare` },
-  { title: `faq`, path: `/faq` }
+  { title: `faq`, path: `/faq` },
 ];
 
 export function Header() {
@@ -136,6 +145,20 @@ export function Header() {
             aria-labelledby="main navigation"
             className={classes.navDisplayFlex}
           >
+            <Link to="/deploy" className={classes.linkText}>
+              <ListItem>
+                <Button
+                  variant={location.pathname === "/deploy" ? "outlined" : "contained"}
+                  className={clsx("actionButtonBase", {
+                    [classes.actionButton]: location.pathname !== "/deploy",
+                  })}
+                >
+                  Deploy
+                </Button>
+                {/* <ListItemText primary="deploy" /> */}
+              </ListItem>
+            </Link>
+
             {navLinks.map(({ title, path }) => (
               <Link to={path} key={title} className={classes.linkText}>
                 <ListItem
