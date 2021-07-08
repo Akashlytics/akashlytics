@@ -3,7 +3,8 @@ import clsx from "clsx";
 import { useStyles } from "./Deploy.styles";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { HelmetSocial } from "@src/shared/components/HelmetSocial";
-import { Typography } from "@material-ui/core";
+import { Box, ButtonGroup, Typography } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 
 export interface IDeployProps {}
 
@@ -25,7 +26,36 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
           In a few clicks!
         </Typography>
 
-        <div className="row"></div>
+        <Box marginTop="3rem" textAlign="center">
+          <Typography variant="h5" className={classes.subSubTitle}>
+            Akashlytics Deploy is a desktop app that greatly simplify and enhance deployments on
+            Akash.
+          </Typography>
+
+          <Box marginTop="2rem">
+            <Typography variant="h5">Download</Typography>
+
+            <div className={classes.actionButtonContainer}>
+              <Button
+                size="large"
+                variant="contained"
+                classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
+              >
+                Windows
+              </Button>
+
+              <Button
+                size="large"
+                variant="contained"
+                classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
+              >
+                macOS <small>(coming soon)</small>
+              </Button>
+            </div>
+
+            <Typography variant="caption">v0.2.1</Typography>
+          </Box>
+        </Box>
       </div>
     </>
   );
