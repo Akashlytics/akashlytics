@@ -5,6 +5,7 @@ import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { HelmetSocial } from "@src/shared/components/HelmetSocial";
 import { Box, ButtonGroup, Typography } from "@material-ui/core";
 import { Button } from "@material-ui/core";
+import ReactPlayer from "react-player/lazy";
 
 export interface IDeployProps {}
 
@@ -26,10 +27,10 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
           In a few clicks!
         </Typography>
 
-        <Box marginTop="3rem" textAlign="center">
+        <Box marginTop="1rem" textAlign="center">
           <Typography variant="h5" className={classes.subSubTitle}>
-            Akashlytics Deploy is a desktop app that greatly simplify and enhance deployments on
-            Akash.
+            Akashlytics Deploy is a desktop app that greatly simplify and enhance deployments on the
+            Akash Network.
           </Typography>
 
           <Box marginTop="2rem">
@@ -55,6 +56,15 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
 
             <Typography variant="caption">v0.2.1</Typography>
           </Box>
+        </Box>
+
+        <Box margin="1rem auto" display="flex" justifyContent="center">
+          <ReactPlayer
+            url="https://www.youtube.com/watch?v=GNEvWmqW7hI"
+            width="640px"
+            height="400px"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          />
         </Box>
       </div>
     </>

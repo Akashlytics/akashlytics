@@ -5,27 +5,31 @@ export const useStyles = makeStyles((theme) => ({
   title: {
     textAlign: "center",
     fontWeight: "bold",
-    fontSize: "3.5rem"
+    fontSize: "3rem"
   },
   subTitle: {
     textAlign: "center",
     fontWeight: 300,
-    fontSize: "2rem"
+    fontSize: "2.5rem"
   },
   subSubTitle: {
     fontWeight: 300,
-    fontSize: "1.2rem"
+    fontSize: "1.1rem"
   },
   actionButtonContainer: {
-    marginTop: "1rem",
+    margin: ".5rem auto",
     display: "flex",
     justifyContent: "center",
-    alignItem: "center"
+    maxWidth: "640px"
   },
   actionButton: {
     margin: ".5rem",
     background: akashRedGradient,
-    color: theme.palette.primary.contrastText
+    color: theme.palette.primary.contrastText,
+    padding: ".7rem 2rem",
+    textTransform: "initial",
+    fontSize: "1.2rem",
+    flexBasis: "50%"
   },
   actionButtonLabel: {
     display: "flex",

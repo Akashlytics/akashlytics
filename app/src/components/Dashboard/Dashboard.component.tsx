@@ -150,12 +150,12 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 className={clsx(classes.title, { "text-center": mediaQuery.smallScreen })}
               >
                 Total resources currently leased
-                <Chip
+                {/* <Chip
                   size="small"
                   label="Live"
                   icon={<FiberManualRecordIcon />}
                   classes={{ root: classes.liveChip, icon: classes.liveChipIcon }}
-                />
+                /> */}
               </Typography>
             </div>
           </div>

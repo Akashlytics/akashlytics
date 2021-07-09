@@ -43,6 +43,7 @@
     "react-helmet-async": "^1.0.9",
     "react-intl": "^5.16.0",
     "react-monaco-editor": "^0.43.0",
+    "react-player": "^2.9.0",
     "react-query": "^3.16.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
