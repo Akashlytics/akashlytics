@@ -37,7 +37,7 @@ export const BetaBanner = () => {
 
   useEffect(() => {
     const isBetaBarSeen = localStorage.getItem("isBetaBarSeen");
-    setIsBetaBarVisible(isBetaBarSeen === undefined ? true : false);
+    setIsBetaBarVisible(isBetaBarSeen === null ? true : false);
   }, []);
 
   const hideIsBetaBarVisible = () => {

@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.5.0",
+  "version": "0.6.2",
   "license": "GPL-3.0-or-later",
   "main": "/src/index.tsx",
   "scripts": {
