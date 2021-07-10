@@ -8,6 +8,7 @@ import ReactPlayer from "react-player/lazy";
 import YouTubeIcon from "@material-ui/icons/YouTube";
 import TwitterIcon from "@material-ui/icons/Twitter";
 import { DiscordIcon } from "@src/shared/components/icons";
+import Alert from "@material-ui/lab/Alert";
 
 export interface IDeployProps {}
 
@@ -62,6 +63,12 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
               &nbsp;&nbsp;
               <Typography variant="caption">v0.2.2</Typography>
             </Box>
+
+            <Alert severity="info" className={classes.alert}>
+              We haven't set up code signing yet for the mvp, so you will get a warning when
+              installing the app!
+              <br /> Will be done soon.
+            </Alert>
           </Box>
         </Box>
 

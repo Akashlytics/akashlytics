@@ -77,5 +77,9 @@ export const useStyles = makeStyles((theme) => ({
     fontSize: "3rem",
     display: "block",
     margin: "0 auto"
+  },
+  alert: {
+    margin: "1rem auto",
+    maxWidth: 640
   }
 }));
