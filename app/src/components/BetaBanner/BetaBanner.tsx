@@ -12,6 +12,7 @@ import {
 import CloseIcon from "@material-ui/icons/Close";
 import { Link } from "react-router-dom";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
+import { useEffect } from "react";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,14 +31,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const MobileBanner = () => {
+export const BetaBanner = () => {
   const [isBetaBarVisible, setIsBetaBarVisible] = useState(true);
   const classes = useStyles();
-  const mediaQuery = useMediaQueryContext();
+
+  useEffect(() => {
+    const isBetaBarSeen = localStorage.getItem("isBetaBarSeen");
+    setIsBetaBarVisible(isBetaBarSeen === undefined ? true : false);
+  }, []);
+
+  const hideIsBetaBarVisible = () => {
+    localStorage.setItem("isBetaBarSeen", "true");
+    setIsBetaBarVisible(false);
+  };
 
   return (
     <>
-      {isBetaBarVisible && mediaQuery.smallScreen && (
+      {isBetaBarVisible && (
         <AppBar position="static" color="default" className={classes.root}>
           <Toolbar>
             <Chip label="BETA" color="primary" className={classes.betaChip} />
@@ -52,7 +62,7 @@ export const MobileBanner = () => {
                 to="/deploy"
                 variant="contained"
                 size="small"
-                onClick={() => setIsBetaBarVisible(false)}
+                onClick={() => hideIsBetaBarVisible()}
               >
                 Take a look!
               </Button>
@@ -62,7 +72,7 @@ export const MobileBanner = () => {
             <IconButton
               aria-label="Close beta app bar"
               color="inherit"
-              onClick={() => setIsBetaBarVisible(false)}
+              onClick={() => hideIsBetaBarVisible()}
             >
               <CloseIcon />
             </IconButton>

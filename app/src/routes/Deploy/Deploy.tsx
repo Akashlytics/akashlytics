@@ -83,7 +83,6 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
             <Grid item xs={4}>
               <a href="https://discord.gg/ApZH2nu3" target="_blank" className={classes.socialLink}>
                 <DiscordIcon className={classes.socialIcon} />
-                <Typography variant="caption">Discord server</Typography>
               </a>
             </Grid>
             <Grid item xs={4}>
@@ -93,7 +92,6 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 className={classes.socialLink}
               >
                 <YouTubeIcon className={classes.socialIcon} />
-                <Typography variant="caption">Youtube</Typography>
               </a>
             </Grid>
             <Grid item xs={4}>
@@ -103,13 +101,12 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 className={classes.socialLink}
               >
                 <TwitterIcon className={classes.socialIcon} />
-                <Typography variant="caption">Twitter</Typography>
               </a>
             </Grid>
           </Grid>
         </Box>
 
-        <Box margin="5rem auto" maxWidth="640px">
+        <Box margin="7rem auto 5rem" maxWidth="640px">
           <Typography variant="h4" className={classes.disclaimerTitle}>
             Disclaimer
           </Typography>

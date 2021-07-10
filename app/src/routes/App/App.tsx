@@ -13,7 +13,7 @@ import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { useDashboardData } from "@src/queries/useDashboardData";
 import { Deploy } from "@src/routes/Deploy";
 import { Footer } from "@src/components/Footer";
-import { MobileBanner } from "@src/components/MobileBanner";
+import { BetaBanner } from "@src/components/BetaBanner";
 
 const useStyles = makeStyles((theme) => ({
   appBody: {
@@ -38,7 +38,7 @@ export function App() {
 
       <Header />
 
-      <MobileBanner />
+      <BetaBanner />
 
       <div className={clsx(classes.appBody, { [classes.appBodySmall]: mediaQuery.smallScreen })}>
         <Switch>
