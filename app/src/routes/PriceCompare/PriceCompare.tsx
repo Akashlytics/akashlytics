@@ -63,12 +63,10 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 50,
   },
   disclaimerTitle: {
-    color: "white",
     fontWeight: "bold",
     marginBottom: "1rem",
   },
   disclaimerList: {
-    color: "white",
     textDecoration: "none",
   },
   link: {

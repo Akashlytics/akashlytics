@@ -5,12 +5,18 @@ export const useStyles = makeStyles((theme) => ({
   title: {
     textAlign: "center",
     fontWeight: "bold",
-    fontSize: "3rem"
+    fontSize: "3rem",
+    [theme.breakpoints.down("xs")]: {
+      fontSize: "2.5rem"
+    }
   },
   subTitle: {
     textAlign: "center",
     fontWeight: 300,
-    fontSize: "2.5rem"
+    fontSize: "2.5rem",
+    [theme.breakpoints.down("xs")]: {
+      fontSize: "1.5rem"
+    }
   },
   subSubTitle: {
     fontWeight: 300,
@@ -37,5 +43,39 @@ export const useStyles = makeStyles((theme) => ({
     "& small": {
       fontSize: ".7rem"
     }
+  },
+  disclaimerTitle: {
+    fontWeight: "bold",
+    marginBottom: "2rem",
+  },
+  disclaimerList: {
+    textDecoration: "none",
+  },
+  link: {
+    fontWeight: "bold",
+    textDecoration: "underline",
+  },
+  socials: {
+    textAlign: "center"
+  },
+  socialLink: {
+    transition: ".3s all ease",
+    "& path": {
+      transition: ".3s all ease",
+
+    },
+    "&:hover": {
+      color: theme.palette.primary.main,
+      "& path": {
+        fill: theme.palette.primary.main
+      }
+    }
+  },
+  socialIcon: {
+    height: "3rem",
+    width: "3rem",
+    fontSize: "3rem",
+    display: "block",
+    margin: "0 auto"
   }
 }));
