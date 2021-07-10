@@ -13,6 +13,7 @@ import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { useDashboardData } from "@src/queries/useDashboardData";
 import { Deploy } from "@src/routes/Deploy";
 import { Footer } from "@src/components/Footer";
+import { MobileBanner } from "@src/components/MobileBanner";
 
 const useStyles = makeStyles((theme) => ({
   appBody: {
@@ -36,6 +37,8 @@ export function App() {
       <Helmet defaultTitle="Akashlytics" titleTemplate="Akashlytics - %s" />
 
       <Header />
+
+      <MobileBanner />
 
       <div className={clsx(classes.appBody, { [classes.appBodySmall]: mediaQuery.smallScreen })}>
         <Switch>

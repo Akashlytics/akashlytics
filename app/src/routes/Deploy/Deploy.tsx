@@ -1,9 +1,8 @@
 import React from "react";
-import clsx from "clsx";
 import { useStyles } from "./Deploy.styles";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { HelmetSocial } from "@src/shared/components/HelmetSocial";
-import { Box, ButtonGroup, Chip, Grid, Typography } from "@material-ui/core";
+import { Box, Chip, Grid, Typography } from "@material-ui/core";
 import { Button } from "@material-ui/core";
 import ReactPlayer from "react-player/lazy";
 import YouTubeIcon from "@material-ui/icons/YouTube";
@@ -14,7 +13,6 @@ export interface IDeployProps {}
 
 export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
   const classes = useStyles();
-  const mediaQuery = useMediaQueryContext();
 
   return (
     <>
@@ -70,8 +68,6 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
         <Box margin="1rem auto" display="flex" justifyContent="center">
           <ReactPlayer
             url="https://www.youtube.com/watch?v=GNEvWmqW7hI"
-            width="640px"
-            height="400px"
             style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
           />
         </Box>

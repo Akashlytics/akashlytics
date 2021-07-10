@@ -14,6 +14,7 @@ import {
   SwipeableDrawer,
 } from "@material-ui/core";
 import { Link } from "react-router-dom";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 
 const useStyles = makeStyles((theme) => ({
   list: {
@@ -90,6 +91,12 @@ export function NavDrawer({ isDrawerOpen, toggleDrawer }) {
                 <HelpIcon />
               </ListItemIcon>
               <ListItemText primary="FAQ" />
+            </ListItem>
+            <ListItem button component={Link} to="/deploy">
+              <ListItemIcon>
+                <CloudUploadIcon />
+              </ListItemIcon>
+              <ListItemText primary="Deploy" />
             </ListItem>
           </List>
         </div>
