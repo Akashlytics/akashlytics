@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const BetaBanner = () => {
-  const [isBetaBarVisible, setIsBetaBarVisible] = useState(true);
+  const [isBetaBarVisible, setIsBetaBarVisible] = useState(false);
   const classes = useStyles();
 
   useEffect(() => {
