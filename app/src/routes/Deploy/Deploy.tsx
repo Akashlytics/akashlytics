@@ -31,7 +31,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
 
         <Box marginTop="1rem" textAlign="center">
           <Typography variant="h5" className={classes.subSubTitle}>
-            Akashlytics Deploy is a desktop app that greatly simplify and enhance deployments on the
+            Akashlytics Deploy is a desktop app that greatly simplifies and enhances deployments on the
             Akash Network.
           </Typography>
 
