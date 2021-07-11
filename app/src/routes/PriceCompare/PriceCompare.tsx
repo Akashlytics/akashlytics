@@ -30,11 +30,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: "3rem",
   },
   pageTitle: {
-    color: "white",
     fontWeight: "bold",
-  },
-  pageSubTitle: {
-    color: "white",
   },
   tableHeader: {
     textTransform: "uppercase",
@@ -106,12 +102,8 @@ export function PriceCompare({ marketData }) {
           <Typography variant="h3" className={classes.pageTitle}>
             Akash vs. Cloud giants
           </Typography>
-          <Typography variant="h5" className={classes.pageSubTitle}>
-            A simple price comparison
-          </Typography>
-          <Typography variant="caption" className={classes.pageSubTitle}>
-            $USD price per month
-          </Typography>
+          <Typography variant="h5">A simple price comparison</Typography>
+          <Typography variant="caption">$USD price per month</Typography>
         </div>
       </div>
 

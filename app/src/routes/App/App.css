@@ -25,7 +25,6 @@
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
   font-weight: bold;
 }
 
@@ -48,16 +47,16 @@
 }
 
 a {
-  color: white;
+  color: #fff;
   text-decoration: none;
 }
 
 .text-on-black {
-  color: white;
+  color: #fff;
 }
 
 a:hover {
-  color: white;
+  color: #f9f9f9;
   text-decoration: none;
 }
 

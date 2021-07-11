@@ -175,7 +175,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
           {isAverage && (
             <div className="row">
               <div className="col-lg-12">
-                <p className={clsx("text-white", classes.graphExplanation)}>
+                <p className={clsx(classes.graphExplanation)}>
                   * The data points represent the average between the minimum and maximum value for
                   the day.
                 </p>

@@ -9,7 +9,6 @@ const useStyles = makeStyles((theme) => ({
   root: {
     paddingTop: 30,
     paddingBottom: 100,
-    color: "white",
     textAlign: "left",
   },
   pageTitle: {

@@ -11,7 +11,6 @@ import {
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import { Link } from "react-router-dom";
-import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { useEffect } from "react";
 
 const useStyles = makeStyles((theme) => ({

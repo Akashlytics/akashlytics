@@ -12,7 +12,6 @@ export const useStyles = makeStyles((theme) => ({
   },
   graphTooltip: {
     padding: "5px 10px",
-    color: "white",
     fontWeight: "bold",
     backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: ".5rem",
@@ -25,7 +24,6 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: "center"
   },
   title: {
-    color: "white",
     fontSize: "2rem",
     [theme.breakpoints.down("xs")]: {
       textAlign: "center"
@@ -40,7 +38,6 @@ export const useStyles = makeStyles((theme) => ({
     }
   },
   subTitleValues: {
-    color: "white",
     [theme.breakpoints.down("xs")]: {
       flexBasis: "100%",
       marginBottom: "1rem"

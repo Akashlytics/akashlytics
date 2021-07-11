@@ -65,7 +65,6 @@ const useStyles = makeStyles((theme) => ({
   linkText: {
     textDecoration: "none",
     textTransform: "uppercase",
-    color: "white",
   },
   navButton: {
     borderRadius: "5px",

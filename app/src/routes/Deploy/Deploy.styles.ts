@@ -61,8 +61,8 @@ export const useStyles = makeStyles((theme) => ({
   socialLink: {
     transition: ".3s all ease",
     "& path": {
+      fill: "#fff",
       transition: ".3s all ease",
-
     },
     "&:hover": {
       color: theme.palette.primary.main,

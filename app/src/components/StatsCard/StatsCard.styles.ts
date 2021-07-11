@@ -5,7 +5,6 @@ export const useStyles = makeStyles((theme) => ({
   root: {
     position: "relative",
     background: akashRedGradient,
-    color: "white",
     height: "100%",
     flexGrow: 1,
     borderRadius: "1rem",
