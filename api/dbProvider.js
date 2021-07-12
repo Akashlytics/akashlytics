@@ -488,6 +488,68 @@ exports.getLastSnapshot = async () => {
   return results[1];
 };
 
+exports.getDailyAktSpent = async () => {
+  const lastDailyAktSnapshot = await StatsSnapshot.findOne({
+    attributes: ["date", "totalAktSpent"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+      totalAktSpent: {
+        [Op.ne]: null,
+      },
+    },
+  });
+  const total = await Deployment.sum("escrowAccountTransferredAmount");
+
+  return total - lastDailyAktSnapshot.totalAktSpent;
+};
+
+exports.getDailyAktSpent = async () => {
+  const lastDailyAktSnapshot = await StatsSnapshot.findOne({
+    attributes: ["date", "totalAktSpent"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+      totalAktSpent: {
+        [Op.ne]: null,
+      },
+    },
+  });
+  const total = await Deployment.sum("escrowAccountTransferredAmount");
+
+  return total - lastDailyAktSnapshot.toJSON().totalAktSpent;
+};
+
+exports.getDailyDeploymentCount = async () => {
+  const lastTotalDeploymentSnapshot = await StatsSnapshot.findOne({
+    attributes: ["date", "allTimeDeploymentCount"],
+    order: [["date", "DESC"]],
+    where: {
+      date: {
+        [Op.not]: dataSnapshotsHandler.getDayStr(),
+      },
+      allTimeDeploymentCount: {
+        [Op.ne]: null,
+      },
+    },
+  });
+  const total = await Deployment.count({
+    distinct: true,
+    include: {
+      model: Lease,
+      required: true,
+    },
+  });
+
+  console.log(lastTotalDeploymentSnapshot, total, "wtf");
+
+  return total - lastTotalDeploymentSnapshot.toJSON().allTimeDeploymentCount;
+};
+
 exports.initSnapshotsFromFile = async () => {
   console.log("Loading " + baseSnapshots.length + " snapshots from file");
   await StatsSnapshot.bulkCreate(baseSnapshots);

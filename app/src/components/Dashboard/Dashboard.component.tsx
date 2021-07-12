@@ -8,7 +8,6 @@ import { FormattedNumber } from "react-intl";
 import { DashboardData, SnapshotsUrlParam } from "@src/shared/models";
 import { Link as RouterLink } from "react-router-dom";
 import { average, percIncrease, uaktToAKT } from "@src/shared/utils/mathHelpers";
-import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
 interface IDashboardProps {
   deploymentCounts: DashboardData;
@@ -31,6 +30,35 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
 
   return (
     <>
+      <Box>
+        <Box>
+          AKT{" "}
+          <FormattedNumber
+            style="currency"
+            currency="USD"
+            value={deploymentCounts.marketData.price}
+          />
+        </Box>
+        <Box>
+          Market cap{" "}
+          <FormattedNumber
+            style="currency"
+            currency="USD"
+            value={deploymentCounts.marketData.marketCap}
+            maximumFractionDigits={0}
+          />
+        </Box>
+        <Box>
+          Volume (24h){" "}
+          <FormattedNumber
+            style="currency"
+            currency="USD"
+            value={deploymentCounts.marketData.volume}
+            maximumFractionDigits={0}
+          />
+        </Box>
+      </Box>
+
       <div
         className={clsx("row", {
           "mb-4": !mediaQuery.smallScreen,
@@ -55,7 +83,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 <FormattedNumber
                   style="currency"
                   currency="USD"
-                  value={deploymentCounts.marketData.computedPrice}
+                  value={deploymentCounts.marketData.price}
                 />
               }
               text="Current AKT Price"
@@ -70,7 +98,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 <FormattedNumber
                   style="currency"
                   currency="USD"
-                  value={0.432 * deploymentCounts.marketData.computedPrice}
+                  value={0.432 * deploymentCounts.marketData.price}
                 />
               }
               text="Monthly cost for a small instance"

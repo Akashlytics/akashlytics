@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../app/dist/index.html"));
 });
 
-app.get("/api/getDeploymentCounts/", async (req, res) => {
+app.get("/api/getDashboardData/", async (req, res) => {
   const activeDeploymentCount = blockchainAnalyzer.getActiveDeploymentCount();
   const deploymentCount = blockchainAnalyzer.getDeploymentCount();
   const averagePrice = blockchainAnalyzer.getAveragePrice();
@@ -28,6 +28,8 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
   const totalAKTSpent = blockchainAnalyzer.getTotalAKTSpent();
   const marketData = marketDataProvider.getAktMarketData();
   const lastSnapshot = await dbProvider.getLastSnapshot();
+  const dailyAktSpent = blockchainAnalyzer.getDailyAktSpent();
+  const dailyDeploymentCount = blockchainAnalyzer.getDailyDeploymentCount();
 
   if (activeDeploymentCount != null) {
     res.send({
@@ -39,6 +41,8 @@ app.get("/api/getDeploymentCounts/", async (req, res) => {
       totalResourcesLeased,
       lastRefreshDate,
       lastSnapshot,
+      dailyAktSpent,
+      dailyDeploymentCount,
     });
   } else {
     res.send(null);

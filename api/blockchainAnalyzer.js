@@ -18,6 +18,10 @@ let activeDeploymentCount = null;
 let averagePrice = null;
 let totalAKTSpent = null;
 let totalResourcesLeased = null;
+let lastSnapshot = null;
+let allSnapshots = null;
+let dailyAktSpent = null;
+let dailyDeploymentCount = null;
 
 let activeDeploymentSnapshots = null;
 let totalAKTSpentSnapshots = null;
@@ -41,6 +45,10 @@ exports.getAllTimeDeploymentCountSnapshots = () => allTimeDeploymentCountSnapsho
 exports.getComputeSnapshots = () => computeSnapshots;
 exports.getMemorySnapshots = () => memorySnapshots;
 exports.getStorageSnapshots = () => storageSnapshots;
+exports.getLastSnapshot = () => lastSnapshot;
+exports.getAllSnapshots = () => allSnapshots;
+exports.getDailyAktSpent = () => dailyAktSpent;
+exports.getDailyDeploymentCount = () => dailyDeploymentCount;
 
 exports.startAutoRefresh = () => {
   console.log(`Will auto-refresh at an interval of ${Math.round(autoRefreshInterval / 1000)} secs`);
@@ -127,6 +135,10 @@ exports.initialize = async (firstInit) => {
     computeSnapshots = await dbProvider.getComputeSnapshots();
     memorySnapshots = await dbProvider.getMemorySnapshots();
     storageSnapshots = await dbProvider.getStorageSnapshots();
+    lastSnapshot = await dbProvider.getLastSnapshot();
+    allSnapshots = await dbProvider.getAllSnapshots();
+    dailyAktSpent = await dbProvider.getDailyAktSpent();
+    dailyDeploymentCount = await dbProvider.getDailyDeploymentCount();
 
     totalAKTSpent = await dbProvider.getTotalAKTSpent();
     const roundedAKTSpent = Math.round((totalAKTSpent / 1000000 + Number.EPSILON) * 100) / 100;
