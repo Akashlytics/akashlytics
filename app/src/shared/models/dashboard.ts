@@ -8,6 +8,8 @@ export interface DashboardData {
   totalResourcesLeased: ResourceLeased;
   lastRefreshDate: Date
   lastSnapshot: SnapshotData;
+  dailyAktSpent: number;
+  dailyDeploymentCount: number;
 }
 
 export interface SnapshotData {
@@ -21,6 +23,8 @@ export interface SnapshotData {
   maxStorage: number;
   allTimeDeploymentCount: number;
   totalAktSpent: number;
+  dailyAktSpent: number;
+  dailyDeploymentCount: number;
 }
 
 export interface ResourceLeased {

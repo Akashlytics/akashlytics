@@ -32,5 +32,16 @@ export const useStyles = makeStyles((theme) => ({
     "100%": {
       color: "#00945c"
     }
+  },
+  priceDataContainer: {
+    backgroundColor: "rgba(0,0,0,0.1)",
+    padding: "1rem",
+    marginBottom: "1rem",
+    borderRadius: "1rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexDirection: "column",
+    // alignItems: "baseline"
   }
 }));

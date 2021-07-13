@@ -481,15 +481,24 @@ exports.getAllSnapshots = async () => {
 
 exports.getLastSnapshot = async () => {
   const results = await StatsSnapshot.findAll({
+    raw: true,
+    limit: 4,
+    order: [["date", "DESC"]],
+  });
+
+  return {
+    ...results[1],
+    // For the daily values, get the day before yesterday and -1 day to get the difference
+    // gained between that value and yesterdays
+    dailyDeploymentCount: results[2].allTimeDeploymentCount - results[3].allTimeDeploymentCount,
+    dailyAktSpent: results[2].totalAktSpent - results[3].totalAktSpent,
+  };
+};
+
+exports.getDailyAktSpent = async () => {
+  const lastDailyAktSnapshot = await StatsSnapshot.findAll({
+    raw: true,
     limit: 2,
-    order: [["date", "DESC"]],
-  });
-
-  return results[1];
-};
-
-exports.getDailyAktSpent = async () => {
-  const lastDailyAktSnapshot = await StatsSnapshot.findOne({
     attributes: ["date", "totalAktSpent"],
     order: [["date", "DESC"]],
     where: {
@@ -501,31 +510,14 @@ exports.getDailyAktSpent = async () => {
       },
     },
   });
-  const total = await Deployment.sum("escrowAccountTransferredAmount");
 
-  return total - lastDailyAktSnapshot.totalAktSpent;
-};
-
-exports.getDailyAktSpent = async () => {
-  const lastDailyAktSnapshot = await StatsSnapshot.findOne({
-    attributes: ["date", "totalAktSpent"],
-    order: [["date", "DESC"]],
-    where: {
-      date: {
-        [Op.not]: dataSnapshotsHandler.getDayStr(),
-      },
-      totalAktSpent: {
-        [Op.ne]: null,
-      },
-    },
-  });
-  const total = await Deployment.sum("escrowAccountTransferredAmount");
-
-  return total - lastDailyAktSnapshot.toJSON().totalAktSpent;
+  return lastDailyAktSnapshot[0].totalAktSpent - lastDailyAktSnapshot[1].totalAktSpent;
 };
 
 exports.getDailyDeploymentCount = async () => {
-  const lastTotalDeploymentSnapshot = await StatsSnapshot.findOne({
+  const lastTotalDeploymentSnapshot = await StatsSnapshot.findAll({
+    raw: true,
+    limit: 2,
     attributes: ["date", "allTimeDeploymentCount"],
     order: [["date", "DESC"]],
     where: {
@@ -537,17 +529,11 @@ exports.getDailyDeploymentCount = async () => {
       },
     },
   });
-  const total = await Deployment.count({
-    distinct: true,
-    include: {
-      model: Lease,
-      required: true,
-    },
-  });
 
-  console.log(lastTotalDeploymentSnapshot, total, "wtf");
-
-  return total - lastTotalDeploymentSnapshot.toJSON().allTimeDeploymentCount;
+  return (
+    lastTotalDeploymentSnapshot[0].allTimeDeploymentCount -
+    lastTotalDeploymentSnapshot[1].allTimeDeploymentCount
+  );
 };
 
 exports.initSnapshotsFromFile = async () => {

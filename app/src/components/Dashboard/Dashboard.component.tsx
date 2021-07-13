@@ -30,7 +30,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
 
   return (
     <>
-      <Box>
+      <div className={classes.priceDataContainer}>
         <Box>
           AKT{" "}
           <FormattedNumber
@@ -57,7 +57,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             maximumFractionDigits={0}
           />
         </Box>
-      </Box>
+      </div>
 
       <div
         className={clsx("row", {
@@ -76,22 +76,52 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
       </div>
 
       <div className="row">
-        {deploymentCounts.marketData && (
-          <div className={clsx("col-xs-12", tileClassName)}>
-            <StatsCard
-              number={
-                <FormattedNumber
-                  style="currency"
-                  currency="USD"
-                  value={deploymentCounts.marketData.price}
-                />
-              }
-              text="Current AKT Price"
-            />
-          </div>
-        )}
+        <div className={clsx("col-xs-12", tileClassName)}>
+          <StatsCard
+            number={
+              <FormattedNumber
+                value={uaktToAKT(deploymentCounts.dailyAktSpent)}
+                maximumFractionDigits={2}
+              />
+            }
+            text="Daily AKT spent"
+            tooltip="Last 24h"
+            graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
+            diffNumber={uaktToAKT(
+              deploymentCounts.dailyAktSpent - deploymentCounts.lastSnapshot.dailyAktSpent
+            )}
+            diffPercent={percIncrease(
+              deploymentCounts.lastSnapshot.dailyAktSpent,
+              deploymentCounts.dailyAktSpent
+            )}
+          />
+        </div>
 
-        {showAveragePrice && (
+        <div className={clsx("col-xs-12", tileClassName)}>
+          <StatsCard
+            number={
+              <>
+                <FormattedNumber
+                  value={uaktToAKT(deploymentCounts.totalAKTSpent)}
+                  maximumFractionDigits={2}
+                />{" "}
+                AKT
+              </>
+            }
+            text="Total spent on decloud"
+            tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
+            graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
+            diffNumber={uaktToAKT(
+              deploymentCounts.totalAKTSpent - deploymentCounts.lastSnapshot.totalAktSpent
+            )}
+            diffPercent={percIncrease(
+              deploymentCounts.lastSnapshot.totalAktSpent,
+              deploymentCounts.totalAKTSpent
+            )}
+          />
+        </div>
+
+        {/* {showAveragePrice && (
           <div className={clsx("col-xs-12", tileClassName)}>
             <StatsCard
               number={
@@ -120,28 +150,21 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
               }
             />
           </div>
-        )}
+        )} */}
 
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
-            number={
-              <>
-                <FormattedNumber
-                  value={uaktToAKT(deploymentCounts.totalAKTSpent)}
-                  maximumFractionDigits={2}
-                />{" "}
-                AKT
-              </>
+            number={<FormattedNumber value={deploymentCounts.dailyDeploymentCount} />}
+            text="Daily deployment count"
+            tooltip="Last 24h"
+            graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
+            diffNumber={
+              deploymentCounts.dailyDeploymentCount -
+              deploymentCounts.lastSnapshot.dailyDeploymentCount
             }
-            text="Total spent on decloud"
-            tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
-            graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
-            diffNumber={uaktToAKT(
-              deploymentCounts.totalAKTSpent - deploymentCounts.lastSnapshot.totalAktSpent
-            )}
             diffPercent={percIncrease(
-              deploymentCounts.lastSnapshot.totalAktSpent,
-              deploymentCounts.totalAKTSpent
+              deploymentCounts.lastSnapshot.dailyDeploymentCount,
+              deploymentCounts.dailyDeploymentCount
             )}
           />
         </div>
@@ -149,8 +172,8 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
             number={<FormattedNumber value={deploymentCounts.deploymentCount} />}
-            text="All-time deployment count"
-            tooltip="The all-time deployment count consists of all deployments that were live at some point. This includes deployments that were deployed for testing or that were meant to be only temporary."
+            text="Total deployment count"
+            tooltip="The total deployment count consists of all deployments that were live(leased) at some point and that someone paid for. This includes deployments that were deployed for testing or that were meant to be only temporary."
             graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
             diffNumber={
               deploymentCounts.deploymentCount -

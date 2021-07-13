@@ -1154,17 +1154,33 @@
   {
     "id": 73,
     "date": "2021-07-12",
-    "minActiveDeploymentCount": 147,
+    "minActiveDeploymentCount": 146,
     "maxActiveDeploymentCount": 149,
-    "minCompute": 400000,
-    "maxCompute": 400400,
-    "minMemory": 321028750642,
-    "maxMemory": 323176234290,
-    "minStorage": 1847748617826,
-    "maxStorage": 1849896101474,
-    "allTimeDeploymentCount": 10159,
-    "totalAktSpent": 618101805,
+    "minCompute": 393000,
+    "maxCompute": 409000,
+    "minMemory": 309217590578,
+    "maxMemory": 326397459762,
+    "minStorage": 1592198063714,
+    "maxStorage": 1903583192674,
+    "allTimeDeploymentCount": 10313,
+    "totalAktSpent": 627666478,
     "createdAt": "2021-07-12T00:02:33.222Z",
-    "updatedAt": "2021-07-12T01:42:23.482Z"
+    "updatedAt": "2021-07-12T23:52:02.113Z"
+  },
+  {
+    "id": 74,
+    "date": "2021-07-13",
+    "minActiveDeploymentCount": 146,
+    "maxActiveDeploymentCount": 148,
+    "minCompute": 397500,
+    "maxCompute": 399000,
+    "minMemory": 320491879730,
+    "maxMemory": 322639363378,
+    "minStorage": 1610988545634,
+    "maxStorage": 1613672900194,
+    "allTimeDeploymentCount": 10318,
+    "totalAktSpent": 627737168,
+    "createdAt": "2021-07-13T00:02:43.863Z",
+    "updatedAt": "2021-07-13T00:32:38.784Z"
   }
 ]
