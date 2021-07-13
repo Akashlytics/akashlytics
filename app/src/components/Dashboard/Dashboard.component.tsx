@@ -2,12 +2,14 @@ import React from "react";
 import clsx from "clsx";
 import { useStyles } from "./Dashboard.styles";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
-import { Box, Button, Chip, Typography } from "@material-ui/core";
+import { Box, Button, Chip, Paper, Typography } from "@material-ui/core";
 import { StatsCard } from "../StatsCard";
 import { FormattedNumber } from "react-intl";
 import { DashboardData, SnapshotsUrlParam } from "@src/shared/models";
 import { Link as RouterLink } from "react-router-dom";
 import { average, percIncrease, uaktToAKT } from "@src/shared/utils/mathHelpers";
+import { DiffNumber } from "@src/shared/components/DiffNumber";
+import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
 
 interface IDashboardProps {
   deploymentCounts: DashboardData;
@@ -30,34 +32,48 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
 
   return (
     <>
-      <div className={classes.priceDataContainer}>
-        <Box>
+      <Paper className={classes.priceDataContainer} elevation={2}>
+        <div className={classes.priceData}>
           AKT{" "}
-          <FormattedNumber
-            style="currency"
-            currency="USD"
-            value={deploymentCounts.marketData.price}
-          />
-        </Box>
-        <Box>
-          Market cap{" "}
-          <FormattedNumber
-            style="currency"
-            currency="USD"
-            value={deploymentCounts.marketData.marketCap}
-            maximumFractionDigits={0}
-          />
-        </Box>
-        <Box>
-          Volume (24h){" "}
-          <FormattedNumber
-            style="currency"
-            currency="USD"
-            value={deploymentCounts.marketData.volume}
-            maximumFractionDigits={0}
-          />
-        </Box>
-      </div>
+          <div className={classes.priceDataValue}>
+            <FormattedNumber
+              style="currency"
+              currency="USD"
+              value={deploymentCounts.marketData.price}
+            />
+            <Box display="flex" alignItems="center" fontSize=".8rem" fontWeight={300}>
+              <DiffPercentageChip
+                value={deploymentCounts.marketData.priceChangePercentage24 / 100}
+              />
+              <Box component="span" ml=".5rem">
+                (24h)
+              </Box>
+            </Box>
+          </div>
+        </div>
+        <div className={classes.priceData}>
+          <span>Market cap</span>{" "}
+          <span className={classes.priceDataValue}>
+            <FormattedNumber
+              style="currency"
+              currency="USD"
+              value={deploymentCounts.marketData.marketCap}
+              maximumFractionDigits={0}
+            />
+          </span>
+        </div>
+        <div className={classes.priceData}>
+          <span>Volume (24h)</span>{" "}
+          <span className={classes.priceDataValue}>
+            <FormattedNumber
+              style="currency"
+              currency="USD"
+              value={deploymentCounts.marketData.volume}
+              maximumFractionDigits={0}
+            />
+          </span>
+        </div>
+      </Paper>
 
       <div
         className={clsx("row", {

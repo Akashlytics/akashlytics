@@ -17,11 +17,10 @@ import { BetaBanner } from "@src/components/BetaBanner";
 
 const useStyles = makeStyles((theme) => ({
   appBody: {
-    paddingTop: 60,
+    paddingTop: "2rem",
     paddingBottom: 80,
   },
   appBodySmall: {
-    paddingTop: 25,
     paddingBottom: 50,
   },
 }));
