@@ -19,7 +19,6 @@ import { Helmet } from "react-helmet-async";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    paddingTop: 30,
     paddingBottom: 100,
   },
   table: {

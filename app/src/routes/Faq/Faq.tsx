@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    paddingTop: 30,
     paddingBottom: 100,
     textAlign: "left",
   },
@@ -82,8 +81,7 @@ export function Faq() {
     },
     {
       title: "How I hosted my personal site on Akash for $2/month",
-      url:
-        "https://teeyeeyang.medium.com/how-i-hosted-my-personal-site-on-akash-for-2-month-cf07768aa0a2",
+      url: "https://teeyeeyang.medium.com/how-i-hosted-my-personal-site-on-akash-for-2-month-cf07768aa0a2",
     },
     {
       title: "A step-by-step guide to deploying a SPA to Akash Network",
@@ -208,14 +206,13 @@ export function Faq() {
               $AKT
             </a>{" "}
             to pay for the computing and then voilà, you can{" "}
-            <a
-              href="https://docs.akash.network/guides/deploy"
-              target="_blank"
-              rel="noopener"
+            <Link
+              // href="https://docs.akash.network/guides/deploy"
               className={classes.link}
+              to="/deploy"
             >
               deploy your app in a few steps.
-            </a>
+            </Link>
           </p>
 
           <Typography variant="h3" className={classes.subTitle}>
@@ -268,12 +265,7 @@ export function Faq() {
           <ul>
             {howToBuyLinks.map((link, i) => (
               <li key={i}>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener"
-                  className={classes.link}
-                >
+                <a href={link.url} target="_blank" rel="noopener" className={classes.link}>
                   {link.title}
                 </a>
               </li>
@@ -287,12 +279,7 @@ export function Faq() {
           <ul>
             {howToStakeLinks.map((link, i) => (
               <li key={i}>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener"
-                  className={classes.link}
-                >
+                <a href={link.url} target="_blank" rel="noopener" className={classes.link}>
                   {link.title}
                 </a>
               </li>
@@ -306,12 +293,7 @@ export function Faq() {
           <ul>
             {howToDeployLinks.map((link, i) => (
               <li key={i}>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener"
-                  className={classes.link}
-                >
+                <a href={link.url} target="_blank" rel="noopener" className={classes.link}>
                   {link.title}
                 </a>
               </li>
@@ -325,12 +307,7 @@ export function Faq() {
           <ul>
             {communitiesLinks.map((link, i) => (
               <li key={i}>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener"
-                  className={classes.link}
-                >
+                <a href={link.url} target="_blank" rel="noopener" className={classes.link}>
                   {link.title}
                 </a>
               </li>
