@@ -86,6 +86,14 @@ app.get("/api/getSnapshot/:id", async (req, res) => {
       snapshots = blockchainAnalyzer.getStorageSnapshots();
       currentValue = totalResourcesLeased.storageSum;
       break;
+    case "dailyAktSpent":
+      snapshots = blockchainAnalyzer.getDailyAktSpentSnapshots();
+      currentValue = blockchainAnalyzer.getDailyAktSpent();
+      break;
+    case "dailyDeploymentCount":
+      snapshots = blockchainAnalyzer.getDailyDeploymentCountSnapshots();
+      currentValue = blockchainAnalyzer.getDailyDeploymentCount();
+      break;
 
     default:
       break;

@@ -220,6 +220,7 @@ const getSnapshotMetadata = (
   snapshotData: GraphResponse
 ): { value?: number; diffNumber?: number; diffPercent?: number } => {
   const lastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 1];
+  const previousLastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 2];
   switch (snapshot) {
     case Snapshots.activeDeployment:
       return {
@@ -237,11 +238,23 @@ const getSnapshotMetadata = (
         diffPercent: percIncrease(lastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
         diffNumber: uaktToAKT(snapshotData.currentValue) - lastSnapshot.value,
       };
+    case Snapshots.dailyAktSpent:
+      return {
+        value: uaktToAKT(snapshotData.currentValue),
+        diffPercent: percIncrease(previousLastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
+        diffNumber: uaktToAKT(snapshotData.currentValue) - previousLastSnapshot.value,
+      };
     case Snapshots.allTimeDeploymentCount:
       return {
         value: snapshotData.currentValue,
         diffPercent: percIncrease(lastSnapshot.value, snapshotData.currentValue),
         diffNumber: snapshotData.currentValue - lastSnapshot.value,
+      };
+    case Snapshots.dailyDeploymentCount:
+      return {
+        value: snapshotData.currentValue,
+        diffPercent: percIncrease(previousLastSnapshot.value, snapshotData.currentValue),
+        diffNumber: snapshotData.currentValue - previousLastSnapshot.value,
       };
     case Snapshots.compute:
       return {
@@ -284,6 +297,10 @@ const getTitle = (snapshot: Snapshots): string => {
       return "Number of Gi of memory currently leased";
     case Snapshots.storage:
       return "Number of Gi of disk currently leased";
+    case Snapshots.dailyAktSpent:
+      return "Daily AKT spent";
+    case Snapshots.dailyDeploymentCount:
+      return "Daily deployment count";
 
     default:
       return "Graph not found.";

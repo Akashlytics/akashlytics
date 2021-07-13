@@ -86,7 +86,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             }
             text="Daily AKT spent"
             tooltip="Last 24h"
-            graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
+            graphPath={`/graph/${SnapshotsUrlParam.dailyAktSpent}`}
             diffNumber={uaktToAKT(
               deploymentCounts.dailyAktSpent - deploymentCounts.lastSnapshot.dailyAktSpent
             )}
@@ -157,7 +157,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             number={<FormattedNumber value={deploymentCounts.dailyDeploymentCount} />}
             text="Daily deployment count"
             tooltip="Last 24h"
-            graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
+            graphPath={`/graph/${SnapshotsUrlParam.dailyDeploymentCount}`}
             diffNumber={
               deploymentCounts.dailyDeploymentCount -
               deploymentCounts.lastSnapshot.dailyDeploymentCount

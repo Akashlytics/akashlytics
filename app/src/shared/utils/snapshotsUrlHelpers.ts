@@ -16,6 +16,10 @@ export const urlParamToSnapshot = (snapshotsUrlParam: SnapshotsUrlParam) => {
       return Snapshots.storage;
     case SnapshotsUrlParam.totalAKTSpent:
       return Snapshots.totalAKTSpent;
+    case SnapshotsUrlParam.dailyAktSpent:
+      return Snapshots.dailyAktSpent;
+    case SnapshotsUrlParam.dailyDeploymentCount:
+      return Snapshots.dailyDeploymentCount;
 
     default:
       return NOT_FOUND;

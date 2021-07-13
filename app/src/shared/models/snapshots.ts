@@ -6,6 +6,8 @@ export enum Snapshots {
   compute = "compute",
   memory = "memory",
   storage = "storage",
+  dailyAktSpent = "dailyAktSpent",
+  dailyDeploymentCount = "dailyDeploymentCount"
 }
 
 export enum SnapshotsUrlParam {
@@ -15,6 +17,8 @@ export enum SnapshotsUrlParam {
   compute = "compute",
   memory = "memory",
   storage = "storage",
+  dailyAktSpent = "daily-akt-spent",
+  dailyDeploymentCount = "daily-deployment-count"
 }
 
 export interface SnapshotValue {
