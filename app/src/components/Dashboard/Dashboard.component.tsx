@@ -171,7 +171,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
             number={<FormattedNumber value={deploymentCounts.dailyDeploymentCount} />}
-            text="Daily deployment count"
+            text="Daily new deployment count"
             tooltip="Last 24h"
             graphPath={`/graph/${SnapshotsUrlParam.dailyDeploymentCount}`}
             diffNumber={

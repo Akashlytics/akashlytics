@@ -286,7 +286,7 @@ const getSnapshotMetadata = (
 const getTitle = (snapshot: Snapshots): string => {
   switch (snapshot) {
     case Snapshots.activeDeployment:
-      return "Daily active deployments";
+      return "Active deployments";
     case Snapshots.totalAKTSpent:
       return "Total AKT spent";
     case Snapshots.allTimeDeploymentCount:
@@ -300,7 +300,7 @@ const getTitle = (snapshot: Snapshots): string => {
     case Snapshots.dailyAktSpent:
       return "Daily AKT spent";
     case Snapshots.dailyDeploymentCount:
-      return "Daily deployment count";
+      return "Daily new deployment count";
 
     default:
       return "Graph not found.";
