@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export function App() {
-  const { data: deploymentCounts, status } = useDashboardData();
+  const { data: dashboardData, status } = useDashboardData();
 
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
@@ -45,7 +45,7 @@ export function App() {
             <Faq />
           </Route>
           <Route path="/price-compare">
-            <PriceCompare marketData={deploymentCounts && deploymentCounts.marketData} />
+            <PriceCompare marketData={dashboardData && dashboardData.marketData} />
           </Route>
           <Route path="/graph/:snapshot">
             <Graph />
@@ -54,7 +54,7 @@ export function App() {
             <Deploy />
           </Route>
           <Route path="/">
-            <Home deploymentCounts={deploymentCounts} />
+            <Home deploymentCounts={dashboardData} />
           </Route>
         </Switch>
       </div>

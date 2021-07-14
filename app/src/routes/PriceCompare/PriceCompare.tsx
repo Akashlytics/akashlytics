@@ -16,6 +16,7 @@ import {
 import clsx from "clsx";
 import { FormattedNumber, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
+import { MarketData } from "@src/shared/models";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -70,7 +71,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function PriceCompare({ marketData }) {
+interface IPriceCompareProps {
+  marketData: MarketData;
+}
+
+export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ marketData }) => {
   const classes = useStyles();
   const [priceComparisons, setPriceComparisons] = useState(null);
   const intl = useIntl();
@@ -130,7 +135,7 @@ export function PriceCompare({ marketData }) {
                 <TableBody>
                   {priceComparisons.rows.map((row, rowIndex) => {
                     const akashCell = row.cells.filter((c) => c.provider === "akash")[0];
-                    const akashPrice = akashCell.amount * 0.432 * marketData.computedPrice;
+                    const akashPrice = akashCell.amount * 0.432 * marketData.price;
 
                     return (
                       <React.Fragment key={row.type}>
@@ -262,7 +267,7 @@ export function PriceCompare({ marketData }) {
       </div>
     </div>
   );
-}
+};
 
 const useCellStyles = makeStyles((theme) => ({
   root: {
@@ -296,7 +301,7 @@ const useCellStyles = makeStyles((theme) => ({
   },
 }));
 
-const ProviderCell = ({ cell, marketData }) => {
+const ProviderCell = ({ cell, marketData }: { cell: any; marketData: MarketData }) => {
   const isAkash = cell.provider === "akash";
   const classes = useCellStyles();
 
@@ -306,7 +311,7 @@ const ProviderCell = ({ cell, marketData }) => {
         {isAkash ? (
           <div>
             <FormattedNumber
-              value={cell.amount * 0.432 * marketData.computedPrice}
+              value={cell.amount * 0.432 * marketData.price}
               style="currency"
               currency="USD"
             />
