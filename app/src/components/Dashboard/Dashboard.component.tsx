@@ -12,15 +12,15 @@ import { DiffNumber } from "@src/shared/components/DiffNumber";
 import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
 
 interface IDashboardProps {
-  deploymentCounts: DashboardData;
+  dashboardData: DashboardData;
 }
 
-export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deploymentCounts }) => {
+export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardData }) => {
   const classes = useStyles();
   const mediaQuery = useMediaQueryContext();
-  const showAktPrice = deploymentCounts && deploymentCounts.marketData;
+  const showAktPrice = dashboardData && dashboardData.marketData;
   const showAveragePrice =
-    deploymentCounts && deploymentCounts.marketData && deploymentCounts.averagePrice > 0;
+    dashboardData && dashboardData.marketData && dashboardData.averagePrice > 0;
 
   let tileClassName = "col-lg-6";
   if (showAktPrice) {
@@ -39,12 +39,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             <FormattedNumber
               style="currency"
               currency="USD"
-              value={deploymentCounts.marketData.price}
+              value={dashboardData.marketData.price}
             />
             <Box display="flex" alignItems="center" fontSize=".8rem" fontWeight={300}>
-              <DiffPercentageChip
-                value={deploymentCounts.marketData.priceChangePercentage24 / 100}
-              />
+              <DiffPercentageChip value={dashboardData.marketData.priceChangePercentage24 / 100} />
               <Box component="span" ml=".5rem">
                 (24h)
               </Box>
@@ -57,7 +55,8 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             <FormattedNumber
               style="currency"
               currency="USD"
-              value={deploymentCounts.marketData.marketCap}
+              value={dashboardData.marketData.marketCap}
+              minimumFractionDigits={0}
               maximumFractionDigits={0}
             />
           </span>
@@ -68,10 +67,15 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             <FormattedNumber
               style="currency"
               currency="USD"
-              value={deploymentCounts.marketData.volume}
+              value={dashboardData.marketData.volume}
+              minimumFractionDigits={0}
               maximumFractionDigits={0}
             />
           </span>
+        </div>
+        <div className={classes.priceData}>
+          <span>Rank</span>{" "}
+          <span className={classes.priceDataValue}>{dashboardData.marketData.marketCapRank}</span>
         </div>
       </Paper>
 
@@ -96,7 +100,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
           <StatsCard
             number={
               <FormattedNumber
-                value={uaktToAKT(deploymentCounts.dailyAktSpent)}
+                value={uaktToAKT(dashboardData.dailyAktSpent)}
                 maximumFractionDigits={2}
               />
             }
@@ -104,11 +108,11 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             tooltip="Last 24h"
             graphPath={`/graph/${SnapshotsUrlParam.dailyAktSpent}`}
             diffNumber={uaktToAKT(
-              deploymentCounts.dailyAktSpent - deploymentCounts.lastSnapshot.dailyAktSpent
+              dashboardData.dailyAktSpent - dashboardData.lastSnapshot.dailyAktSpent
             )}
             diffPercent={percIncrease(
-              deploymentCounts.lastSnapshot.dailyAktSpent,
-              deploymentCounts.dailyAktSpent
+              dashboardData.lastSnapshot.dailyAktSpent,
+              dashboardData.dailyAktSpent
             )}
           />
         </div>
@@ -118,7 +122,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             number={
               <>
                 <FormattedNumber
-                  value={uaktToAKT(deploymentCounts.totalAKTSpent)}
+                  value={uaktToAKT(dashboardData.totalAKTSpent)}
                   maximumFractionDigits={2}
                 />{" "}
                 AKT
@@ -128,11 +132,11 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
             graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
             diffNumber={uaktToAKT(
-              deploymentCounts.totalAKTSpent - deploymentCounts.lastSnapshot.totalAktSpent
+              dashboardData.totalAKTSpent - dashboardData.lastSnapshot.totalAktSpent
             )}
             diffPercent={percIncrease(
-              deploymentCounts.lastSnapshot.totalAktSpent,
-              deploymentCounts.totalAKTSpent
+              dashboardData.lastSnapshot.totalAktSpent,
+              dashboardData.totalAKTSpent
             )}
           />
         </div>
@@ -144,7 +148,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 <FormattedNumber
                   style="currency"
                   currency="USD"
-                  value={0.432 * deploymentCounts.marketData.price}
+                  value={0.432 * dashboardData.marketData.price}
                 />
               }
               text="Monthly cost for a small instance"
@@ -170,40 +174,38 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
 
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
-            number={<FormattedNumber value={deploymentCounts.dailyDeploymentCount} />}
+            number={<FormattedNumber value={dashboardData.dailyDeploymentCount} />}
             text="Daily new deployment count"
             tooltip="Last 24h"
             graphPath={`/graph/${SnapshotsUrlParam.dailyDeploymentCount}`}
             diffNumber={
-              deploymentCounts.dailyDeploymentCount -
-              deploymentCounts.lastSnapshot.dailyDeploymentCount
+              dashboardData.dailyDeploymentCount - dashboardData.lastSnapshot.dailyDeploymentCount
             }
             diffPercent={percIncrease(
-              deploymentCounts.lastSnapshot.dailyDeploymentCount,
-              deploymentCounts.dailyDeploymentCount
+              dashboardData.lastSnapshot.dailyDeploymentCount,
+              dashboardData.dailyDeploymentCount
             )}
           />
         </div>
 
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
-            number={<FormattedNumber value={deploymentCounts.deploymentCount} />}
+            number={<FormattedNumber value={dashboardData.deploymentCount} />}
             text="Total deployment count"
             tooltip="The total deployment count consists of all deployments that were live(leased) at some point and that someone paid for. This includes deployments that were deployed for testing or that were meant to be only temporary."
             graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
             diffNumber={
-              deploymentCounts.deploymentCount -
-              deploymentCounts.lastSnapshot.allTimeDeploymentCount
+              dashboardData.deploymentCount - dashboardData.lastSnapshot.allTimeDeploymentCount
             }
             diffPercent={percIncrease(
-              deploymentCounts.lastSnapshot.allTimeDeploymentCount,
-              deploymentCounts.deploymentCount
+              dashboardData.lastSnapshot.allTimeDeploymentCount,
+              dashboardData.deploymentCount
             )}
           />
         </div>
       </div>
 
-      {deploymentCounts.totalResourcesLeased && (
+      {dashboardData.totalResourcesLeased && (
         <>
           <div
             className={clsx("row mt-5", {
@@ -227,10 +229,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
             </div>
           </div>
           <div className="row">
-            {deploymentCounts.activeDeploymentCount && (
+            {dashboardData.activeDeploymentCount && (
               <div className={clsx("col-xs-12 col-lg-3")}>
                 <StatsCard
-                  number={<FormattedNumber value={deploymentCounts.activeDeploymentCount} />}
+                  number={<FormattedNumber value={dashboardData.activeDeploymentCount} />}
                   text="Active deployments"
                   tooltip={
                     <>
@@ -245,22 +247,22 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                   }
                   graphPath={`/graph/${SnapshotsUrlParam.activeDeployment}`}
                   diffNumber={
-                    deploymentCounts.activeDeploymentCount -
+                    dashboardData.activeDeploymentCount -
                     Math.ceil(
                       average(
-                        deploymentCounts.lastSnapshot.minActiveDeploymentCount,
-                        deploymentCounts.lastSnapshot.maxActiveDeploymentCount
+                        dashboardData.lastSnapshot.minActiveDeploymentCount,
+                        dashboardData.lastSnapshot.maxActiveDeploymentCount
                       )
                     )
                   }
                   diffPercent={percIncrease(
                     Math.ceil(
                       average(
-                        deploymentCounts.lastSnapshot.minActiveDeploymentCount,
-                        deploymentCounts.lastSnapshot.maxActiveDeploymentCount
+                        dashboardData.lastSnapshot.minActiveDeploymentCount,
+                        dashboardData.lastSnapshot.maxActiveDeploymentCount
                       )
                     ),
-                    deploymentCounts.activeDeploymentCount
+                    dashboardData.activeDeploymentCount
                   )}
                 />
               </div>
@@ -271,7 +273,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 number={
                   <>
                     <FormattedNumber
-                      value={deploymentCounts.totalResourcesLeased.cpuSum / 1000}
+                      value={dashboardData.totalResourcesLeased.cpuSum / 1000}
                       maximumFractionDigits={2}
                     />
                     <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>
@@ -282,19 +284,19 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 text="Compute"
                 graphPath={`/graph/${SnapshotsUrlParam.compute}`}
                 diffNumber={
-                  (deploymentCounts.totalResourcesLeased.cpuSum -
+                  (dashboardData.totalResourcesLeased.cpuSum -
                     average(
-                      deploymentCounts.lastSnapshot.minCompute,
-                      deploymentCounts.lastSnapshot.maxCompute
+                      dashboardData.lastSnapshot.minCompute,
+                      dashboardData.lastSnapshot.maxCompute
                     )) /
                   1000
                 }
                 diffPercent={percIncrease(
                   average(
-                    deploymentCounts.lastSnapshot.minCompute,
-                    deploymentCounts.lastSnapshot.maxCompute
+                    dashboardData.lastSnapshot.minCompute,
+                    dashboardData.lastSnapshot.maxCompute
                   ),
-                  deploymentCounts.totalResourcesLeased.cpuSum
+                  dashboardData.totalResourcesLeased.cpuSum
                 )}
               />
             </div>
@@ -304,7 +306,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 number={
                   <>
                     <FormattedNumber
-                      value={deploymentCounts.totalResourcesLeased.memorySum / 1024 / 1024 / 1024}
+                      value={dashboardData.totalResourcesLeased.memorySum / 1024 / 1024 / 1024}
                       maximumFractionDigits={2}
                     />
                     <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>
@@ -315,10 +317,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 text="Memory"
                 graphPath={`/graph/${SnapshotsUrlParam.memory}`}
                 diffNumber={
-                  (deploymentCounts.totalResourcesLeased.memorySum -
+                  (dashboardData.totalResourcesLeased.memorySum -
                     average(
-                      deploymentCounts.lastSnapshot.minMemory,
-                      deploymentCounts.lastSnapshot.maxMemory
+                      dashboardData.lastSnapshot.minMemory,
+                      dashboardData.lastSnapshot.maxMemory
                     )) /
                   1024 /
                   1024 /
@@ -326,10 +328,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 }
                 diffPercent={percIncrease(
                   average(
-                    deploymentCounts.lastSnapshot.minMemory,
-                    deploymentCounts.lastSnapshot.maxMemory
+                    dashboardData.lastSnapshot.minMemory,
+                    dashboardData.lastSnapshot.maxMemory
                   ),
-                  deploymentCounts.totalResourcesLeased.memorySum
+                  dashboardData.totalResourcesLeased.memorySum
                 )}
               />
             </div>
@@ -339,7 +341,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 number={
                   <>
                     <FormattedNumber
-                      value={deploymentCounts.totalResourcesLeased.storageSum / 1024 / 1024 / 1024}
+                      value={dashboardData.totalResourcesLeased.storageSum / 1024 / 1024 / 1024}
                       maximumFractionDigits={2}
                     />
                     <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>
@@ -350,10 +352,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 text="Storage"
                 graphPath={`/graph/${SnapshotsUrlParam.storage}`}
                 diffNumber={
-                  (deploymentCounts.totalResourcesLeased.storageSum -
+                  (dashboardData.totalResourcesLeased.storageSum -
                     average(
-                      deploymentCounts.lastSnapshot.minStorage,
-                      deploymentCounts.lastSnapshot.maxStorage
+                      dashboardData.lastSnapshot.minStorage,
+                      dashboardData.lastSnapshot.maxStorage
                     )) /
                   1024 /
                   1024 /
@@ -361,10 +363,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ deployment
                 }
                 diffPercent={percIncrease(
                   average(
-                    deploymentCounts.lastSnapshot.minStorage,
-                    deploymentCounts.lastSnapshot.maxStorage
+                    dashboardData.lastSnapshot.minStorage,
+                    dashboardData.lastSnapshot.maxStorage
                   ),
-                  deploymentCounts.totalResourcesLeased.storageSum
+                  dashboardData.totalResourcesLeased.storageSum
                 )}
               />
             </div>

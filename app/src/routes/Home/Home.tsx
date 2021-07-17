@@ -22,7 +22,7 @@ export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) 
       <div className={clsx("container")}>
         {deploymentCounts ? (
           <>
-            <Dashboard deploymentCounts={deploymentCounts} />
+            <Dashboard dashboardData={deploymentCounts} />
 
             <div className="row mt-5">
               <div
