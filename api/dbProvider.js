@@ -2,6 +2,7 @@ const { Sequelize, DataTypes, Op, Deferrable, DATEONLY } = require("sequelize");
 const { averageBlockTime } = require("./constants");
 const baseSnapshots = require("./data/snapshotsBackup.json");
 const dataSnapshotsHandler = require("./dataSnapshotsHandler");
+const uuid = require("uuid");
 
 const sequelize = new Sequelize("sqlite::memory:", {
   logging: false,
@@ -117,58 +118,77 @@ exports.init = async () => {
   Deployment.hasOne(Lease, { foreignKey: "deploymentId" });
   Lease.belongsTo(Deployment);
 };
-
-exports.addLease = async (lease) => {
-  const createdLease = await Lease.create({
+let deploymentIdCache = [];
+function addToDeploymentIdCache(owner, dseq, id){
+  deploymentIdCache[owner + "_" + dseq] = id;
+}
+function getDeploymentIdFromCache(owner, dseq){
+  return deploymentIdCache[owner + "_" + dseq];
+}
+exports.addLeases = async (leases) => {
+  const leasesToInsert = leases.map(lease => ({
+    deploymentId: getDeploymentIdFromCache(lease.lease.lease_id.owner, lease.lease.lease_id.dseq),
     owner: lease.lease.lease_id.owner,
     dseq: lease.lease.lease_id.dseq,
     state: lease.lease.state,
     price: convertPrice(lease.lease.price),
     datetime: blockHeightToDatetime(lease.lease.created_at),
-  });
+  }));
 
-  createdLease.setDeployment(
-    await Deployment.findOne({
-      where: {
-        owner: lease.lease.lease_id.owner,
-        dseq: lease.lease.lease_id.dseq,
-      },
-    })
-  );
+  await Lease.bulkCreate(leasesToInsert);
 };
 
-exports.addDeployment = async (deployment) => {
-  const createdDeployment = await Deployment.create({
-    owner: deployment.deployment.deployment_id.owner,
-    dseq: deployment.deployment.deployment_id.dseq,
-    state: deployment.deployment.state,
-    escrowAccountTransferredAmount: deployment.escrow_account.transferred.amount,
-    datetime: blockHeightToDatetime(deployment.deployment.created_at),
-  });
+exports.addDeployments = async (deployments) => {
+  let deploymentsToInsert = [];
+  let groupsToInsert = [];
+  let groupResourcesToInsert = [];
+  
+    for (const deployment of deployments) {
+      const createdDeployment = {
+        id: uuid.v4(),
+        owner: deployment.deployment.deployment_id.owner,
+        dseq: deployment.deployment.deployment_id.dseq,
+        state: deployment.deployment.state,
+        escrowAccountTransferredAmount: deployment.escrow_account.transferred.amount,
+        datetime: blockHeightToDatetime(deployment.deployment.created_at),
+      };
+      
+      deploymentsToInsert.push(createdDeployment);
+      addToDeploymentIdCache(createdDeployment.owner, createdDeployment.dseq, createdDeployment.id);
+    
+      for (const group of deployment.groups) {
+        const createdGroup = {
+          id: uuid.v4(),
+          deploymentId: createdDeployment.id,
+          owner: group.group_id.owner,
+          dseq: group.group_id.dseq,
+          gseq: group.group_id.gseq,
+          state: group.state,
+          datetime: blockHeightToDatetime(group.created_at),
+        };
 
-  for (const group of deployment.groups) {
-    const createdGroup = await createdDeployment.createDeploymentGroup({
-      owner: group.group_id.owner,
-      dseq: group.group_id.dseq,
-      gseq: group.group_id.gseq,
-      state: group.state,
-      datetime: blockHeightToDatetime(group.created_at),
-    });
-
-    for (const resource of group.group_spec.resources) {
-      await createdGroup.createDeploymentGroupResource({
-        cpuUnits: resource.resources.cpu.units.val,
-        memoryQuantity: resource.resources.memory.quantity.val,
-        storageQuantity: resource.resources.storage.quantity.val,
-        count: resource.count,
-        price: convertPrice(resource.price),
-      });
+        groupsToInsert.push(createdGroup);
+    
+        for (const resource of group.group_spec.resources) {
+          groupResourcesToInsert.push({
+            deploymentGroupId: createdGroup.id,
+            cpuUnits: resource.resources.cpu.units.val,
+            memoryQuantity: resource.resources.memory.quantity.val,
+            storageQuantity: resource.resources.storage.quantity.val,
+            count: resource.count,
+            price: convertPrice(resource.price),
+          });
+        }
+      }
     }
-  }
-};
 
-exports.addBid = async (bid) => {
-  await Bid.create({
+    await Deployment.bulkCreate(deploymentsToInsert);
+    await DeploymentGroup.bulkCreate(groupsToInsert);
+    await DeploymentGroupResource.bulkCreate(groupResourcesToInsert)
+}
+
+exports.addBids = async (bids) => {
+  const bidsToInsert = bids.map(bid => ({
     owner: bid.bid.bid_id.owner,
     dseq: bid.bid.bid_id.dseq,
     gseq: bid.bid.bid_id.gseq,
@@ -177,7 +197,9 @@ exports.addBid = async (bid) => {
     state: bid.bid.state,
     price: convertPrice(bid.bid.price),
     datetime: blockHeightToDatetime(bid.bid.created_at),
-  });
+  }))
+
+  await Bid.bulkCreate(bidsToInsert);
 };
 
 function convertPrice(priceObj) {

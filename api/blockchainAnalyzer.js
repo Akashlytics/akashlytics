@@ -114,19 +114,21 @@ exports.initialize = async (firstInit) => {
     }
 
     console.log(`Inserting ${deployments.length} deployments into the database`);
-    for (const deployment of deployments) {
-      await dbProvider.addDeployment(deployment);
-    }
+    console.time("insertData");
+    console.time("insertDeployments");
+    await dbProvider.addDeployments(deployments);
+    console.timeEnd("insertDeployments");
 
     console.log(`Inserting ${leases.length} leases into the database`);
-    for (const lease of leases) {
-      await dbProvider.addLease(lease);
-    }
+    console.time("insertLeases");
+    await dbProvider.addLeases(leases);
+    console.timeEnd("insertLeases");
 
     console.log(`Inserting ${bids.length} bids into the database`);
-    for (const bid of bids) {
-      await dbProvider.addBid(bid);
-    }
+    console.time("insertBids");
+    await dbProvider.addBids(bids);
+    console.timeEnd("insertBids");
+    console.timeEnd("insertData");
 
     deploymentCount = await dbProvider.getDeploymentCount();
     activeDeploymentCount = await dbProvider.getActiveDeploymentCount();

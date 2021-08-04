@@ -22,6 +22,7 @@
     "http-proxy-middelware": "0.0.1-security",
     "node-fetch": "^2.6.1",
     "sequelize": "^6.6.2",
+    "skynet-js": "^3.0.2",
     "sqlite3": "^5.0.2"
   },
   "devDependencies": {
