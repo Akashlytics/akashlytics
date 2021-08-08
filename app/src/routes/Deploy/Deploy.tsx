@@ -7,6 +7,7 @@ import { Button } from "@material-ui/core";
 import ReactPlayer from "react-player/lazy";
 import YouTubeIcon from "@material-ui/icons/YouTube";
 import TwitterIcon from "@material-ui/icons/Twitter";
+import GitHubIcon from "@material-ui/icons/GitHub";
 import { DiscordIcon } from "@src/shared/components/icons";
 import Alert from "@material-ui/lab/Alert";
 
@@ -44,7 +45,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 variant="contained"
                 classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
                 component="a"
-                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy%20Setup%200.2.4.exe"
+                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy%20Setup%200.2.5.exe"
               >
                 Windows
               </Button>
@@ -53,15 +54,17 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 size="large"
                 variant="contained"
                 classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
+                component="a"
+                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy-0.2.5.dmg"
               >
-                macOS <small>(coming soon)</small>
+                macOS
               </Button>
             </div>
 
             <Box display="flex" alignItems="center" justifyContent="center">
               <Chip color="primary" label="BETA" size="small" />
               &nbsp;&nbsp;
-              <Typography variant="caption">v0.2.4</Typography>
+              <Typography variant="caption">v0.2.5</Typography>
             </Box>
 
             <Alert severity="info" className={classes.alert}>
@@ -87,7 +90,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
           </Box>
 
           <Grid container spacing={1} className={classes.socials}>
-            <Grid item xs={4}>
+            <Grid item xs={6} sm={3}>
               <a
                 href="https://discord.gg/rXDFNYnFwv"
                 target="_blank"
@@ -96,7 +99,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 <DiscordIcon className={classes.socialIcon} />
               </a>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={6} sm={3}>
               <a
                 href="https://www.youtube.com/channel/UC1rgl1y8mtcQoa9R_RWO0UA?sub_confirmation=1"
                 target="_blank"
@@ -105,7 +108,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 <YouTubeIcon className={classes.socialIcon} />
               </a>
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={6} sm={3}>
               <a
                 href="https://twitter.com/thereisnomax"
                 target="_blank"
@@ -114,10 +117,19 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 <TwitterIcon className={classes.socialIcon} />
               </a>
             </Grid>
+            <Grid item xs={6} sm={3}>
+              <a
+                href="https://github.com/Akashlytics/akashlytics-deploy"
+                target="_blank"
+                className={classes.socialLink}
+              >
+                <GitHubIcon className={classes.socialIcon} />
+              </a>
+            </Grid>
           </Grid>
         </Box>
 
-        <Box margin="7rem auto 5rem" maxWidth="640px">
+        <Box margin="5rem auto" maxWidth="640px">
           <Typography variant="h4" className={classes.disclaimerTitle}>
             Disclaimer
           </Typography>

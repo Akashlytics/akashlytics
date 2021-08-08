@@ -59,6 +59,7 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: "center"
   },
   socialLink: {
+    padding: "1rem",
     transition: ".3s all ease",
     "& path": {
       fill: "#fff",

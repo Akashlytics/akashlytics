@@ -99,10 +99,13 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
             number={
-              <FormattedNumber
-                value={uaktToAKT(dashboardData.dailyAktSpent)}
-                maximumFractionDigits={2}
-              />
+              <>
+                <FormattedNumber
+                  value={uaktToAKT(dashboardData.dailyAktSpent)}
+                  maximumFractionDigits={2}
+                />{" "}
+                AKT
+              </>
             }
             text="Daily AKT spent"
             tooltip="Last 24h"

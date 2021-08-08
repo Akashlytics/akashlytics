@@ -3,7 +3,7 @@ version: "2.0"
 
 services:
   web:
-    image: baktun/akashlytics:0.7.3
+    image: baktun/akashlytics:0.7.4
     expose:
       - port: 3080
         as: 80
