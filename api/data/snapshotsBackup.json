@@ -1594,9 +1594,41 @@
     "maxMemory": 360810885222,
     "minStorage": 1259284411186,
     "maxStorage": 1266263733042,
-    "allTimeDeploymentCount": 14363,
-    "totalAktSpent": 903151225,
+    "allTimeDeploymentCount": 14421,
+    "totalAktSpent": 903395659,
     "createdAt": "2021-08-08T00:16:54.744Z",
-    "updatedAt": "2021-08-08T15:46:51.722Z"
+    "updatedAt": "2021-08-08T23:55:31.109Z"
+  },
+  {
+    "id": 101,
+    "date": "2021-08-09",
+    "minActiveDeploymentCount": 204,
+    "maxActiveDeploymentCount": 209,
+    "minCompute": 605100,
+    "maxCompute": 616100,
+    "minMemory": 343094145126,
+    "maxMemory": 365105852518,
+    "minStorage": 1260418628914,
+    "maxStorage": 1481609444658,
+    "allTimeDeploymentCount": 14582,
+    "totalAktSpent": 912770133,
+    "createdAt": "2021-08-09T00:06:32.750Z",
+    "updatedAt": "2021-08-09T23:57:21.809Z"
+  },
+  {
+    "id": 102,
+    "date": "2021-08-10",
+    "minActiveDeploymentCount": 202,
+    "maxActiveDeploymentCount": 207,
+    "minCompute": 602800,
+    "maxCompute": 611800,
+    "minMemory": 337993871462,
+    "maxMemory": 352220950630,
+    "minStorage": 1355115868978,
+    "maxStorage": 1431680449842,
+    "allTimeDeploymentCount": 14745,
+    "totalAktSpent": 923482464,
+    "createdAt": "2021-08-10T00:07:10.861Z",
+    "updatedAt": "2021-08-10T23:27:30.651Z"
   }
 ]
