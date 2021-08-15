@@ -2,6 +2,7 @@ const path = require("path");
 const { NODE_ENV = "production" } = process.env;
 const NodemonPlugin = require("nodemon-webpack-plugin");
 const nodeExternals = require("webpack-node-externals");
+const hq = require("alias-hq");
 
 module.exports = {
   entry: "./src/index.ts",
@@ -13,6 +14,7 @@ module.exports = {
   },
   resolve: {
     extensions: [".ts", ".js"],
+    alias: hq.get("webpack"),
   },
   externals: [nodeExternals()],
   module: {

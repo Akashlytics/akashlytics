@@ -5,8 +5,6 @@
     "removeComments": false,
     "sourceMap": true,
     "downlevelIteration": true,
-    "module": "ESNext",
-    "target": "ESNext",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
@@ -15,10 +13,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "baseUrl": "./",
+    "target": "ES6",
+    "baseUrl": "./src",
     "paths": {
-      "@src/*": ["src/*"],
-      "@app/*": ["*"]
+      "@src/*": ["*"]
     }
   },
   "include": ["src/**/*"],
