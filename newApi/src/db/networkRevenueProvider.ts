@@ -98,11 +98,11 @@ export const getWeb3IndexRevenue = async () => {
 
   return {
     revenue: {
-      now: totalRevenue,
-      oneDayAgo: oneDayAgoRevenue,
-      twoDaysAgo: twoDaysAgoRevenue,
-      oneWeekAgo: oneWeekAgoRevenue,
-      twoWeeksAgo: twoWeeksAgoRevenue
+      now: round(totalRevenue),
+      oneDayAgo: round(oneDayAgoRevenue),
+      twoDaysAgo: round(twoDaysAgoRevenue),
+      oneWeekAgo: round(oneWeekAgoRevenue),
+      twoWeeksAgo: round(twoWeeksAgoRevenue)
     },
     days
   }
