@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/mbeauchamp7/akashlytics#readme",
   "dependencies": {
+    "date-fns": "^2.23.0",
+    "date-fns-tz": "^1.1.6",
     "express": "^4.17.1",
     "http-proxy-middelware": "0.0.1-security",
     "node-fetch": "^2.6.1",
@@ -25,6 +27,7 @@
     "sqlite3": "^5.0.2"
   },
   "devDependencies": {
+    "@types/date-fns": "^2.6.0",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.0",
     "@types/node": "^16.6.0",

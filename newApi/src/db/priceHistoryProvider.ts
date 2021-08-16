@@ -1,7 +1,8 @@
 import fetch from "node-fetch";
 import { PriceHistory } from "./schema";
-import { Op } from "sequelize";
 import { v4 } from "uuid";
+import { toUTC } from "@src/shared/utils/date";
+import { isEqual } from "date-fns";
 
 interface PriceHistoryResponse {
   prices: Array<Array<number>>
@@ -10,7 +11,7 @@ interface PriceHistoryResponse {
 }
 
 const reftreshInterval = 60 * 60 * 1000; // 60min
-// const reftreshInterval = 1 * 30 * 1000; // 30sec
+// const reftreshInterval = 1 * 10 * 1000; // 10sec
 
 export const syncPriceHistory = async () => {
   await updatePriceHistory();
@@ -31,24 +32,24 @@ const updatePriceHistory = async () => {
     price: pDate[1]
   }));
 
-
   const priceHistory = await PriceHistory.findAll({ raw: true });
-  const missingPrices = apiPrices.filter(p => !priceHistory.some(ph => p.date === ph.date)).sort((a, b) => a.date - b.date);
+  const missingPrices = apiPrices.filter(p => !priceHistory.some(ph => isEqual(new Date(p.date), new Date(ph.date)))).sort((a, b) => a.date - b.date);
 
+  console.log(`there are ${missingPrices.length} missing prices in the database.`);
   if (missingPrices.length > 0) {
-    console.log(`there are ${missingPrices.length} missing prices in the database.`);
-
     let missingPriceToInsert = [];
 
     for (const missingPrice of missingPrices) {
       const createdPrice = {
         id: v4(),
-        date: missingPrice.date,
+        date: toUTC(new Date(missingPrice.date)),
         price: missingPrice.price
       };
 
       missingPriceToInsert.push(createdPrice);
     }
+
+    // console.log(missingPriceToInsert);
 
     await PriceHistory.bulkCreate(missingPriceToInsert);
   }

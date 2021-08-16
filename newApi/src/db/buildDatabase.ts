@@ -1,7 +1,7 @@
 import { loadNodeList } from "@src/akash/nodes";
-import { pickRandomElement } from "@src/shared/utils/random";
+import { pickRandomElement } from "@src/shared/utils/math";
 import fs from "fs";
-import { Bid, Deployment, DeploymentGroup, DeploymentGroupResource, Lease, PriceHistory, sequelize, StatsSnapshot } from "./schema";
+import { Bid, DailyNetworkRevenue, Deployment, DeploymentGroup, DeploymentGroupResource, Lease, PriceHistory, sequelize, StatsSnapshot } from "./schema";
 
 const cacheFolder = "./cache/";
 let isLoadingData = false;
@@ -116,6 +116,7 @@ export const initDatabase = async () => {
   await Bid.sync({ force: true });
   await StatsSnapshot.sync();
   await PriceHistory.sync();
+  await DailyNetworkRevenue.sync();
 
   Deployment.hasMany(DeploymentGroup);
   DeploymentGroup.belongsTo(Deployment, { foreignKey: "deploymentId" });

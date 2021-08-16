@@ -7,16 +7,43 @@ export const sequelize = new Sequelize("sqlite::memory:", {
   },
 });
 
-export const Lease = sequelize.define("lease", {
-  deploymentId: {
-    type: DataTypes.UUID,
-    references: { model: "deployment", key: "id" },
-  },
+// export const Lease = sequelize.define("lease", {
+//   deploymentId: {
+//     type: DataTypes.UUID,
+//     references: { model: "deployment", key: "id" },
+//   },
+//   owner: { type: DataTypes.STRING, allowNull: false },
+//   dseq: { type: DataTypes.STRING, allowNull: false },
+//   state: { type: DataTypes.STRING, allowNull: false },
+//   price: { type: DataTypes.NUMBER, allowNull: false },
+//   datetime: { type: DataTypes.DATE, allowNull: false },
+// });
+
+export class Lease extends Model {
+  public id!: string;
+  public deploymentId!: string;
+  public owner!: string;
+  public dseq!: string;
+  public state!: string;
+  public startDate!: string;
+  public endDate!: string;
+  public price!: number;
+}
+
+Lease.init({
+  // TODO put once real data
+  // deploymentId: { type: DataTypes.UUID, references: { model: "deployment", key: "id" } },
+  id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+  deploymentId: { type: DataTypes.UUID },
   owner: { type: DataTypes.STRING, allowNull: false },
   dseq: { type: DataTypes.STRING, allowNull: false },
   state: { type: DataTypes.STRING, allowNull: false },
+  startDate: { type: DataTypes.DATE, allowNull: false },
+  endDate: { type: DataTypes.DATE, allowNull: true },
   price: { type: DataTypes.NUMBER, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false },
+}, {
+  tableName: "lease",
+  sequelize
 });
 
 export const Deployment = sequelize.define("deployment", {
@@ -80,25 +107,30 @@ export const StatsSnapshot = sequelize.define("statsSnapshot", {
 
 export class PriceHistory extends Model {
   public id!: string;
-  public date!: number;
+  public date!: string;
   public price!: number;
 }
 
 PriceHistory.init({
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    allowNull: false
-  },
-  date: {
-    type: DataTypes.NUMBER,
-    allowNull: false
-  },
-  price: {
-    type: DataTypes.NUMBER,
-    allowNull: false
-  },
+  id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+  date: { type: DataTypes.DATE, allowNull: false },
+  price: { type: DataTypes.NUMBER, allowNull: false },
 }, {
   tableName: "priceHistory",
+  sequelize
+});
+
+export class DailyNetworkRevenue extends Model {
+  public id!: string;
+  public date!: string;
+  public amount!: number;
+}
+
+DailyNetworkRevenue.init({
+  id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+  date: { type: DataTypes.DATE, allowNull: false },
+  amount: { type: DataTypes.NUMBER, allowNull: false },
+}, {
+  tableName: "dailyNetworkRevenue",
   sequelize
 });
