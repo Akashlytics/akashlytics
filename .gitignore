@@ -34,7 +34,7 @@ node_modules/
 # Optional eslint cache
 .eslintcache
 
-akash
+# akash
 cache
 
 .DS_Store
