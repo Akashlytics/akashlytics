@@ -1779,16 +1779,16 @@
     "id": 112,
     "date": "2021-08-20",
     "minActiveDeploymentCount": 314,
-    "maxActiveDeploymentCount": 317,
+    "maxActiveDeploymentCount": 331,
     "minCompute": 1071500,
-    "maxCompute": 1092500,
+    "maxCompute": 1230000,
     "minMemory": 416377024614,
-    "maxMemory": 420671991910,
+    "maxMemory": 449126150246,
     "minStorage": 1302147076402,
-    "maxStorage": 1305368301874,
-    "allTimeDeploymentCount": 16248,
-    "totalAktSpent": 1114559624,
+    "maxStorage": 1369792811314,
+    "allTimeDeploymentCount": 16334,
+    "totalAktSpent": 1136890096,
     "createdAt": "2021-08-20T00:04:37.664Z",
-    "updatedAt": "2021-08-20T01:15:21.163Z"
+    "updatedAt": "2021-08-20T12:25:21.803Z"
   }
 ]
