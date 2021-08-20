@@ -42,6 +42,8 @@ export function Faq() {
     { title: "bitmart.com", url: "https://www.bitmart.com/en?r=7QJGUG" },
     { title: "digifinex.com", url: "https://www.digifinex.com/" },
     { title: "bithumb.pro", url: "https://www.bithumb.pro/" },
+    { title: "osmosis (dex)", url: "https://app.osmosis.zone/" },
+    { title: "emeris (dex)", url: "https://app.emeris.com/" },
   ];
 
   const howToStakeLinks = [
@@ -63,8 +65,8 @@ export function Faq() {
   ];
 
   const howToDeployLinks = [
-    { title: "Official documentation", url: "https://docs.akash.network/" },
-    { title: "Dev & Tech Support Discord", url: "https://discord.akash.network" },
+    { title: "Official Akash Network documentation", url: "https://docs.akash.network/" },
+    { title: "Akash Network - Dev & Tech Support Discord", url: "https://discord.akash.network" },
     { title: "Akash Network Github", url: "https://github.com/ovrclk" },
     { title: "Hello world example", url: "https://github.com/tombeynon/akash-hello-world" },
     { title: "Deploy ui tool", url: "https://github.com/tombeynon/akash-deploy" },

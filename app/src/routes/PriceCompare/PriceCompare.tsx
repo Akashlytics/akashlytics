@@ -43,8 +43,10 @@ const useStyles = makeStyles((theme) => ({
     padding: 8,
   },
   discountChip: {
-    backgroundColor: "#0d900d",
     fontWeight: "bold",
+  },
+  discountChipGreen: {
+    backgroundColor: "#0d900d",
   },
   discountLabel: {
     fontWeight: "bold",
@@ -166,6 +168,7 @@ export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ mark
                           ></TableCell>
                           {row.cells.map((cell, i) => {
                             const isAkash = cell.provider === "akash";
+                            const discount = +(akashPrice - cell.amount) / cell.amount;
 
                             return (
                               <TableCell
@@ -175,12 +178,14 @@ export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ mark
                               >
                                 {!isAkash ? (
                                   <Chip
-                                    className={classes.discountChip}
+                                    className={clsx(classes.discountChip, {
+                                      [classes.discountChipGreen]: discount < 0,
+                                    })}
                                     size="small"
-                                    label={intl.formatNumber(
-                                      +(akashPrice - cell.amount) / cell.amount,
-                                      { style: "percent", maximumFractionDigits: 2 }
-                                    )}
+                                    label={intl.formatNumber(discount, {
+                                      style: "percent",
+                                      maximumFractionDigits: 2,
+                                    })}
                                   />
                                 ) : (
                                   <div className={classes.discountLabel}>Akash discount:</div>
