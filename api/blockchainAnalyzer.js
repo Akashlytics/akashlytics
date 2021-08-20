@@ -96,6 +96,8 @@ exports.initialize = async (firstInit) => {
       fs.mkdirSync(cacheFolder);
     }
 
+    await dbProvider.init();
+
     const nodeList = await loadNodeList();
     const node = pickRandomElement(nodeList);
 
@@ -106,8 +108,6 @@ exports.initialize = async (firstInit) => {
     const bids = await loadBids(node);
 
     lastRefreshDate = new Date();
-
-    await dbProvider.init();
 
     if (firstInit) {
       await dbProvider.initSnapshotsFromFile();
