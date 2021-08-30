@@ -6,6 +6,7 @@ import { endOfDay, getTodayUTC, startOfDay, toUTC } from "@src/shared/utils/date
 import { round, uaktToAKT } from "@src/shared/utils/math";
 import { isSyncing } from "@src/akash/akashSync";
 import { sleep } from "@src/shared/utils/delay";
+import { isSyncingPrices } from "./priceHistoryProvider";
 
 let isLastComputingSuccess = false;
 let isCalculatingRevenue = false;
@@ -137,7 +138,7 @@ export const getStatus = async () => {
 };
 
 export const getWeb3IndexRevenue = async (debug: boolean) => {
-  while (isCalculatingRevenue) {
+  while (isCalculatingRevenue || isSyncingPrices) {
     await sleep(5000);
   }
 

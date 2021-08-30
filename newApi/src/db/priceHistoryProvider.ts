@@ -4,10 +4,12 @@ import { v4 } from "uuid";
 import { toUTC } from "@src/shared/utils/date";
 import { isEqual } from "date-fns";
 
+export let isSyncingPrices = false;
+
 interface PriceHistoryResponse {
-  prices: Array<Array<number>>
-  market_caps: Array<Array<number>>
-  total_volumes: Array<Array<number>>
+  prices: Array<Array<number>>;
+  market_caps: Array<Array<number>>;
+  total_volumes: Array<Array<number>>;
 }
 
 const reftreshInterval = 60 * 60 * 1000; // 60min
@@ -18,39 +20,36 @@ export const syncPriceHistory = async () => {
   setInterval(async () => {
     await updatePriceHistory();
   }, reftreshInterval);
-}
+};
 
 const updatePriceHistory = async () => {
-  const endpointUrl = "https://api.coingecko.com/api/v3/coins/akash-network/market_chart?vs_currency=usd&days=max";
+  try {
+    isSyncingPrices = true;
+    const endpointUrl = "https://api.coingecko.com/api/v3/coins/akash-network/market_chart?vs_currency=usd&days=max";
 
-  console.log("Fetching latest market data from " + endpointUrl);
+    console.log("Fetching latest market data from " + endpointUrl);
 
-  const response = await fetch(endpointUrl);
-  const data: PriceHistoryResponse = await response.json();
-  const apiPrices = data.prices.map(pDate => ({
-    date: pDate[0],
-    price: pDate[1]
-  }));
+    const response = await fetch(endpointUrl);
+    const data: PriceHistoryResponse = await response.json();
+    const apiPrices = data.prices.map((pDate) => ({
+      date: pDate[0],
+      price: pDate[1]
+    }));
 
-  const priceHistory = await PriceHistory.findAll({ raw: true });
-  const missingPrices = apiPrices.filter(p => !priceHistory.some(ph => isEqual(new Date(p.date), new Date(ph.date)))).sort((a, b) => a.date - b.date);
+    console.log(`There are ${apiPrices.length} prices to update.`);
 
-  console.log(`there are ${missingPrices.length} missing prices in the database.`);
-  if (missingPrices.length > 0) {
-    let missingPriceToInsert = [];
+    const pricesToInsert = apiPrices.map((p) => ({
+      id: v4(),
+      date: new Date(p.date),
+      price: p.price
+    }));
 
-    for (const missingPrice of missingPrices) {
-      const createdPrice = {
-        id: v4(),
-        date: toUTC(new Date(missingPrice.date)),
-        price: missingPrice.price
-      };
-
-      missingPriceToInsert.push(createdPrice);
-    }
-
-    // console.log(missingPriceToInsert);
-
-    await PriceHistory.bulkCreate(missingPriceToInsert);
+    await PriceHistory.destroy({ where: {} });
+    await PriceHistory.bulkCreate(pricesToInsert);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    isSyncingPrices = false;
   }
-}
+};

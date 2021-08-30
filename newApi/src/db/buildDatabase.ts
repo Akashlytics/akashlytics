@@ -32,19 +32,19 @@ async function download(url, dest) {
  * Restore backup from current version if it exists
  */
 export const initDatabase = async () => {
-  if (fs.existsSync(sqliteDatabasePath)) {
+  const shouldDownloadNewDb = true;
+  if (fs.existsSync(sqliteDatabasePath) && shouldDownloadNewDb) {
     console.log("Deleting existing database files.");
-    await fs.promises.rm(sqliteDatabasePath);
-    await fs.promises.rm("./data/latestDownloadedHeight.txt");
-    await fs.promises.rm("./data/latestDownloadedTxHeight.txt");
-  }
+    await fs.promises.rm(sqliteDatabasePath, { force: true });
+    await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });
+    await fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true });
 
-  console.log("Downloading database file...");
-  const databaseDownloadUrl = "https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite";
-  await download(databaseDownloadUrl, sqliteDatabasePath);
-  await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt");
-  await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt");
-  console.log("Database downloaded");
+    console.log("Downloading database files...");
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath);
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt");
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt");
+    console.log("Database downloaded");
+  }
 
   try {
     await sequelize.authenticate();
