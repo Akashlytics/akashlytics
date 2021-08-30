@@ -1,107 +1,48 @@
-import { loadNodeList } from "@src/akash/nodes";
-import { pickRandomElement } from "@src/shared/utils/math";
+import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 import fs from "fs";
-import { Bid, DailyNetworkRevenue, Deployment, DeploymentGroup, DeploymentGroupResource, Lease, PriceHistory, sequelize, StatsSnapshot } from "./schema";
+import https from "https";
+import {
+  Bid,
+  DailyNetworkRevenue,
+  Deployment,
+  DeploymentGroup,
+  DeploymentGroupResource,
+  Lease,
+  PriceHistory,
+  sequelize,
+  sqliteDatabasePath,
+  StatsSnapshot
+} from "./schema";
 
-const cacheFolder = "./cache/";
-let isLoadingData = false;
-
-export const initialize = async (firstInit) => {
-  isLoadingData = true;
-  try {
-    if (!fs.existsSync(cacheFolder)) {
-      fs.mkdirSync(cacheFolder);
-    }
-
-    const nodeList = await loadNodeList();
-    const node = pickRandomElement(nodeList);
-
-    console.log("Selected node: " + node);
-
-    // const leases = await loadLeases(node);
-    // const deployments = await loadDeployments(node);
-    // const bids = await loadBids(node);
-
-    // lastRefreshDate = new Date();
-
-    // await dbProvider.init();
-
-    // if (firstInit) {
-    //   await dbProvider.initSnapshotsFromFile();
-    // }
-
-    // console.log(`Inserting ${deployments.length} deployments into the database`);
-    // console.time("insertData");
-    // console.time("insertDeployments");
-    // await dbProvider.addDeployments(deployments);
-    // console.timeEnd("insertDeployments");
-
-    // console.log(`Inserting ${leases.length} leases into the database`);
-    // console.time("insertLeases");
-    // await dbProvider.addLeases(leases);
-    // console.timeEnd("insertLeases");
-
-    // console.log(`Inserting ${bids.length} bids into the database`);
-    // console.time("insertBids");
-    // await dbProvider.addBids(bids);
-    // console.timeEnd("insertBids");
-    // console.timeEnd("insertData");
-
-    // deploymentCount = await dbProvider.getDeploymentCount();
-    // activeDeploymentCount = await dbProvider.getActiveDeploymentCount();
-    // console.log(`There is ${activeDeploymentCount} active deployments`);
-    // console.log(`There was ${deploymentCount} total deployments`);
-
-    // activeDeploymentSnapshots = await dbProvider.getActiveDeploymentSnapshots();
-    // totalAKTSpentSnapshots = await dbProvider.getTotalAKTSpentSnapshots();
-    // allTimeDeploymentCountSnapshots = await dbProvider.getAllTimeDeploymentCountSnapshots();
-    // computeSnapshots = await dbProvider.getComputeSnapshots();
-    // memorySnapshots = await dbProvider.getMemorySnapshots();
-    // storageSnapshots = await dbProvider.getStorageSnapshots();
-    // dailyAktSpentSnapshots = await dbProvider.getDailyAktSpentSnapshots();
-    // dailyDeploymentCountSnapshots = await dbProvider.getDailyDeploymentCountSnapshots();
-    // lastSnapshot = await dbProvider.getLastSnapshot();
-    // allSnapshots = await dbProvider.getAllSnapshots();
-    // dailyAktSpent = await dbProvider.getDailyAktSpent();
-    // dailyDeploymentCount = await dbProvider.getDailyDeploymentCount();
-
-    // totalAKTSpent = await dbProvider.getTotalAKTSpent();
-    // const roundedAKTSpent = Math.round((totalAKTSpent / 1000000 + Number.EPSILON) * 100) / 100;
-    // console.log(`There was ${roundedAKTSpent} akt spent on cloud resources`);
-
-    // totalResourcesLeased = await dbProvider.getTotalResourcesLeased();
-    // console.log(
-    //   `Total resources leased: ${totalResourcesLeased.cpuSum} cpu / ${totalResourcesLeased.memorySum} memory / ${totalResourcesLeased.storageSum} storage`
-    // );
-
-    // const averagePriceByBlock = await dbProvider.getPricingAverage();
-    // console.log(`The average price for a small instance is: ${averagePriceByBlock} uakt / block`);
-
-    // averagePrice = (averagePriceByBlock * 31 * 24 * 60 * 60) / averageBlockTime;
-    // const roundedPriceAkt = Math.round((averagePrice / 1000000 + Number.EPSILON) * 100) / 100;
-
-    // console.log(`That is ${roundedPriceAkt} AKT / month`);
-
-    // await dataSnapshotsHandler.takeSnapshot(
-    //   activeDeploymentCount,
-    //   totalResourcesLeased.cpuSum,
-    //   totalResourcesLeased.memorySum,
-    //   totalResourcesLeased.storageSum,
-    //   deploymentCount,
-    //   totalAKTSpent
-    // );
-  } catch (err) {
-    console.error("Could not initialize", err);
-  } finally {
-    isLoadingData = false;
-  }
-};
+async function download(url, dest) {
+  return new Promise<void>((res, rej) => {
+    var file = fs.createWriteStream(dest);
+    https.get(url, function (response) {
+      response.pipe(file);
+      file.on("finish", function () {
+        file.close();
+        res();
+      });
+    });
+  });
+}
 
 /**
  * Initiate database schema
  * Restore backup from current version if it exists
  */
 export const initDatabase = async () => {
+  if (fs.existsSync(sqliteDatabasePath)) {
+    console.log("Database file exists.");
+  } else {
+    console.log("Downloading database file...");
+    const databaseDownloadUrl = "https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite";
+    await download(databaseDownloadUrl, sqliteDatabasePath);
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt");
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt");
+    console.log("Database downloaded");
+  }
+
   try {
     await sequelize.authenticate();
     console.log("Connection has been established successfully.");
@@ -109,14 +50,14 @@ export const initDatabase = async () => {
     console.error("Unable to connect to the database:", error);
   }
 
-  await Lease.sync({ force: true });
-  await Deployment.sync({ force: true });
+  await Lease.sync({ force: false });
+  await Deployment.sync({ force: false });
   await DeploymentGroup.sync({ force: true });
   await DeploymentGroupResource.sync({ force: true });
-  await Bid.sync({ force: true });
+  await Bid.sync({ force: false });
   await StatsSnapshot.sync();
-  await PriceHistory.sync();
-  await DailyNetworkRevenue.sync();
+  await PriceHistory.sync({ force: true });
+  await DailyNetworkRevenue.sync({ force: true });
 
   Deployment.hasMany(DeploymentGroup);
   DeploymentGroup.belongsTo(Deployment, { foreignKey: "deploymentId" });
@@ -125,6 +66,11 @@ export const initDatabase = async () => {
   DeploymentGroupResource.belongsTo(DeploymentGroup, { foreignKey: "deploymentGroupId" });
 
   // TODO deployments only have one lease??
-  Deployment.hasOne(Lease, { foreignKey: "deploymentId" });
+  Deployment.hasMany(Lease, { foreignKey: "deploymentId" });
   Lease.belongsTo(Deployment);
 };
+
+export async function getDbSize() {
+  const dbSize = await fs.promises.stat("./data/database.sqlite");
+  return bytesToHumanReadableSize(dbSize.size);
+}

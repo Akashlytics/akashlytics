@@ -7,5 +7,5 @@ export function round(amount: number, precision: number = 2) {
 }
 
 export function uaktToAKT(amount: number, precision = 2) {
-  return round(amount / 1000000, precision);
+  return round(amount / 1_000_000, precision);
 }

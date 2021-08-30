@@ -36,6 +36,7 @@ node_modules/
 
 # akash
 cache
+data
 
 .DS_Store
 .vim

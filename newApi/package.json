@@ -7,6 +7,7 @@
   "main": "server.js",
   "scripts": {
     "start": "webpack --watch",
+    "build": "webpack --config webpack.config.js",
     "test": "jest"
   },
   "repository": {
@@ -18,11 +19,15 @@
   },
   "homepage": "https://github.com/mbeauchamp7/akashlytics#readme",
   "dependencies": {
+    "cosmjs-types": "^0.2.0",
     "date-fns": "^2.23.0",
     "date-fns-tz": "^1.1.6",
     "express": "^4.17.1",
     "http-proxy-middelware": "0.0.1-security",
+    "js-sha256": "^0.9.0",
+    "level": "^7.0.0",
     "node-fetch": "^2.6.1",
+    "protobufjs": "^6.11.2",
     "sequelize": "^6.6.2",
     "sqlite3": "^5.0.2"
   },

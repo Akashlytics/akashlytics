@@ -265,7 +265,7 @@ async function loadNodeList() {
 
   console.log(`Found ${nodeList.length} nodes`);
 
-  return ["http://public-rpc2.akash.vitwit.com:1317"];
+  return ["http://135.181.181.120:1518"];
   // return nodeList;
 }
 

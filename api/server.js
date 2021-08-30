@@ -5,12 +5,15 @@ const path = require("path");
 const blockchainAnalyzer = require("./blockchainAnalyzer");
 const marketDataProvider = require("./marketDataProvider");
 const dbProvider = require("./dbProvider");
+const proxy = require('express-http-proxy');
 
 // Constants
 const PORT = 3080;
 
 // App
 const app = express();
+
+app.use('/web3-index', proxy('localhost:3081'));
 
 app.use("/dist", express.static(path.join(__dirname, "../app/dist")));
 app.use(express.static(path.join(__dirname, "../app/dist")));

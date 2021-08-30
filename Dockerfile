@@ -23,5 +23,12 @@ RUN npm ci --only=production
 
 RUN npm rebuild
 
+WORKDIR /app/newApi
+RUN npm ci
+RUN npm run build
+
 EXPOSE 3080
-CMD [ "node", "/app/api/server.js" ]
+
+WORKDIR /
+RUN npm install -g concurrently
+CMD ["concurrently", "node /app/api/server.js", "node /app/newApi/dist/server.js"]

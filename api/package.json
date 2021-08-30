@@ -19,6 +19,7 @@
   "homepage": "https://github.com/mbeauchamp7/akashlytics#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "express-http-proxy": "^1.6.2",
     "http-proxy-middelware": "0.0.1-security",
     "node-fetch": "^2.6.1",
     "sequelize": "^6.6.2",
