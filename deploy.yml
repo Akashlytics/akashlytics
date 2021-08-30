@@ -3,7 +3,7 @@ version: "2.0"
 
 services:
   web:
-    image: baktun/akashlytics:0.7.8
+    image: baktun/akashlytics:0.8
     expose:
       - port: 3080
         as: 80
@@ -12,6 +12,10 @@ services:
           - akashlytics.com
         to:
           - global: true
+      - port: 3081
+        as: 3081
+        to:
+          - global: false
 
 profiles:
   compute:
