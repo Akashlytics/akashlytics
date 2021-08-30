@@ -169,8 +169,7 @@ export class DailyNetworkRevenue extends Model {
   public id!: string;
   public date!: string;
   public amount!: number;
-  public amountAkt!: number;
-  public amountUAkt?: number;
+  public amountUAkt!: number;
   public aktPrice!: number;
   public leaseCount!: number;
 }
@@ -179,7 +178,6 @@ DailyNetworkRevenue.init({
   id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
   date: { type: DataTypes.DATE, allowNull: false },
   amount: { type: DataTypes.NUMBER, allowNull: false },
-  amountAkt: { type: DataTypes.NUMBER, allowNull: false },
   amountUAkt: { type: DataTypes.NUMBER, allowNull: false },
   aktPrice: { type: DataTypes.NUMBER, allowNull: false },
   leaseCount: { type: DataTypes.NUMBER, allowNull: false }

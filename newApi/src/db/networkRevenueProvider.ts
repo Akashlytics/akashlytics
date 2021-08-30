@@ -75,7 +75,7 @@ export const calculateNetworkRevenue = async () => {
       const activeLeasesForDay = leases.filter((l) => l.createdHeight < endOfDayHeight && (!l.closedHeight || l.closedHeight >= startOfDayHeight));
 
       const calculatedLeases = activeLeasesForDay.map((l) => {
-        const maxLegitBlock = l.createdHeight + l.deployment.deposit / l.price;
+        const maxLegitBlock = l.createdHeight + Math.ceil(l.deployment.deposit / l.price);
         const startBlock = Math.max(l.createdHeight, startOfDayHeight);
         const endBlock = Math.min(endOfDayHeight, l.closedHeight || endOfDayHeight, maxLegitBlock);
         const blockCount = endBlock < startBlock ? 0 : endBlock - startBlock;
@@ -87,16 +87,13 @@ export const calculateNetworkRevenue = async () => {
         };
       });
 
-      if (isToday) console.table([{ startOfDayHeight, endOfDayHeight }]);
       const revenueUsd = calculatedLeases.map((l) => l.usd).reduce((a, b) => a + b, 0);
-      const revenueAkt = calculatedLeases.map((l) => l.akt).reduce((a, b) => a + b, 0);
       const revenueUAkt = calculatedLeases.map((l) => l.uakt).reduce((a, b) => a + b, 0);
 
       networkRevenueDaysToAdd.push({
         id: v4(),
         date: startOfDayDate,
         amount: round(revenueUsd),
-        amountAkt: revenueAkt,
         amountUAkt: revenueUAkt,
         leaseCount: calculatedLeases.length,
         aktPrice: priceDay.price
@@ -156,7 +153,7 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
   let days = dailyNetworkRevenues.map((r) => ({
     date: new Date(r.date).getTime() / 1000,
     revenue: r.amount,
-    revenueAkt: r.amountAkt,
+    revenueUAkt: r.amountUAkt,
     aktPrice: r.aktPrice,
     dateStr: new Date(r.date)
   }));
@@ -171,11 +168,11 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
     twoDaysAgoRevenue: number = 0,
     oneWeekAgoRevenue: number = 0,
     twoWeeksAgoRevenue: number = 0;
-  let totalRevenueAkt: number = 0,
-    oneDayAgoRevenueAkt: number = 0,
-    twoDaysAgoRevenueAkt: number = 0,
-    oneWeekAgoRevenueAkt: number = 0,
-    twoWeeksAgoRevenueAkt: number = 0;
+  let totalRevenueUAkt: number = 0,
+    oneDayAgoRevenueUAkt: number = 0,
+    twoDaysAgoRevenueUAkt: number = 0,
+    oneWeekAgoRevenueUAkt: number = 0,
+    twoWeeksAgoRevenueUAkt: number = 0;
 
   days.forEach((b) => {
     const _date = new Date(b.date * 1000);
@@ -183,27 +180,27 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
 
     if (date <= twoWeeksAgo) {
       twoWeeksAgoRevenue += b.revenue;
-      twoWeeksAgoRevenueAkt += b.revenueAkt;
+      twoWeeksAgoRevenueUAkt += b.revenueUAkt;
     }
     if (date <= oneWeekAgo) {
       oneWeekAgoRevenue += b.revenue;
-      oneWeekAgoRevenueAkt += b.revenueAkt;
+      oneWeekAgoRevenueUAkt += b.revenueUAkt;
     }
     if (date <= twoDaysAgo) {
       twoDaysAgoRevenue += b.revenue;
-      twoDaysAgoRevenueAkt += b.revenueAkt;
+      twoDaysAgoRevenueUAkt += b.revenueUAkt;
     }
     if (date <= oneDayAgo) {
       oneDayAgoRevenue += b.revenue;
-      oneDayAgoRevenueAkt += b.revenueAkt;
+      oneDayAgoRevenueUAkt += b.revenueUAkt;
     }
 
     totalRevenue += b.revenue;
-    totalRevenueAkt += b.revenueAkt;
+    totalRevenueUAkt += b.revenueUAkt;
   }, 0);
 
   if (!debug) {
-    days = days.map(({ dateStr, revenueAkt, aktPrice, ...others }) => others) as any;
+    days = days.map(({ dateStr, revenueUAkt, aktPrice, ...others }) => others) as any;
   }
 
   let revenueStats = {
@@ -217,11 +214,11 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
   if (debug) {
     revenueStats = {
       ...revenueStats,
-      totalRevenueAkt: round(totalRevenueAkt),
-      oneDayAgoRevenueAkt: round(oneDayAgoRevenueAkt),
-      twoDaysAgoRevenueAkt: round(twoDaysAgoRevenueAkt),
-      oneWeekAgoRevenueAkt: round(oneWeekAgoRevenueAkt),
-      twoWeeksAgoRevenueAkt: round(twoWeeksAgoRevenueAkt)
+      nowRevenueAkt: uaktToAKT(totalRevenueUAkt, 6),
+      oneDayAgoRevenueAkt: uaktToAKT(oneDayAgoRevenueUAkt, 6),
+      twoDaysAgoRevenueAkt: uaktToAKT(twoDaysAgoRevenueUAkt, 6),
+      oneWeekAgoRevenueAkt: uaktToAKT(oneWeekAgoRevenueUAkt, 6),
+      twoWeeksAgoRevenueAkt: uaktToAKT(twoWeeksAgoRevenueUAkt, 6)
     } as any;
   }
 
