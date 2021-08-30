@@ -77,7 +77,7 @@ async function computeAtInterval() {
 
   setTimeout(async () => {
     await computeAtInterval();
-  }, 1 * 60 * 1000); // 1min
+  }, 15 * 60 * 1000); // 15min
 }
 
 initApp();
