@@ -33,11 +33,13 @@ async function download(url, dest) {
  */
 export const initDatabase = async () => {
   const shouldDownloadNewDb = true;
-  if (fs.existsSync(sqliteDatabasePath) && shouldDownloadNewDb) {
-    console.log("Deleting existing database files.");
-    await fs.promises.rm(sqliteDatabasePath, { force: true });
-    await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });
-    await fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true });
+  if (shouldDownloadNewDb) {
+    if (fs.existsSync(sqliteDatabasePath)) {
+      console.log("Deleting existing database files.");
+      await fs.promises.rm(sqliteDatabasePath, { force: true });
+      await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });
+      await fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true });
+    }
 
     console.log("Downloading database files...");
     await download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath);
@@ -68,7 +70,6 @@ export const initDatabase = async () => {
   DeploymentGroup.hasMany(DeploymentGroupResource);
   DeploymentGroupResource.belongsTo(DeploymentGroup, { foreignKey: "deploymentGroupId" });
 
-  // TODO deployments only have one lease??
   Deployment.hasMany(Lease, { foreignKey: "deploymentId" });
   Lease.belongsTo(Deployment);
 };
