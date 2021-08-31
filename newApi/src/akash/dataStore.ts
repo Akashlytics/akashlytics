@@ -21,8 +21,8 @@ export const getCacheSize = async function () {
 
 export const deleteCache = async function () {
   console.log("Deleting cache...");
-  blocksDb.clear();
-  txsDb.clear();
+  await blocksDb.clear();
+  await txsDb.clear();
   console.log("Deleted");
 };
 

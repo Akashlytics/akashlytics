@@ -12,18 +12,6 @@ const apiEndpoints = [
   "http://135.181.181.123:1518"
 ];
 
-let endpointIndex = 0;
-function getNextApiEndpoint() {
-  const endpoint = apiEndpoints[endpointIndex];
-
-  endpointIndex++;
-  if (endpointIndex >= apiEndpoints.length) {
-    endpointIndex = 0;
-  }
-
-  return endpoint;
-}
-
 export function createNodeAccessor() {
   let maxConcurrentQueries = 10;
   let nodeClients = apiEndpoints.map((x) => createEndpointAccessor(x, maxConcurrentQueries));

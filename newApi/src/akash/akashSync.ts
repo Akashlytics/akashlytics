@@ -3,11 +3,14 @@ import base64js from "base64-js";
 import { processMessages } from "./statsProcessor";
 import { blocksDb, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
+import { Block, Transaction, Message, Op } from "@src/db/schema";
 
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
 
 export let isSyncing = false;
+
+const nodeAccessor = createNodeAccessor();
 
 const { AuthInfo, TxBody, TxRaw } = require("cosmjs-types/cosmos/tx/v1beta1/tx");
 function fromBase64(base64String) {
@@ -60,9 +63,6 @@ async function getCachedTxByHash(hash) {
     return null;
   }
 }
-
-import { Block, Transaction, Message, Op } from "@src/db/schema";
-const nodeAccessor = createNodeAccessor();
 
 async function getLatestDownloadedHeight() {
   if (fs.existsSync("./data/latestDownloadedHeight.txt")) {
