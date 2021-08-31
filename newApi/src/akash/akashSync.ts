@@ -186,7 +186,7 @@ async function insertBlocks(startHeight, endHeight) {
     blocksToAdd.push({
       height: i,
       datetime: new Date(blockData.block.header.time),
-      firstBlockOfDay: false
+      firstBlockOfDay: firstBlockOfDay
     });
 
     if (blocksToAdd.length >= 1000) {
