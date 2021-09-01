@@ -1,3 +1,4 @@
+import { isProd } from "@src/shared/constants";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 import fs from "fs";
 import https from "https";
@@ -32,9 +33,9 @@ async function download(url, dest) {
  * Restore backup from current version if it exists
  */
 export const initDatabase = async () => {
-  const shouldDownloadNewDb = true;
-  if (shouldDownloadNewDb) {
-    if (fs.existsSync(sqliteDatabasePath)) {
+  const databaseFileExists = fs.existsSync(sqliteDatabasePath);
+  if (isProd || !databaseFileExists) {
+    if (databaseFileExists) {
       console.log("Deleting existing database files.");
       await fs.promises.rm(sqliteDatabasePath, { force: true });
       await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });

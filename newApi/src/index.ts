@@ -5,6 +5,7 @@ import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue } from "./db/ne
 import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
+import { isProd } from "./shared/constants";
 
 const app = express();
 const { PORT = 3081 } = process.env;
@@ -68,7 +69,10 @@ async function computeAtInterval() {
   try {
     await syncBlocks();
     await calculateNetworkRevenue();
-    await deleteCache();
+
+    if (isProd) {
+      await deleteCache();
+    }
   } catch (err) {
     latestSyncingError = err;
     latestSyncingErrorDate = new Date();
