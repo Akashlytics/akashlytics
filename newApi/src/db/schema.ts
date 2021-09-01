@@ -23,8 +23,8 @@ export class Lease extends Model {
   public gseq!: string;
   public provider!: string;
   public state!: string;
-  public startDate!: string;
-  public endDate!: string;
+  public startDate!: Date;
+  public endDate!: Date;
   public createdHeight!: number;
   public closedHeight?: number;
   public price!: number;

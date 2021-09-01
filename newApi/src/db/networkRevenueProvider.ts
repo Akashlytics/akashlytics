@@ -31,7 +31,7 @@ export const calculateNetworkRevenue = async () => {
       raw: true,
       where: {
         date: {
-          [Op.gte]: new Date(firstLease.startDate)
+          [Op.gte]: startOfDay(firstLease.startDate)
         }
       }
     });
