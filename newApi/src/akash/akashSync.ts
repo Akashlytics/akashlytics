@@ -9,6 +9,7 @@ import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
 
 export let isSyncing = false;
+export let syncingStatus = null;
 
 const nodeAccessor = createNodeAccessor();
 
@@ -93,6 +94,7 @@ async function saveLatestDownloadedTxHeight(height) {
 export async function syncBlocks() {
   try {
     isSyncing = true;
+    syncingStatus = "Fetching latest block";
 
     const latestAvailableBlock = await nodeAccessor.fetch("/blocks/latest");
     const latestAvailableHeight = parseInt(latestAvailableBlock.block.header.height);
@@ -114,18 +116,23 @@ export async function syncBlocks() {
 
     await insertBlocks(latestInsertedHeight + 1, latestAvailableHeight);
     await downloadTransactions();
+
+    syncingStatus = "Processing messages";
+
     await processMessages();
   } catch (err) {
     console.error("Error while syncing", err);
     throw err;
   } finally {
     isSyncing = false;
+    syncingStatus = "Done";
   }
 }
 
 async function insertBlocks(startHeight, endHeight) {
   const blockCount = endHeight - startHeight;
   console.log("Inserting " + blockCount + " blocks into database");
+  syncingStatus = "Inserting blocks";
 
   let lastInsertedBlock = await Block.findOne({
     order: [["height", "DESC"]]
@@ -137,6 +144,7 @@ async function insertBlocks(startHeight, endHeight) {
   let msgsToAdd = [];
 
   for (let i = startHeight; i <= endHeight; ++i) {
+    syncingStatus = `Inserting block #${i} / ${endHeight}`;
     const blockData = await getCachedBlockByHeight(i);
 
     if (!blockData) throw "Block # " + i + " was not in cache";
@@ -219,10 +227,12 @@ async function insertBlocks(startHeight, endHeight) {
 }
 
 async function downloadBlocks(startHeight, endHeight) {
+  syncingStatus = "Downloading blocks";
   const missingBlockCount = endHeight - startHeight;
   let shouldStop = false;
 
   for (let height = startHeight; height <= endHeight && !shouldStop; height++) {
+    syncingStatus = `Downloading block #${height} / ${endHeight}`;
     await nodeAccessor.waitForAvailableNode();
 
     const cachedBlock = await getCachedBlockByHeight(height);
@@ -249,12 +259,15 @@ async function downloadBlocks(startHeight, endHeight) {
 
   await nodeAccessor.waitForAllFinished();
 
+  syncingStatus = "Saving latest downloaded height";
+
   saveLatestDownloadedHeight(endHeight);
 
   if (shouldStop) throw "Stopped";
 }
 
 async function downloadTransactions() {
+  syncingStatus = "Downloading transactions";
   const latestDownloadedTxHeight = await getLatestDownloadedTxHeight();
 
   if (latestDownloadedTxHeight > 0) {
@@ -285,6 +298,7 @@ async function downloadTransactions() {
   let highestHeight = 0;
 
   for (let i = 0; i < missingTransactions.length; ++i) {
+    syncingStatus = `Downloading transaction ${i} / ${missingTransactions.length}`;
     const hash = missingTransactions[i].hash;
     highestHeight = missingTransactions[i].height;
 
@@ -332,6 +346,8 @@ async function downloadTransactions() {
   if (shouldStop) throw "Stopped";
 
   await nodeAccessor.waitForAllFinished();
+
+  syncingStatus = "Saving latest downloaded tx height";
 
   if (highestHeight > 0) {
     await saveLatestDownloadedTxHeight(highestHeight);

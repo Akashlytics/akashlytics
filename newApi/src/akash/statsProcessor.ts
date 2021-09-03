@@ -12,10 +12,11 @@ const {
 const uuid = require("uuid");
 const sha256 = require("js-sha256");
 import { blocksDb, txsDb } from "@src/akash/dataStore";
-import { Deployment, Transaction, Message, Block, Bid, Lease, Op, Sequelize } from "@src/db/schema";
-const { performance } = require("perf_hooks");
-
+import { Deployment, Transaction, Message, Block, Bid, Lease, Op } from "@src/db/schema";
 import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+
+export let processingStatus = null;
+
 function fromBase64(base64String) {
   if (!base64String.match(/^[a-zA-Z0-9+/]*={0,2}$/)) {
     throw new Error("Invalid base64 string format");
@@ -85,6 +86,7 @@ export async function rebuildStatsTables() {
 }
 
 export async function processMessages() {
+  processingStatus = "Processing messages";
   console.time("processMessages");
 
   console.log("Fetching deployment id cache...");
@@ -135,6 +137,9 @@ export async function processMessages() {
   for (let msg of messages) {
     const height = msg.transaction.height;
     const time = msg.transaction.block.datetime;
+
+    processingStatus = `Processing message of block #${height}`;
+
     const blockData = await getBlockByHeight(msg.transaction.height);
 
     const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === msg.transaction.hash);
@@ -212,6 +217,7 @@ export async function processMessages() {
     }
   ]);
 
+  processingStatus = null;
   console.timeEnd("processMessages");
 }
 

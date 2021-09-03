@@ -1,10 +1,11 @@
 import { Op } from "sequelize";
-import { Lease, PriceHistory, DailyNetworkRevenue, Block, Transaction, Message, Deployment } from "./schema";
+import { Lease, PriceHistory, DailyNetworkRevenue, Block, Transaction, Deployment } from "./schema";
 import { add } from "date-fns";
 import { v4 } from "uuid";
-import { endOfDay, getTodayUTC, startOfDay, toUTC } from "@src/shared/utils/date";
+import { endOfDay, getTodayUTC, startOfDay } from "@src/shared/utils/date";
 import { round, uaktToAKT } from "@src/shared/utils/math";
-import { isSyncing } from "@src/akash/akashSync";
+import { isSyncing, syncingStatus } from "@src/akash/akashSync";
+import { processingStatus } from "@src/akash/statsProcessor";
 import { sleep } from "@src/shared/utils/delay";
 import { isSyncingPrices } from "./priceHistoryProvider";
 
@@ -133,7 +134,9 @@ export const getStatus = async () => {
     latestCalculateDate,
     isLastComputingSuccess,
     isCalculatingRevenue,
-    isSyncing
+    isSyncing,
+    syncingStatus,
+    processingStatus
   };
 };
 
