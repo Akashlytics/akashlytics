@@ -4,6 +4,7 @@ const express = require("express");
 const path = require("path");
 const blockchainAnalyzer = require("./blockchainAnalyzer");
 const marketDataProvider = require("./marketDataProvider");
+const newApiProvider = require("./newApiProvider");
 const dbProvider = require("./dbProvider");
 const proxy = require('express-http-proxy');
 
@@ -28,10 +29,9 @@ app.get("/api/getDashboardData/", async (req, res) => {
   const averagePrice = blockchainAnalyzer.getAveragePrice();
   const totalResourcesLeased = blockchainAnalyzer.getTotalResourcesLeased();
   const lastRefreshDate = blockchainAnalyzer.getLastRefreshDate();
-  const totalAKTSpent = blockchainAnalyzer.getTotalAKTSpent();
+  const spentStats = await newApiProvider.getSpentStats();
   const marketData = marketDataProvider.getAktMarketData();
   const lastSnapshot = await dbProvider.getLastSnapshot();
-  const dailyAktSpent = blockchainAnalyzer.getDailyAktSpent();
   const dailyDeploymentCount = blockchainAnalyzer.getDailyDeploymentCount();
 
   if (activeDeploymentCount != null) {
@@ -40,11 +40,10 @@ app.get("/api/getDashboardData/", async (req, res) => {
       deploymentCount,
       averagePrice,
       marketData,
-      totalAKTSpent,
+      spentStats,
       totalResourcesLeased,
       lastRefreshDate,
       lastSnapshot,
-      dailyAktSpent,
       dailyDeploymentCount,
     });
   } else {

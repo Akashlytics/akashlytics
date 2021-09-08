@@ -76,10 +76,10 @@ exports.refreshData = async () => {
 
   console.log("Deleting cache folder");
   if (fs.existsSync(cacheFolder)) {
-    fs.rmSync(deploymentsCachePath, { force: true });
-    fs.rmSync(leasesCachePath, { force: true });
-    fs.rmSync(bidsCachePath, { force: true });
-    fs.rmdirSync(cacheFolder);
+    //fs.rmSync(deploymentsCachePath, { force: true });
+    //fs.rmSync(leasesCachePath, { force: true });
+    //fs.rmSync(bidsCachePath, { force: true });
+    //fs.rmdirSync(cacheFolder);
   }
 
   await dbProvider.clearDatabase();

@@ -1,7 +1,6 @@
 import express from "express";
-import { Request, Response } from "express";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
-import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
+import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue, getTotalSpent } from "./db/networkRevenueProvider";
 import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
@@ -44,6 +43,15 @@ Sentry.init({
 app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
+
+app.get("/getTotalSpent", async (req, res) => {
+  try {
+    const totalSpend = await getTotalSpent();
+    res.send(totalSpend);
+  } catch (err) {
+    console.error(err);
+  }
+});
 
 app.get("/status", async (req, res) => {
   console.log("getting debug infos");

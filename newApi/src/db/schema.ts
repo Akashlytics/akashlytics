@@ -151,7 +151,7 @@ export const StatsSnapshot = sequelize.define("statsSnapshot", {
 
 export class PriceHistory extends Model {
   public id!: string;
-  public date!: string;
+  public date!: Date;
   public price!: number;
 }
 

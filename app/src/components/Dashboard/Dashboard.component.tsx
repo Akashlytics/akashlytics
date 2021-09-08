@@ -101,7 +101,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             number={
               <>
                 <FormattedNumber
-                  value={uaktToAKT(dashboardData.dailyAktSpent)}
+                  value={uaktToAKT(dashboardData.spentStats?.revenueLast24.uakt)}
                   maximumFractionDigits={2}
                 />{" "}
                 AKT
@@ -111,21 +111,21 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             tooltip="Last 24h"
             graphPath={`/graph/${SnapshotsUrlParam.dailyAktSpent}`}
             diffNumber={uaktToAKT(
-              dashboardData.dailyAktSpent - dashboardData.lastSnapshot.dailyAktSpent
+              dashboardData.spentStats?.revenueLast24.uakt - dashboardData.spentStats?.revenuePrevious24.uakt
             )}
             diffPercent={percIncrease(
-              dashboardData.lastSnapshot.dailyAktSpent,
-              dashboardData.dailyAktSpent
+              dashboardData.spentStats?.revenuePrevious24.uakt,
+              dashboardData.spentStats?.revenueLast24.uakt
             )}
           />
         </div>
 
         <div className={clsx("col-xs-12", tileClassName)}>
-          <StatsCard
+          {/* <StatsCard
             number={
               <>
                 <FormattedNumber
-                  value={uaktToAKT(dashboardData.totalAKTSpent)}
+                  value={dashboardData.totalAKTSpent}
                   maximumFractionDigits={2}
                 />{" "}
                 AKT
@@ -141,7 +141,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
               dashboardData.lastSnapshot.totalAktSpent,
               dashboardData.totalAKTSpent
             )}
-          />
+          /> */}
         </div>
 
         {/* {showAveragePrice && (
