@@ -6,6 +6,7 @@ import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
 import { isProd } from "./shared/constants";
+import { bytesToHumanReadableSize } from "./shared/utils/files";
 
 const app = express();
 const { PORT = 3081 } = process.env;
@@ -18,11 +19,22 @@ let latestQueryingErrorDate = null;
 app.get("/status", async (req, res) => {
   console.log("getting debug infos");
 
-  const debugInfos = await getStatus();
-  const cacheSize = await getCacheSize();
-  const dbSize = await getDbSize();
+  try {
+    const debugInfos = await getStatus();
+    const cacheSize = await getCacheSize();
+    const dbSize = await getDbSize();
+    const memoryInBytes = process.memoryUsage();
+    const memory = {
+      rss: bytesToHumanReadableSize(memoryInBytes.rss),
+      heapTotal: bytesToHumanReadableSize(memoryInBytes.heapTotal),
+      heapUsed: bytesToHumanReadableSize(memoryInBytes.heapUsed),
+      external: bytesToHumanReadableSize(memoryInBytes.external)
+    };
 
-  res.send({ ...debugInfos, latestSyncingError, latestSyncingErrorDate, latestQueryingError, latestQueryingErrorDate, ...cacheSize, dbSize });
+    res.send({ ...debugInfos, latestSyncingError, latestSyncingErrorDate, latestQueryingError, latestQueryingErrorDate, ...cacheSize, dbSize, memory });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
 app.get("/revenue", async (req, res) => {
