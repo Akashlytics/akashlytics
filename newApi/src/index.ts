@@ -69,6 +69,7 @@ async function initApp() {
 
     await syncPriceHistory();
 
+    await computeAtInterval();
     setInterval(async () => {
       await computeAtInterval();
     }, 15 * 60 * 1000); // 15min
