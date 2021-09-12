@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
 import { Lease, PriceHistory, DailyNetworkRevenue, Block, Transaction, Deployment } from "./schema";
-import { add } from "date-fns";
+import { add, differenceInMinutes } from "date-fns";
 import { v4 } from "uuid";
 import { endOfDay, getTodayUTC, startOfDay } from "@src/shared/utils/date";
 import { round, uaktToAKT } from "@src/shared/utils/math";
@@ -12,6 +12,9 @@ import { isSyncingPrices } from "./priceHistoryProvider";
 let isLastComputingSuccess = false;
 let isCalculatingRevenue = false;
 let latestCalculateDate = null;
+
+let cachedRevenue = null;
+let cachedRevenueDate = null;
 
 export const calculateNetworkRevenue = async () => {
   try {
@@ -141,6 +144,10 @@ export const getStatus = async () => {
 };
 
 export const getWeb3IndexRevenue = async (debug: boolean) => {
+  if (cachedRevenue && cachedRevenueDate && differenceInMinutes(cachedRevenueDate, new Date()) < 30) {
+    return cachedRevenue;
+  }
+
   while (isCalculatingRevenue || isSyncingPrices) {
     await sleep(5000);
   }
@@ -252,8 +259,13 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
     } as any;
   }
 
-  return {
+  const responseObj = {
     revenue: revenueStats,
     days
   };
+
+  cachedRevenue = responseObj;
+  cachedRevenueDate = new Date();
+
+  return responseObj;
 };
