@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
 import { syncPriceHistory } from "./db/priceHistoryProvider";
-import { syncBlocks } from "./akash/akashSync";
+import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
 import { isProd } from "./shared/constants";
 import { bytesToHumanReadableSize } from "./shared/utils/files";
@@ -69,7 +69,9 @@ async function initApp() {
 
     await syncPriceHistory();
 
-    await computeAtInterval();
+    setInterval(async () => {
+      await computeAtInterval();
+    }, 15 * 60 * 1000); // 15min
   } catch (err) {
     latestSyncingError = err;
     latestSyncingErrorDate = new Date();
@@ -79,6 +81,8 @@ async function initApp() {
 
 async function computeAtInterval() {
   try {
+    if (isSyncing) return;
+
     await syncBlocks();
     await calculateNetworkRevenue();
 
@@ -90,10 +94,6 @@ async function computeAtInterval() {
     latestSyncingErrorDate = new Date();
     console.error(err);
   }
-
-  setTimeout(async () => {
-    await computeAtInterval();
-  }, 15 * 60 * 1000); // 15min
 }
 
 initApp();
