@@ -13,7 +13,7 @@ export const useStyles = makeStyles((theme) => ({
   },
   watermark: {
     position: "absolute",
-    top: "8px",
+    top: "4px",
     left: "50%",
     transform: "translateX(-50%)",
     "& span": {

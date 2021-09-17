@@ -111,7 +111,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               theme={theme}
               data={graphData}
               curve="linear"
-              margin={{ top: 30, right: 30, bottom: 50, left: 45 }}
+              margin={{ top: 30, right: 35, bottom: 50, left: 45 }}
               xScale={{ type: "point" }}
               yScale={{
                 type: "linear",
@@ -136,8 +136,6 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               pointBorderColor="#e41e13"
               pointColor={"#ffffff"}
               pointBorderWidth={graphMetadata.border}
-              pointLabelYOffset={-15}
-              enablePointLabel={false}
               isInteractive={true}
               tooltip={(props) => (
                 <div className={classes.graphTooltip}>
@@ -147,7 +145,6 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
                   <Box>{nFormatter(props.point.data.y as number, 2)}</Box>
                 </div>
               )}
-              useMesh={true}
               enableGridX={false}
               enableCrosshair={true}
             />
