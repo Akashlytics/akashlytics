@@ -144,7 +144,7 @@ export const getStatus = async () => {
 };
 
 export const getWeb3IndexRevenue = async (debug: boolean) => {
-  if (cachedRevenue && cachedRevenueDate && differenceInMinutes(cachedRevenueDate, new Date()) < 30) {
+  if (cachedRevenue && cachedRevenueDate && Math.abs(differenceInMinutes(cachedRevenueDate, new Date())) < 30) {
     return cachedRevenue;
   }
 
