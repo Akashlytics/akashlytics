@@ -7,6 +7,7 @@ import { Block, Transaction, Message, Op } from "@src/db/schema";
 
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
+import { isProd } from "@src/shared/constants";
 
 export let isSyncing = false;
 export let syncingStatus = null;
@@ -253,7 +254,9 @@ async function downloadBlocks(startHeight, endHeight) {
       console.log("Current height: " + height + " / " + endHeight);
       console.log("Progress: " + (((height - startHeight) * 100) / missingBlockCount).toFixed(2) + "%");
 
-      nodeAccessor.displayTable();
+      if (!isProd) {
+        nodeAccessor.displayTable();
+      }
     }
   }
 
@@ -333,7 +336,9 @@ async function downloadTransactions() {
       console.log("Current tx: " + i + " / " + missingTransactions.length);
       console.log("Progress: " + ((i * 100) / missingTransactions.length).toFixed(2) + "%");
 
-      nodeAccessor.displayTable();
+      if (!isProd) {
+        nodeAccessor.displayTable();
+      }
     }
   }
 
