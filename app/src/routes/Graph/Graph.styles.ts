@@ -8,7 +8,20 @@ export const useStyles = makeStyles((theme) => ({
   },
   loading: { textAlign: "center", marginTop: "4rem", marginBottom: "1rem" },
   graphContainer: {
-    height: "400px"
+    height: "400px",
+    position: "relative"
+  },
+  watermark: {
+    position: "absolute",
+    top: "8px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    "& span": {
+      fontWeight: "bold",
+      letterSpacing: "1px",
+      fontSize: "1rem",
+      color: "rgba(255,255,255,.2)"
+    }
   },
   graphTooltip: {
     padding: "5px 10px",

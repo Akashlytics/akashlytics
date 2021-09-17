@@ -12,14 +12,14 @@ import { Helmet } from "react-helmet-async";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 import { urlParamToSnapshot } from "@src/shared/utils/snapshotsUrlHelpers";
 import { useGraphSnapshot } from "@src/queries/useGrapsQuery";
-import { average, percIncrease, round, uaktToAKT } from "@src/shared/utils/mathHelpers";
+import { average, nFormatter, percIncrease, round, uaktToAKT } from "@src/shared/utils/mathHelpers";
 import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
 import { DiffNumber } from "@src/shared/components/DiffNumber";
 
 enum SelectedRange {
   "7D" = 7,
   "1M" = 30,
-  "ALL" = Number.MAX_SAFE_INTEGER,
+  "ALL" = Number.MAX_SAFE_INTEGER
 }
 
 export interface IGraphProps {}
@@ -33,16 +33,9 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
   const classes = useStyles();
   const theme = getTheme();
   const intl = useIntl();
-  const rangedData =
-    snapshotData &&
-    snapshotData.snapshots.slice(
-      snapshotData.snapshots.length - selectedRange,
-      snapshotData.snapshots.length
-    );
-  const minValue =
-    rangedData && rangedData.map((x) => x.min || x.value).reduce((a, b) => (a < b ? a : b));
-  const maxValue =
-    snapshotData && rangedData.map((x) => x.max || x.value).reduce((a, b) => (a > b ? a : b));
+  const rangedData = snapshotData && snapshotData.snapshots.slice(snapshotData.snapshots.length - selectedRange, snapshotData.snapshots.length);
+  const minValue = rangedData && rangedData.map((x) => x.min || x.value).reduce((a, b) => (a < b ? a : b));
+  const maxValue = snapshotData && rangedData.map((x) => x.max || x.value).reduce((a, b) => (a > b ? a : b));
   const isAverage = snapshotData && rangedData.some((x) => x.average);
   const graphData = snapshotData
     ? [
@@ -51,9 +44,9 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
           color: "rgb(1,0,0)",
           data: rangedData.map((snapshot) => ({
             x: snapshot.date,
-            y: round(snapshot.average ? snapshot.average : snapshot.value),
-          })),
-        },
+            y: round(snapshot.average ? snapshot.average : snapshot.value)
+          }))
+        }
       ]
     : null;
   const title = getTitle(snapshot as Snapshots);
@@ -97,33 +90,23 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               </Typography>
             </Box>
 
-            <ButtonGroup
-              size="small"
-              aria-label="Graph range select"
-              className={classes.graphRangeSelect}
-            >
-              <Button
-                variant={selectedRange === SelectedRange["7D"] ? "contained" : "outlined"}
-                onClick={() => setSelectedRange(SelectedRange["7D"])}
-              >
+            <ButtonGroup size="small" aria-label="Graph range select" className={classes.graphRangeSelect}>
+              <Button variant={selectedRange === SelectedRange["7D"] ? "contained" : "outlined"} onClick={() => setSelectedRange(SelectedRange["7D"])}>
                 7D
               </Button>
-              <Button
-                variant={selectedRange === SelectedRange["1M"] ? "contained" : "outlined"}
-                onClick={() => setSelectedRange(SelectedRange["1M"])}
-              >
+              <Button variant={selectedRange === SelectedRange["1M"] ? "contained" : "outlined"} onClick={() => setSelectedRange(SelectedRange["1M"])}>
                 1M
               </Button>
-              <Button
-                variant={selectedRange === SelectedRange["ALL"] ? "contained" : "outlined"}
-                onClick={() => setSelectedRange(SelectedRange["ALL"])}
-              >
+              <Button variant={selectedRange === SelectedRange["ALL"] ? "contained" : "outlined"} onClick={() => setSelectedRange(SelectedRange["ALL"])}>
                 ALL
               </Button>
             </ButtonGroup>
           </Box>
 
           <div className={classes.graphContainer}>
+            <Box className={classes.watermark}>
+              <Typography variant="caption">akashlytics.com</Typography>
+            </Box>
             <ResponsiveLineCanvas
               theme={theme}
               data={graphData}
@@ -133,15 +116,18 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               yScale={{
                 type: "linear",
                 min: minValue * 0.98,
-                max: maxValue * 1.02,
+                max: maxValue * 1.02
               }}
               yFormat=" >-1d"
               // @ts-ignore will be fixed in 0.69.1
               axisBottom={{
                 tickRotation: mediaQuery.mobileView ? 45 : 0,
-                format: (dateStr) =>
-                  intl.formatDate(dateStr, { day: "numeric", month: "long", timeZone: "utc" }),
-                tickValues: getTickValues(rangedData, graphMetadata.xModulo),
+                format: (dateStr) => intl.formatDate(dateStr, { day: "numeric", month: "short", timeZone: "utc" }),
+                tickValues: getTickValues(rangedData, graphMetadata.xModulo)
+              }}
+              // @ts-ignore will be fixed in 0.69.1
+              axisLeft={{
+                format: (val) => nFormatter(val, 2)
               }}
               axisTop={null}
               axisRight={null}
@@ -156,14 +142,9 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               tooltip={(props) => (
                 <div className={classes.graphTooltip}>
                   <Typography variant="caption">
-                    <FormattedDate
-                      value={new Date(props.point.data.x)}
-                      day="numeric"
-                      month="long"
-                      timeZone="UTC"
-                    />
+                    <FormattedDate value={new Date(props.point.data.x)} day="numeric" month="long" timeZone="UTC" />
                   </Typography>
-                  <Box>{props.point.data.y}</Box>
+                  <Box>{nFormatter(props.point.data.y as number, 2)}</Box>
                 </div>
               )}
               useMesh={true}
@@ -175,10 +156,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
           {isAverage && (
             <div className="row">
               <div className="col-lg-12">
-                <p className={clsx(classes.graphExplanation)}>
-                  * The data points represent the average between the minimum and maximum value for
-                  the day.
-                </p>
+                <p className={clsx(classes.graphExplanation)}>* The data points represent the average between the minimum and maximum value for the day.</p>
               </div>
             </div>
           )}
@@ -196,86 +174,71 @@ const getTheme = () => {
       domain: {
         line: {
           stroke: "#FFFFFF",
-          strokeWidth: 1,
-        },
+          strokeWidth: 1
+        }
       },
       ticks: {
         line: {
           stroke: "#FFFFFF",
-          strokeWidth: 1,
-        },
-      },
+          strokeWidth: 1
+        }
+      }
     },
     grid: {
       line: {
         stroke: "#FFFFFF",
-        strokeWidth: 0.5,
-      },
-    },
+        strokeWidth: 0.5
+      }
+    }
   };
 };
 
-const getSnapshotMetadata = (
-  snapshot: Snapshots,
-  snapshotData: GraphResponse
-): { value?: number; diffNumber?: number; diffPercent?: number } => {
+const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): { value?: number; diffNumber?: number; diffPercent?: number } => {
   const lastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 1];
   const previousLastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 2];
   switch (snapshot) {
     case Snapshots.activeDeployment:
       return {
         value: snapshotData.currentValue,
-        diffPercent: percIncrease(
-          Math.ceil(average(lastSnapshot.min, lastSnapshot.max)),
-          snapshotData.currentValue
-        ),
-        diffNumber:
-          snapshotData.currentValue - Math.ceil(average(lastSnapshot.min, lastSnapshot.max)),
+        diffPercent: percIncrease(Math.ceil(average(lastSnapshot.min, lastSnapshot.max)), snapshotData.currentValue),
+        diffNumber: snapshotData.currentValue - Math.ceil(average(lastSnapshot.min, lastSnapshot.max))
       };
     case Snapshots.totalAKTSpent:
       return {
         value: uaktToAKT(snapshotData.currentValue),
         diffPercent: percIncrease(lastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - lastSnapshot.value,
+        diffNumber: uaktToAKT(snapshotData.currentValue) - lastSnapshot.value
       };
     case Snapshots.dailyAktSpent:
       return {
         value: uaktToAKT(snapshotData.currentValue),
         diffPercent: percIncrease(previousLastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - previousLastSnapshot.value,
+        diffNumber: uaktToAKT(snapshotData.currentValue) - previousLastSnapshot.value
       };
     case Snapshots.allTimeDeploymentCount:
       return {
         value: snapshotData.currentValue,
         diffPercent: percIncrease(lastSnapshot.value, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - lastSnapshot.value,
+        diffNumber: snapshotData.currentValue - lastSnapshot.value
       };
     case Snapshots.dailyDeploymentCount:
       return {
         value: snapshotData.currentValue,
         diffPercent: percIncrease(previousLastSnapshot.value, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - previousLastSnapshot.value,
+        diffNumber: snapshotData.currentValue - previousLastSnapshot.value
       };
     case Snapshots.compute:
       return {
         value: snapshotData.currentValue / 1000,
-        diffPercent: percIncrease(
-          average(lastSnapshot.min, lastSnapshot.max),
-          snapshotData.currentValue / 1000
-        ),
-        diffNumber: snapshotData.currentValue / 1000 - average(lastSnapshot.min, lastSnapshot.max),
+        diffPercent: percIncrease(average(lastSnapshot.min, lastSnapshot.max), snapshotData.currentValue / 1000),
+        diffNumber: snapshotData.currentValue / 1000 - average(lastSnapshot.min, lastSnapshot.max)
       };
     case Snapshots.memory:
     case Snapshots.storage:
       return {
         value: snapshotData.currentValue / 1024 / 1024 / 1024,
-        diffPercent: percIncrease(
-          average(lastSnapshot.min, lastSnapshot.max),
-          snapshotData.currentValue / 1024 / 1024 / 1024
-        ),
-        diffNumber:
-          snapshotData.currentValue / 1024 / 1024 / 1024 -
-          average(lastSnapshot.min, lastSnapshot.max),
+        diffPercent: percIncrease(average(lastSnapshot.min, lastSnapshot.max), snapshotData.currentValue / 1024 / 1024 / 1024),
+        diffNumber: snapshotData.currentValue / 1024 / 1024 / 1024 - average(lastSnapshot.min, lastSnapshot.max)
       };
 
     default:
@@ -307,34 +270,32 @@ const getTitle = (snapshot: Snapshots): string => {
   }
 };
 
-const getGraphMetadataPerRange = (
-  range: SelectedRange
-): { size: number; border: number; xModulo: number } => {
+const getGraphMetadataPerRange = (range: SelectedRange): { size: number; border: number; xModulo: number } => {
   switch (range) {
     case SelectedRange["7D"]:
       return {
         size: 10,
         border: 3,
-        xModulo: 1,
+        xModulo: 1
       };
     case SelectedRange["1M"]:
       return {
         size: 6,
         border: 2,
-        xModulo: 3,
+        xModulo: 3
       };
     case SelectedRange["ALL"]:
       return {
         size: 3,
         border: 1,
-        xModulo: 5,
+        xModulo: 5
       };
 
     default:
       return {
         size: 10,
         border: 3,
-        xModulo: 1,
+        xModulo: 1
       };
   }
 };
