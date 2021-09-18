@@ -153,6 +153,80 @@
           "machineType": "B2S"
         }
       ]
+    },
+	{
+      "type": "large",
+      "cells": [
+        {
+          "provider": "akash",
+          "amount": 11,
+          "unit": "uakt",
+          "cpu": 2,
+          "ram": "8Gi",
+          "storage": "1Gi"
+        },
+        {
+          "provider": "aws",
+          "amount": 55.05,
+          "unit": "usd",
+          "cpu": 2,
+          "ram": "8Gb",
+          "machineType": "t3a.large"
+        },
+        {
+          "provider": "gcp",
+          "amount": 52.08,
+          "unit": "usd",
+          "cpu": 2,
+          "ram": "8Gb",
+          "machineType": "n1-custom"
+        },
+        {
+          "provider": "azure",
+          "amount": 72.42,
+          "unit": "usd",
+          "cpu": 2,
+          "ram": "8Gb",
+          "machineType": "B2ms"
+        }
+      ]
+    },
+	{
+      "type": "xlarge",
+      "cells": [
+        {
+          "provider": "akash",
+          "amount": 22,
+          "unit": "uakt",
+          "cpu": 4,
+          "ram": "16Gi",
+          "storage": "1Gi"
+        },
+        {
+          "provider": "aws",
+          "amount": 98.39,
+          "unit": "usd",
+          "cpu": 4,
+          "ram": "16Gb",
+          "machineType": "t3g.xlarge"
+        },
+        {
+          "provider": "gcp",
+          "amount": 104.16,
+          "unit": "usd",
+          "cpu": 4,
+          "ram": "16Gb",
+          "machineType": "n1-custom"
+        },
+        {
+          "provider": "azure",
+          "amount": 144.54,
+          "unit": "usd",
+          "cpu": 4,
+          "ram": "16Gb",
+          "machineType": "B4ms"
+        }
+      ]
     }
   ]
 }
