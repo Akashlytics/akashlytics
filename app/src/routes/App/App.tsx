@@ -19,10 +19,11 @@ const useStyles = makeStyles((theme) => ({
   appBody: {
     paddingTop: "2rem",
     paddingBottom: 80,
+    minHeight: "57vh"
   },
   appBodySmall: {
-    paddingBottom: 50,
-  },
+    paddingBottom: 50
+  }
 }));
 
 export function App() {

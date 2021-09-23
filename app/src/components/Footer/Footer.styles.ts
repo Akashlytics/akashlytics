@@ -2,7 +2,12 @@ import { makeStyles } from "@material-ui/core/styles";
 
 export const useStyles = makeStyles((theme) => ({
   root: {
-
+    background: "linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgb(38 41 48) 77%, rgb(40 44 52) 100%)",
+    borderTop: "4px solid #252930",
+    paddingTop: "2rem",
+    [theme.breakpoints.down("xs")]: {
+      textAlign: "center"
+    }
   },
   link: {
     fontWeight: "bold",
@@ -17,20 +22,32 @@ export const useStyles = makeStyles((theme) => ({
     fontSize: "1rem",
     fontWeight: "lighter"
   },
+  donationLabel: {
+    maxWidth: "15rem"
+  },
   poweredAkash: {
     margin: "2rem -1rem",
-    height: "2.5rem"
+    height: "2.5rem",
+    [theme.breakpoints.down("xs")]: {
+      marginBottom: "0rem"
+    }
   },
   sectionTitle: {
     fontWeight: "bold",
     padding: ".5rem 0",
-    fontSize: "1rem"
+    fontSize: "1rem",
+    [theme.breakpoints.down("xs")]: {
+      marginTop: "1rem"
+    }
   },
   socialLinks: {
     listStyle: "none",
     display: "flex",
     padding: 0,
-    margin: 0
+    margin: 0,
+    [theme.breakpoints.down("xs")]: {
+      justifyContent: "center"
+    }
   },
   socialLink: {
     display: "block",

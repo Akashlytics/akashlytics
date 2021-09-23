@@ -43,76 +43,85 @@ export const Footer: React.FunctionComponent<IFooterProps> = ({}) => {
   };
 
   return (
-    <footer className={clsx("container", classes.root)}>
-      <Grid container spacing={2}>
-        <Grid item sm={4}>
-          <Typography variant="h3" className={classes.title}>
-            Akashlytics
-          </Typography>
-          <Typography variant="h5" className={classes.subSitle}>
-            We make tools to boost and enhance <strong>web3</strong> adoption.
-          </Typography>
-          <img src="/images/powered-by-akash.png" className={clsx("img-fluid", classes.poweredAkash)} alt="Powered by Akash logo" />
-        </Grid>
-        <Grid item sm={8}>
-          <Grid container>
-            <Grid item sm={6}>
-              <Typography variant="body2" className={classes.sectionTitle}>
-                <strong>Support</strong>
-              </Typography>
-              <Chip label={donationAddress} size="small" deleteIcon={<FileCopyIcon fontSize="small" />} onDelete={onDonationClick} onClick={onDonationClick} />
+    <div className={classes.root}>
+      <footer className="container">
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} lg={4}>
+            <Typography variant="h3" className={classes.title}>
+              Akashlytics
+            </Typography>
+            <Typography variant="h5" className={classes.subSitle}>
+              We make tools to boost and enhance <strong>web3</strong> adoption.
+            </Typography>
+            <img src="/images/powered-by-akash.png" className={clsx("img-fluid", classes.poweredAkash)} alt="Powered by Akash logo" />
+          </Grid>
+          <Grid item xs={12} sm={6} lg={8}>
+            <Grid container>
+              <Grid item xs={12} lg={6}>
+                <Typography variant="body2" className={classes.sectionTitle}>
+                  <strong>Support</strong>
+                </Typography>
+                <Chip
+                  label={donationAddress}
+                  size="small"
+                  deleteIcon={<FileCopyIcon fontSize="small" />}
+                  onDelete={onDonationClick}
+                  onClick={onDonationClick}
+                  classes={{label: classes.donationLabel}}
+                />
+              </Grid>
+              <Grid item xs={12} lg={6}>
+                <Typography variant="body2" className={classes.sectionTitle}>
+                  Follow
+                </Typography>
+                <ul className={classes.socialLinks}>
+                  <li>
+                    <a href="https://discord.gg/rXDFNYnFwv" target="_blank" className={classes.socialLink}>
+                      <DiscordIcon className={classes.socialIcon} />
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://www.youtube.com/channel/UC1rgl1y8mtcQoa9R_RWO0UA?sub_confirmation=1" target="_blank" className={classes.socialLink}>
+                      <YouTubeIcon className={classes.socialIcon} />
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://twitter.com/thereisnomax" target="_blank" className={classes.socialLink}>
+                      <TwitterIcon className={classes.socialIcon} />
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/Akashlytics/akashlytics" target="_blank" className={classes.socialLink}>
+                      <GitHubIcon className={classes.socialIcon} />
+                    </a>
+                  </li>
+                </ul>
+              </Grid>
             </Grid>
-            <Grid item sm={6}>
+
+            <Grid item sm={12}>
               <Typography variant="body2" className={classes.sectionTitle}>
-                Follow
+                Ideas
               </Typography>
-              <ul className={classes.socialLinks}>
-                <li>
-                  <a href="https://discord.gg/rXDFNYnFwv" target="_blank" className={classes.socialLink}>
-                    <DiscordIcon className={classes.socialIcon} />
-                  </a>
-                </li>
-                <li>
-                  <a href="https://www.youtube.com/channel/UC1rgl1y8mtcQoa9R_RWO0UA?sub_confirmation=1" target="_blank" className={classes.socialLink}>
-                    <YouTubeIcon className={classes.socialIcon} />
-                  </a>
-                </li>
-                <li>
-                  <a href="https://twitter.com/thereisnomax" target="_blank" className={classes.socialLink}>
-                    <TwitterIcon className={classes.socialIcon} />
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/Akashlytics/akashlytics" target="_blank" className={classes.socialLink}>
-                    <GitHubIcon className={classes.socialIcon} />
-                  </a>
-                </li>
-              </ul>
+              <Typography variant="caption">
+                We are ready for the challenge{" "}
+                <a className={classes.link} href="mailto:ideas@akashlytics.com">
+                  ideas@akashlytics.com
+                </a>
+              </Typography>
             </Grid>
           </Grid>
-
-          <Grid item sm={12}>
-            <Typography variant="body2" className={classes.sectionTitle}>
-              Ideas
-            </Typography>
-            <Typography variant="caption">
-              We are ready for the challenge{" "}
-              <a className={classes.link} href="mailto:ideas@akashlytics.com">
-                ideas@akashlytics.com
-              </a>
-            </Typography>
-          </Grid>
         </Grid>
-      </Grid>
 
-      <Box className={classes.meta}>
-        <Box>
-          <small>Version: {process.env.PACKAGE_VERSION}</small>
+        <Box className={classes.meta}>
+          <Box>
+            <small>Version: {process.env.PACKAGE_VERSION}</small>
+          </Box>
+          <Box>
+            <CopyrightIcon /> Akashlytics
+          </Box>
         </Box>
-        <Box>
-          <CopyrightIcon /> Akashlytics
-        </Box>
-      </Box>
-    </footer>
+      </footer>
+    </div>
   );
 };
