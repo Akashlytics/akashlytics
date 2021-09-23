@@ -3,11 +3,12 @@ version: "2.0"
 
 services:
   web:
-    image: baktun/akashlytics:0.8.7
+    image: baktun/akashlytics:0.9.0
     expose:
       - port: 3080
         as: 80
         accept:
+          - beta.akashlytics.com
           - www.akashlytics.com
           - akashlytics.com
         to:
@@ -24,9 +25,9 @@ profiles:
         cpu:
           units: 1
         memory:
-          size: 1Gi
+          size: 2Gi
         storage:
-          size: 5Gi
+          size: 20Gi
   placement:
     dcloud:
       attributes:
@@ -37,7 +38,7 @@ profiles:
       pricing:
         web:
           denom: uakt
-          amount: 100
+          amount: 1000
 
 deployment:
   web:
