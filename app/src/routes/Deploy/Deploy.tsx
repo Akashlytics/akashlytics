@@ -44,7 +44,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 variant="contained"
                 classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
                 component="a"
-                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy%20Setup%200.3.0.exe"
+                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy%20Setup%200.3.1.exe"
               >
                 Windows
               </Button>
@@ -54,7 +54,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 variant="contained"
                 classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
                 component="a"
-                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy-0.3.0.dmg"
+                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy-0.3.1.dmg"
               >
                 macOS
               </Button>
@@ -63,7 +63,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
             <Box display="flex" alignItems="center" justifyContent="center">
               <Chip color="primary" label="BETA" size="small" />
               &nbsp;&nbsp;
-              <Typography variant="caption">v0.3.0</Typography>
+              <Typography variant="caption">v0.3.1</Typography>
             </Box>
 
             <Alert severity="info" className={classes.alert}>
