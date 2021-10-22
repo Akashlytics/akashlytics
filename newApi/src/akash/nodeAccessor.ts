@@ -38,7 +38,7 @@ export function createNodeAccessor() {
           endpoint: x.endpoint,
           fetching: x
             .pendingQueries()
-            .map((x) => x.startsWith("/blocks") ? x.replace("/blocks/", "") : x.substring(60))
+            .map((x) => (x.startsWith("/blocks") ? x.replace("/blocks/", "") : x.substring(60)))
             .join(","),
           fetched: x.count(),
           errors: x.errorCount()
@@ -46,7 +46,7 @@ export function createNodeAccessor() {
       );
     }
   };
-};
+}
 
 function createEndpointAccessor(endpoint, maxConcurrentQueries) {
   let pendingQueries = [];
@@ -63,26 +63,30 @@ function createEndpointAccessor(endpoint, maxConcurrentQueries) {
     },
     fetch: async (url, callback) => {
       pendingQueries.push(url);
-      const fullUrl = endpoint + url;
 
-      const response = await fetch(fullUrl);
+      try {
+        const fullUrl = endpoint + url;
 
-      if (response.status === 200) {
-        count++;
-        const json = await response.json();
+        const response = await fetch(fullUrl);
 
-        if (callback) {
-          await callback(json);
+        if (response.status === 200) {
+          count++;
+          const json = await response.json();
+
+          if (callback) {
+            await callback(json);
+          }
+          await sleep(Math.random() * 400 + 100);
+
+          return json;
+        } else {
+          throw response;
         }
-        await sleep(Math.random() * 400 + 100);
-
-        pendingQueries = pendingQueries.filter((x) => x !== url);
-
-        return json;
-      } else {
-        console.error(response);
+      } catch (err) {
         errorCount++;
-        throw response;
+        throw err;
+      } finally {
+        pendingQueries = pendingQueries.filter((x) => x !== url);
       }
     }
   };
