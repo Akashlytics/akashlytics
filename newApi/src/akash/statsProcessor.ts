@@ -449,6 +449,7 @@ async function handleDepositDeployment(encodedMessage, height, time) {
   });
 
   deployment.deposit += parseFloat(decodedMessage.amount.amount);
+  deployment.balance += parseFloat(decodedMessage.amount.amount);
   await deployment.save();
 }
 
