@@ -1,6 +1,6 @@
 import express from "express";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
-import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue, getTotalSpent } from "./db/networkRevenueProvider";
+import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue, getTotalSpent, getDailySpentGraph } from "./db/networkRevenueProvider";
 import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
@@ -52,6 +52,15 @@ app.get("/getTotalSpent", async (req, res) => {
     console.error(err);
   }
 });
+
+app.get("/getDailySpentGraph", async (req, res) => {
+  try {
+    const dailySpentGraph = await getDailySpentGraph();
+    res.send(dailySpentGraph)
+  } catch (err) {
+    console.error(err)
+  }
+})
 
 app.get("/status", async (req, res) => {
   console.log("getting debug infos");

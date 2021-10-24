@@ -2,12 +2,13 @@ import { Op } from "sequelize";
 import { Lease, PriceHistory, DailyNetworkRevenue, Block, Transaction, Deployment } from "./schema";
 import { add, addDays, differenceInMinutes } from "date-fns";
 import { v4 } from "uuid";
-import { endOfDay, getTodayUTC, startOfDay } from "@src/shared/utils/date";
+import { endOfDay, getTodayUTC, startOfDay, toUTC } from "@src/shared/utils/date";
 import { round, uaktToAKT } from "@src/shared/utils/math";
 import { isSyncing, syncingStatus } from "@src/akash/akashSync";
 import { processingStatus } from "@src/akash/statsProcessor";
 import { sleep } from "@src/shared/utils/delay";
 import { isSyncingPrices } from "./priceHistoryProvider";
+import { DailySpentGraph } from "@src/models/revenue";
 
 let isLastComputingSuccess = false;
 let isCalculatingRevenue = false;
@@ -18,6 +19,9 @@ let cachedRevenueDate = null;
 
 let cachedTotalSpent = null;
 let cachedTotalSpentDate = null;
+
+let cachedDailySpentGraph = null
+let cachedDailySpentGraphDate = null
 
 export const getTotalSpent = async () => {
 
@@ -32,11 +36,14 @@ export const getTotalSpent = async () => {
 
   const endHeight: number = await Block.max("height");
 
-  const currentDate = getTodayUTC();
+  const currentDate = toUTC(new Date());
+  const yesterday = addDays(currentDate, -1)
+  console.log(currentDate, yesterday);
+
   const oneDayAgoHeight: number = await Block.min("height", {
     where: {
       datetime: {
-        [Op.gte]: addDays(currentDate, -1)
+        [Op.gte]: yesterday
       }
     }
   });
@@ -382,6 +389,72 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
 
   cachedRevenue = responseObj;
   cachedRevenueDate = new Date();
+
+  return responseObj;
+};
+
+export const getDailySpentGraph = async () => {
+  if (cachedDailySpentGraph && cachedDailySpentGraphDate && Math.abs(differenceInMinutes(cachedDailySpentGraphDate, new Date())) < 30) {
+    return cachedDailySpentGraph;
+  }
+
+  while (isCalculatingRevenue || isSyncingPrices) {
+    await sleep(5000);
+  }
+
+  if (!isLastComputingSuccess) {
+    throw "Throwing instead of returning invalid data";
+  }
+
+  const dailyNetworkRevenues = await DailyNetworkRevenue.findAll({
+    raw: true,
+    order: [["date", "ASC"]]
+  });
+
+  let days: DailySpentGraph[] = dailyNetworkRevenues.map((r) => ({
+    date: new Date(r.date),
+    revenue: r.amount,
+    revenueUAkt: r.amountUAkt,
+    aktPrice: r.aktPrice,
+  }));
+
+  for (let i = 0; i < days.length; i++) {
+    const current = days[i];
+    if (i === 0) {
+      current.total = current.revenue
+      current.totalUAkt = current.revenueUAkt
+    } else {
+      const prev = days[i - 1];
+      current.total = prev.total + current.revenue;
+      current.totalUAkt = prev.totalUAkt + current.revenueUAkt;
+    }
+  }
+
+  const endHeight: number = await Block.max("height");
+
+  const currentDate = toUTC(new Date());
+  const oneDayAgoHeight: number = await Block.min("height", {
+    where: {
+      datetime: {
+        [Op.gte]: addDays(currentDate, -1)
+      }
+    }
+  });
+
+  const revenueLast24 = await computeRevenueForBlocks(oneDayAgoHeight, endHeight);
+
+  const totalUAkt = await DailyNetworkRevenue.sum("amountUAkt");
+  const totalUSD = await DailyNetworkRevenue.sum("amount");
+
+  const responseObj = {
+    totalUAkt,
+    totalUSD,
+    last24: revenueLast24,
+    days
+  }
+
+  cachedDailySpentGraph = responseObj;
+  cachedDailySpentGraphDate = new Date();
 
   return responseObj;
 };
