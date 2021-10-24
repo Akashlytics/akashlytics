@@ -5,6 +5,9 @@ export interface RevenueAmount {
 }
 
 export interface SpentStats {
+  amountAkt: number;
+  amountUAkt: number;
+  amountUSD: number;
   revenueLast24: RevenueAmount;
   revenuePrevious24: RevenueAmount;
 }

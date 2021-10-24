@@ -21,11 +21,12 @@ let cachedTotalSpentDate = null;
 
 export const getTotalSpent = async () => {
 
-  if(cachedTotalSpent != null && differenceInMinutes(new Date(), cachedTotalSpentDate) <= 15){
+  if (cachedTotalSpent != null && differenceInMinutes(new Date(), cachedTotalSpentDate) <= 15) {
     return cachedTotalSpent;
   }
 
   console.time("compute");
+
   const amountUAkt = await DailyNetworkRevenue.sum("amountUAkt");
   const amountUSD = await DailyNetworkRevenue.sum("amount");
 
@@ -61,6 +62,8 @@ export const getTotalSpent = async () => {
 
   cachedTotalSpent = response;
   cachedTotalSpentDate = new Date();
+
+  console.timeEnd("compute")
 
   return response;
 };
