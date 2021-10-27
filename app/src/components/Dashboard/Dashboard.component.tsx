@@ -84,7 +84,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             }
             text="Daily AKT spent"
             tooltip="Last 24h"
-            graphPath={`/graph/${SnapshotsUrlParam.dailyAktSpent}`}
+            graphPath={`/revenue/daily`}
             diffNumber={uaktToAKT(dashboardData.spentStats?.revenueLast24.uakt - dashboardData.spentStats?.revenuePrevious24.uakt)}
             diffPercent={percIncrease(dashboardData.spentStats?.revenuePrevious24.uakt, dashboardData.spentStats?.revenueLast24.uakt)}
           />
@@ -99,7 +99,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             }
             text="Total spent on decloud"
             tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
-            graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
+            graphPath={`/revenue/total`}
             diffNumber={dashboardData.spentStats?.amountAkt - (dashboardData.spentStats?.amountAkt - dashboardData.spentStats?.revenueLast24.akt)}
             diffPercent={percIncrease(dashboardData.spentStats?.amountAkt - dashboardData.spentStats?.revenueLast24.akt, dashboardData.spentStats?.amountAkt)}
           />

@@ -24,7 +24,6 @@ let cachedDailySpentGraph = null
 let cachedDailySpentGraphDate = null
 
 export const getTotalSpent = async () => {
-
   if (cachedTotalSpent != null && differenceInMinutes(new Date(), cachedTotalSpentDate) <= 15) {
     return cachedTotalSpent;
   }
@@ -37,8 +36,7 @@ export const getTotalSpent = async () => {
   const endHeight: number = await Block.max("height");
 
   const currentDate = toUTC(new Date());
-  const yesterday = addDays(currentDate, -1)
-  console.log(currentDate, yesterday);
+  const yesterday = addDays(currentDate, -1);
 
   const oneDayAgoHeight: number = await Block.min("height", {
     where: {
@@ -97,7 +95,7 @@ async function computeRevenueForBlocks(startBlock: number, endBlock: number) {
     where: {
       firstBlockOfDay: true,
       height: {
-        [Op.gte]: startBlock,
+        [Op.gte]: startBlock - 15000,
         [Op.lt]: endBlock
       }
     }
@@ -107,7 +105,7 @@ async function computeRevenueForBlocks(startBlock: number, endBlock: number) {
 
   for (let i = 0; i < firstBlockOfDays.length; i++) {
     const startOfDayDate = startOfDay(firstBlockOfDays[i].datetime);
-    const firstBlockOfDay = firstBlockOfDays[i].height;
+    const firstBlockOfDay = Math.max(firstBlockOfDays[i].height, startBlock);
     const lastBlockOfDay = i + 1 >= firstBlockOfDays.length ? endBlock : firstBlockOfDays[i + 1].height;
 
     const activeLeasesForDay = activeLeases.filter((l) => l.createdHeight < lastBlockOfDay && (!l.closedHeight || l.closedHeight >= firstBlockOfDay));
@@ -267,7 +265,7 @@ export const getStatus = async () => {
 };
 
 export const getWeb3IndexRevenue = async (debug: boolean) => {
-  if (cachedRevenue && cachedRevenueDate && Math.abs(differenceInMinutes(cachedRevenueDate, new Date())) < 30) {
+  if (!debug && cachedRevenue && cachedRevenueDate && Math.abs(differenceInMinutes(cachedRevenueDate, new Date())) < 30) {
     return cachedRevenue;
   }
 
@@ -394,7 +392,7 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
 };
 
 export const getDailySpentGraph = async () => {
-  if (cachedDailySpentGraph && cachedDailySpentGraphDate && Math.abs(differenceInMinutes(cachedDailySpentGraphDate, new Date())) < 30) {
+  if (cachedDailySpentGraph && cachedDailySpentGraphDate && Math.abs(differenceInMinutes(cachedDailySpentGraphDate, new Date())) < 15) {
     return cachedDailySpentGraph;
   }
 
@@ -406,8 +404,15 @@ export const getDailySpentGraph = async () => {
     throw "Throwing instead of returning invalid data";
   }
 
+  const currentDate = toUTC(new Date());
+
   const dailyNetworkRevenues = await DailyNetworkRevenue.findAll({
     raw: true,
+    where: {
+      date: {
+        [Op.lt]: addDays(currentDate, -1)
+      }
+    },
     order: [["date", "ASC"]]
   });
 
@@ -432,7 +437,6 @@ export const getDailySpentGraph = async () => {
 
   const endHeight: number = await Block.max("height");
 
-  const currentDate = toUTC(new Date());
   const oneDayAgoHeight: number = await Block.min("height", {
     where: {
       datetime: {

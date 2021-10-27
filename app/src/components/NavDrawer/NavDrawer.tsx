@@ -64,7 +64,7 @@ export function NavDrawer({ isDrawerOpen, toggleDrawer }) {
               >
                 <img
                   src="/images/akash-network-akt-logo.png"
-                  alt="Akash logo"
+                  alt="Akashlytics logo"
                   className={clsx(classes.listSubHeaderLogo, "App-logo")}
                 />
 

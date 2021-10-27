@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { ResponsiveLineCanvas } from "@nivo/line";
 import { FormattedDate, FormattedNumber, useIntl } from "react-intl";
 import { useMediaQueryContext } from "../../context/MediaQueryProvider";
-import { useStyles } from "./Graph.styles";
-import { GraphResponse, Snapshots, SnapshotsUrlParam, SnapshotValue } from "@src/shared/models";
+import { useStyles } from "./Revenue.styles";
+import { DailySpentGraph, DailySpentGraphResponse, GraphResponse, Snapshots, SnapshotsUrlParam, SnapshotValue } from "@src/shared/models";
 import { Box, Button, ButtonGroup, CircularProgress, Typography } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import clsx from "clsx";
@@ -11,42 +11,43 @@ import { useHistory, useLocation, useParams } from "react-router";
 import { Helmet } from "react-helmet-async";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 import { urlParamToSnapshot } from "@src/shared/utils/snapshotsUrlHelpers";
-import { useGraphSnapshot } from "@src/queries/useGrapsQuery";
+import { useGraphSnapshot, useRevenueGraph } from "@src/queries/useGrapsQuery";
 import { average, nFormatter, percIncrease, round, uaktToAKT } from "@src/shared/utils/mathHelpers";
 import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
 import { DiffNumber } from "@src/shared/components/DiffNumber";
 import { SelectedRange } from "@src/shared/contants";
 
-export interface IGraphProps {}
+type RevenueVariant = "total" | "daily";
 
-export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
+export interface IRevenueProps {}
+
+export const Revenue: React.FunctionComponent<IRevenueProps> = ({}) => {
+  const { variant } = useParams<{ variant: RevenueVariant }>();
   const [selectedRange, setSelectedRange] = useState(SelectedRange["7D"]);
-  const { snapshot: snapshotUrlParam } = useParams<{ snapshot: string }>();
-  const snapshot = urlParamToSnapshot(snapshotUrlParam as SnapshotsUrlParam);
-  const { data: snapshotData, status } = useGraphSnapshot(snapshot);
+  const { data: revenueGraphData, status } = useRevenueGraph();
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
   const theme = getTheme();
   const intl = useIntl();
-  const rangedData = snapshotData && snapshotData.snapshots.slice(snapshotData.snapshots.length - selectedRange, snapshotData.snapshots.length);
-  const minValue = rangedData && rangedData.map((x) => x.min || x.value).reduce((a, b) => (a < b ? a : b));
-  const maxValue = snapshotData && rangedData.map((x) => x.max || x.value).reduce((a, b) => (a > b ? a : b));
-  const isAverage = snapshotData && rangedData.some((x) => x.average);
-  const graphData = snapshotData
+  const rangedData: DailySpentGraph[] =
+    revenueGraphData && revenueGraphData.days.slice(revenueGraphData.days.length - selectedRange, revenueGraphData.days.length);
+  const minValue = rangedData && rangedData.map((x) => uaktToAKT(variant === "total" ? x.totalUAkt : x.revenueUAkt)).reduce((a, b) => (a < b ? a : b));
+  const maxValue = rangedData && rangedData.map((x) => uaktToAKT(variant === "total" ? x.totalUAkt : x.revenueUAkt)).reduce((a, b) => (a > b ? a : b));
+  const graphData = rangedData
     ? [
         {
-          id: snapshot,
+          id: variant,
           color: "rgb(1,0,0)",
-          data: rangedData.map((snapshot) => ({
-            x: snapshot.date,
-            y: round(snapshot.average ? snapshot.average : snapshot.value)
+          data: rangedData.map((dataPoint) => ({
+            x: dataPoint.date,
+            y: round(uaktToAKT(variant === "total" ? dataPoint.totalUAkt : dataPoint.revenueUAkt))
           }))
         }
       ]
     : null;
-  const title = getTitle(snapshot as Snapshots);
-  const snapshotMetadata = snapshotData && getSnapshotMetadata(snapshot as Snapshots, snapshotData);
-  const graphMetadata = getGraphMetadataPerRange(selectedRange);
+  const title = getTitle(variant);
+  const graphMetadata = revenueGraphData && getGraphMetadata(variant, revenueGraphData);
+  const graphMetadataPerRange = getGraphMetadataPerRange(selectedRange);
 
   return (
     <div className={clsx("container", classes.root)}>
@@ -66,22 +67,22 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
         </div>
       </div>
 
-      {!snapshotData && status === "loading" && (
+      {!revenueGraphData && status === "loading" && (
         <div className={classes.loading}>
           <CircularProgress size={80} />
         </div>
       )}
 
-      {snapshotData && (
+      {revenueGraphData && (
         <>
           <Box className={classes.subTitle}>
             <Box className={classes.subTitleValues}>
               <Typography variant="h3" className={classes.titleValue}>
-                <FormattedNumber value={snapshotMetadata.value} maximumFractionDigits={2} />
+                <FormattedNumber value={graphMetadata.value} maximumFractionDigits={2} />
                 &nbsp;
-                <DiffPercentageChip value={snapshotMetadata.diffPercent} size="medium" />
+                <DiffPercentageChip value={graphMetadata.diffPercent} size="medium" />
                 &nbsp;
-                <DiffNumber value={snapshotMetadata.diffNumber} className={classes.diffNumber} />
+                <DiffNumber value={graphMetadata.diffNumber} className={classes.diffNumber} />
               </Typography>
             </Box>
 
@@ -118,7 +119,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               axisBottom={{
                 tickRotation: mediaQuery.mobileView ? 45 : 0,
                 format: (dateStr) => intl.formatDate(dateStr, { day: "numeric", month: "short", timeZone: "utc" }),
-                tickValues: getTickValues(rangedData, graphMetadata.xModulo)
+                tickValues: getTickValues(rangedData, graphMetadataPerRange.xModulo)
               }}
               // @ts-ignore will be fixed in 0.69.1
               axisLeft={{
@@ -127,10 +128,10 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               axisTop={null}
               axisRight={null}
               colors={"#e41e13"}
-              pointSize={graphMetadata.size}
+              pointSize={graphMetadataPerRange.size}
               pointBorderColor="#e41e13"
               pointColor={"#ffffff"}
-              pointBorderWidth={graphMetadata.border}
+              pointBorderWidth={graphMetadataPerRange.border}
               isInteractive={true}
               tooltip={(props) => (
                 <div className={classes.graphTooltip}>
@@ -144,14 +145,6 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               enableCrosshair={true}
             />
           </div>
-
-          {isAverage && (
-            <div className="row">
-              <div className="col-lg-12">
-                <p className={clsx(classes.graphExplanation)}>* The data points represent the average between the minimum and maximum value for the day.</p>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>
@@ -185,52 +178,24 @@ const getTheme = () => {
   };
 };
 
-const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): { value?: number; diffNumber?: number; diffPercent?: number } => {
-  const lastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 1];
-  const previousLastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 2];
-  switch (snapshot) {
-    case Snapshots.activeDeployment:
+const getGraphMetadata = (
+  variant: RevenueVariant,
+  revenueGraphData: DailySpentGraphResponse
+): { value?: number; diffNumber?: number; diffPercent?: number } => {
+  const lastData = revenueGraphData.days[revenueGraphData.days.length - 1];
+  const previousLastData = revenueGraphData.days[revenueGraphData.days.length - 2];
+  switch (variant) {
+    case "total":
       return {
-        value: snapshotData.currentValue,
-        diffPercent: percIncrease(Math.ceil(average(lastSnapshot.min, lastSnapshot.max)), snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - Math.ceil(average(lastSnapshot.min, lastSnapshot.max))
+        value: uaktToAKT(revenueGraphData.totalUAkt),
+        diffPercent: percIncrease(previousLastData.totalUAkt, lastData.totalUAkt),
+        diffNumber: uaktToAKT(lastData.totalUAkt - previousLastData.totalUAkt)
       };
-    case Snapshots.totalAKTSpent:
+    case "daily":
       return {
-        value: uaktToAKT(snapshotData.currentValue),
-        diffPercent: percIncrease(lastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - lastSnapshot.value
-      };
-    case Snapshots.dailyAktSpent:
-      return {
-        value: uaktToAKT(snapshotData.currentValue),
-        diffPercent: percIncrease(previousLastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - previousLastSnapshot.value
-      };
-    case Snapshots.allTimeDeploymentCount:
-      return {
-        value: snapshotData.currentValue,
-        diffPercent: percIncrease(lastSnapshot.value, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - lastSnapshot.value
-      };
-    case Snapshots.dailyDeploymentCount:
-      return {
-        value: snapshotData.currentValue,
-        diffPercent: percIncrease(previousLastSnapshot.value, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - previousLastSnapshot.value
-      };
-    case Snapshots.compute:
-      return {
-        value: snapshotData.currentValue / 1000,
-        diffPercent: percIncrease(average(lastSnapshot.min, lastSnapshot.max), snapshotData.currentValue / 1000),
-        diffNumber: snapshotData.currentValue / 1000 - average(lastSnapshot.min, lastSnapshot.max)
-      };
-    case Snapshots.memory:
-    case Snapshots.storage:
-      return {
-        value: snapshotData.currentValue / 1024 / 1024 / 1024,
-        diffPercent: percIncrease(average(lastSnapshot.min, lastSnapshot.max), snapshotData.currentValue / 1024 / 1024 / 1024),
-        diffNumber: snapshotData.currentValue / 1024 / 1024 / 1024 - average(lastSnapshot.min, lastSnapshot.max)
+        value: revenueGraphData.last24.akt,
+        diffPercent: percIncrease(previousLastData.revenueUAkt, lastData.revenueUAkt),
+        diffNumber: uaktToAKT(lastData.revenueUAkt - previousLastData.revenueUAkt)
       };
 
     default:
@@ -238,24 +203,12 @@ const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): 
   }
 };
 
-const getTitle = (snapshot: Snapshots): string => {
-  switch (snapshot) {
-    case Snapshots.activeDeployment:
-      return "Active deployments";
-    case Snapshots.totalAKTSpent:
+const getTitle = (variant: RevenueVariant): string => {
+  switch (variant) {
+    case "total":
       return "Total AKT spent";
-    case Snapshots.allTimeDeploymentCount:
-      return "All-time deployment count";
-    case Snapshots.compute:
-      return "Number of vCPUs currently leased";
-    case Snapshots.memory:
-      return "Number of Gi of memory currently leased";
-    case Snapshots.storage:
-      return "Number of Gi of disk currently leased";
-    case Snapshots.dailyAktSpent:
+    case "daily":
       return "Daily AKT spent";
-    case Snapshots.dailyDeploymentCount:
-      return "Daily new deployment count";
 
     default:
       return "Graph not found.";
@@ -292,7 +245,7 @@ const getGraphMetadataPerRange = (range: SelectedRange): { size: number; border:
   }
 };
 
-const getTickValues = (rangedData: SnapshotValue[], modulo: number) => {
+const getTickValues = (rangedData: DailySpentGraph[], modulo: number) => {
   const values = rangedData.reverse().filter((data, i) => i % modulo === 0);
   const maxLength = 10;
 

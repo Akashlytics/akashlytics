@@ -10,10 +10,10 @@ import { Faq } from "@src/routes/Faq";
 import { makeStyles } from "@material-ui/core/styles";
 import { Graph } from "../Graph";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
-import { useDashboardData } from "@src/queries/useDashboardData";
 import { Deploy } from "@src/routes/Deploy";
 import { Footer } from "@src/components/Footer";
 import { BetaBanner } from "@src/components/BetaBanner";
+import { Revenue } from "../Revenue";
 
 const useStyles = makeStyles((theme) => ({
   appBody: {
@@ -27,7 +27,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export function App() {
-  const { data: dashboardData, status } = useDashboardData();
 
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
@@ -46,7 +45,10 @@ export function App() {
             <Faq />
           </Route>
           <Route path="/price-compare">
-            <PriceCompare marketData={dashboardData && dashboardData.marketData} />
+            <PriceCompare />
+          </Route>
+          <Route path="/revenue/:variant">
+            <Revenue />
           </Route>
           <Route path="/graph/:snapshot">
             <Graph />
@@ -55,7 +57,7 @@ export function App() {
             <Deploy />
           </Route>
           <Route path="/">
-            <Home deploymentCounts={dashboardData} />
+            <Home />
           </Route>
         </Switch>
       </div>

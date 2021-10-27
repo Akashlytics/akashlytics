@@ -7,12 +7,13 @@ import { Dashboard } from "../../components/Dashboard";
 import { DashboardData } from "@src/shared/models";
 import { FormattedDate, FormattedTime } from "react-intl";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
+import { useDashboardData } from "@src/queries/useDashboardData";
 
 export interface IHomeProps {
-  deploymentCounts: DashboardData;
 }
 
-export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) => {
+export const Home: React.FunctionComponent<IHomeProps> = ({ }) => {
+  const { data: dashboardData, status } = useDashboardData();
   const classes = useStyles();
   const mediaQuery = useMediaQueryContext();
 
@@ -20,9 +21,9 @@ export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) 
     <>
       <Helmet title="Dashboard" />
       <div className={clsx("container")}>
-        {deploymentCounts ? (
+        {dashboardData ? (
           <>
-            <Dashboard dashboardData={deploymentCounts} />
+            <Dashboard dashboardData={dashboardData} />
 
             <div className="row mt-5">
               <div
@@ -30,8 +31,8 @@ export const Home: React.FunctionComponent<IHomeProps> = ({ deploymentCounts }) 
                   "text-center": mediaQuery.smallScreen,
                 })}
               >
-                Last updated: <FormattedDate value={deploymentCounts.lastRefreshDate} />{" "}
-                <FormattedTime value={deploymentCounts.lastRefreshDate} />
+                Last updated: <FormattedDate value={dashboardData.lastRefreshDate} />{" "}
+                <FormattedTime value={dashboardData.lastRefreshDate} />
               </div>
             </div>
           </>

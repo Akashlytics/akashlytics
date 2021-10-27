@@ -1,85 +1,74 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
-  Chip,
-  Typography,
-} from "@material-ui/core";
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Chip, Typography } from "@material-ui/core";
 import clsx from "clsx";
 import { FormattedNumber, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
 import { MarketData } from "@src/shared/models";
+import { useDashboardData } from "@src/queries/useDashboardData";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    paddingBottom: 100,
+    paddingBottom: 100
   },
   table: {
-    minWidth: 650,
+    minWidth: 650
   },
   titleContainer: {
     textAlign: "center",
-    marginBottom: "3rem",
+    marginBottom: "3rem"
   },
   pageTitle: {
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   tableHeader: {
-    textTransform: "uppercase",
+    textTransform: "uppercase"
   },
   dataCell: {
     verticalAlign: "initial",
-    borderBottom: "none",
+    borderBottom: "none"
   },
   discountCell: {
-    padding: 8,
+    padding: 8
   },
   discountChip: {
-    fontWeight: "bold",
+    fontWeight: "bold"
   },
   discountChipGreen: {
-    backgroundColor: "#0d900d",
+    backgroundColor: "#0d900d"
   },
   discountLabel: {
     fontWeight: "bold",
-    fontSize: "1rem",
+    fontSize: "1rem"
   },
   tableRow: {
     "&:last-child td": {
-      paddingBottom: 20,
-    },
+      paddingBottom: 20
+    }
   },
   disclaimerRow: {
-    marginTop: 50,
+    marginTop: 50
   },
   disclaimerTitle: {
     fontWeight: "bold",
-    marginBottom: "1rem",
+    marginBottom: "1rem"
   },
   disclaimerList: {
-    textDecoration: "none",
+    textDecoration: "none"
   },
   link: {
     fontWeight: "bold",
-    textDecoration: "underline",
-  },
+    textDecoration: "underline"
+  }
 }));
 
-interface IPriceCompareProps {
-  marketData: MarketData;
-}
+interface IPriceCompareProps {}
 
-export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ marketData }) => {
+export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({}) => {
+  const { data: dashboardData, status } = useDashboardData();
   const classes = useStyles();
   const [priceComparisons, setPriceComparisons] = useState(null);
+  const marketData = dashboardData?.marketData;
   const intl = useIntl();
 
   useEffect(() => {
@@ -142,30 +131,16 @@ export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ mark
                     return (
                       <React.Fragment key={row.type}>
                         <TableRow>
-                          <TableCell
-                            align="center"
-                            component="th"
-                            scope="row"
-                            className={classes.dataCell}
-                          >
+                          <TableCell align="center" component="th" scope="row" className={classes.dataCell}>
                             {row.type}
                           </TableCell>
                           {row.cells.map((cell) => (
-                            <ProviderCell
-                              key={`${cell.provider}_${cell.amount}_${cell.unit}`}
-                              cell={cell}
-                              marketData={marketData}
-                            />
+                            <ProviderCell key={`${cell.provider}_${cell.amount}_${cell.unit}`} cell={cell} marketData={marketData} />
                           ))}
                         </TableRow>
 
                         <TableRow className={classes.tableRow}>
-                          <TableCell
-                            align="center"
-                            component="th"
-                            scope="row"
-                            className={classes.discountCell}
-                          ></TableCell>
+                          <TableCell align="center" component="th" scope="row" className={classes.discountCell}></TableCell>
                           {row.cells.map((cell, i) => {
                             const isAkash = cell.provider === "akash";
                             const discount = +(akashPrice - cell.amount) / cell.amount;
@@ -179,12 +154,12 @@ export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ mark
                                 {!isAkash ? (
                                   <Chip
                                     className={clsx(classes.discountChip, {
-                                      [classes.discountChipGreen]: discount < 0,
+                                      [classes.discountChipGreen]: discount < 0
                                     })}
                                     size="small"
                                     label={intl.formatNumber(discount, {
                                       style: "percent",
-                                      maximumFractionDigits: 2,
+                                      maximumFractionDigits: 2
                                     })}
                                   />
                                 ) : (
@@ -211,59 +186,31 @@ export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ mark
           </Typography>
 
           <u className={classes.disclaimerList}>
+            <li>These prices may vary. I strongly suggest that you do your own research as I might have miss-calculated some of the providers pricing.</li>
+            <li>The specifications used for comparisons are mostly focused on CPU and RAM as storage is usually rather cheap.</li>
             <li>
-              These prices may vary. I strongly suggest that you do your own research as I might
-              have miss-calculated some of the providers pricing.
-            </li>
-            <li>
-              The specifications used for comparisons are mostly focused on CPU and RAM as storage
-              is usually rather cheap.
-            </li>
-            <li>
-              As of today, the minimum pricing for a lease on akash is 1uakt (.000001akt) per block
-              at an average of 1 block per 6 second, which gives ~.423akt/month. To counter the rise
-              of prices, Akash will introduce fractional pricing which will enable even lower
-              prices. Please refer to this{" "}
-              <a
-                href="https://akash.network/blog/akash-mainnet-2-update-april-29-2021/"
-                target="_blank"
-                rel="noopener"
-                className={classes.link}
-              >
+              As of today, the minimum pricing for a lease on akash is 1uakt (.000001akt) per block at an average of 1 block per 6 second, which gives
+              ~.423akt/month. To counter the rise of prices, Akash will introduce fractional pricing which will enable even lower prices. Please refer to this{" "}
+              <a href="https://akash.network/blog/akash-mainnet-2-update-april-29-2021/" target="_blank" rel="noopener" className={classes.link}>
                 article.
               </a>
             </li>
             <li>
-              To calculate the pricing for Akash, I created a deployment with the given
-              specifications and took the best available bid. This might change in the future.
+              To calculate the pricing for Akash, I created a deployment with the given specifications and took the best available bid. This might change in the
+              future.
             </li>
             <li>
-              <a
-                href="https://calculator.s3.amazonaws.com/index.html"
-                target="_blank"
-                rel="noopener"
-                className={classes.link}
-              >
+              <a href="https://calculator.s3.amazonaws.com/index.html" target="_blank" rel="noopener" className={classes.link}>
                 Amazon Web Service pricing calculator
               </a>
             </li>
             <li>
-              <a
-                href="https://cloud.google.com/products/calculator"
-                target="_blank"
-                rel="noopener"
-                className={classes.link}
-              >
+              <a href="https://cloud.google.com/products/calculator" target="_blank" rel="noopener" className={classes.link}>
                 Google cloud platform pricing calculator
               </a>
             </li>
             <li>
-              <a
-                href="https://azure.microsoft.com/en-us/pricing/calculator/"
-                target="_blank"
-                rel="noopener"
-                className={classes.link}
-              >
+              <a href="https://azure.microsoft.com/en-us/pricing/calculator/" target="_blank" rel="noopener" className={classes.link}>
                 Microsoft Azure pricing calculator
               </a>
             </li>
@@ -277,33 +224,33 @@ export const PriceCompare: React.FunctionComponent<IPriceCompareProps> = ({ mark
 const useCellStyles = makeStyles((theme) => ({
   root: {
     verticalAlign: "initial",
-    borderBottom: "none",
+    borderBottom: "none"
   },
   amount: {
     fontWeight: "bold",
     fontSize: "1rem",
-    paddingBottom: "5px",
+    paddingBottom: "5px"
   },
   aktAmount: {
-    marginTop: ".5rem",
+    marginTop: ".5rem"
   },
   unitContainer: {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    lineHeight: 1,
+    lineHeight: 1
   },
   unitLabel: {
     flexBasis: "50%",
     textAlign: "right",
-    paddingRight: 5,
+    paddingRight: 5
   },
   unitValue: {
     flexBasis: "50%",
     textAlign: "left",
     paddingLeft: 5,
-    fontWeight: "bold",
-  },
+    fontWeight: "bold"
+  }
 }));
 
 const ProviderCell = ({ cell, marketData }: { cell: any; marketData: MarketData }) => {
@@ -315,11 +262,7 @@ const ProviderCell = ({ cell, marketData }: { cell: any; marketData: MarketData 
       <div className={classes.amount}>
         {isAkash ? (
           <div>
-            <FormattedNumber
-              value={cell.amount * 0.432 * marketData.price}
-              style="currency"
-              currency="USD"
-            />
+            <FormattedNumber value={cell.amount * 0.432 * marketData.price} style="currency" currency="USD" />
           </div>
         ) : (
           <FormattedNumber value={cell.amount} style="currency" currency="USD" />

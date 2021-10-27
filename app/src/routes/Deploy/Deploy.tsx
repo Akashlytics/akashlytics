@@ -58,6 +58,16 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
               >
                 macOS
               </Button>
+
+              <Button
+                size="large"
+                variant="contained"
+                classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
+                component="a"
+                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics%20Deploy-0.3.1.AppImage"
+              >
+                Linux
+              </Button>
             </div>
 
             <Box display="flex" alignItems="center" justifyContent="center">
