@@ -4,36 +4,26 @@ import AttachMoneyIcon from "@material-ui/icons/AttachMoney";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import HelpIcon from "@material-ui/icons/Help";
 import clsx from "clsx";
-import {
-  Typography,
-  List,
-  ListSubheader,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  SwipeableDrawer,
-} from "@material-ui/core";
+import { Typography, List, ListSubheader, ListItem, ListItemText, ListItemIcon, SwipeableDrawer } from "@material-ui/core";
 import { Link } from "react-router-dom";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 
 const useStyles = makeStyles((theme) => ({
   list: {
-    width: 250,
+    width: 250
   },
   listSubHeader: {
     display: "flex",
     paddingTop: 15,
     paddingBottom: 15,
-    alignItem: "center",
+    alignItem: "center"
   },
   listSubHeaderLogo: {
-    height: 30,
-    width: 30,
-    marginRight: 25,
+    height: "4rem"
   },
   listSubHeaderTitle: {
-    fontWeight: "bold",
-  },
+    fontWeight: "bold"
+  }
 }));
 
 export function NavDrawer({ isDrawerOpen, toggleDrawer }) {
@@ -42,35 +32,12 @@ export function NavDrawer({ isDrawerOpen, toggleDrawer }) {
 
   return (
     <React.Fragment>
-      <SwipeableDrawer
-        anchor={anchor}
-        open={isDrawerOpen}
-        onClose={toggleDrawer(false)}
-        onOpen={toggleDrawer(true)}
-      >
-        <div
-          className={clsx(classes.list)}
-          role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
-        >
+      <SwipeableDrawer anchor={anchor} open={isDrawerOpen} onClose={toggleDrawer(false)} onOpen={toggleDrawer(true)}>
+        <div className={clsx(classes.list)} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
           <List
             subheader={
-              <ListSubheader
-                component={Link}
-                to="/"
-                id="nested-list-subheader"
-                className={classes.listSubHeader}
-              >
-                <img
-                  src="/images/akash-network-akt-logo.png"
-                  alt="Akashlytics logo"
-                  className={clsx(classes.listSubHeaderLogo, "App-logo")}
-                />
-
-                <Typography className={clsx(classes.listSubHeaderTitle)} variant="h5">
-                  Akashlytics
-                </Typography>
+              <ListSubheader component={Link} to="/" id="nested-list-subheader" className={classes.listSubHeader}>
+                <img src="/images/akashlytics_logo_compact_small.png" alt="Akashlytics logo" className={clsx(classes.listSubHeaderLogo, "App-logo")} />
               </ListSubheader>
             }
           >

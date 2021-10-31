@@ -2,8 +2,8 @@ import { makeStyles } from "@material-ui/core/styles";
 
 export const useStyles = makeStyles((theme) => ({
   root: {
-    background: "linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgb(38 41 48) 77%, rgb(40 44 52) 100%)",
-    borderTop: "4px solid #252930",
+    background: "linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, rgb(36 37 38) 77%, rgb(36 37 38) 100%)",
+    borderTop: "4px solid #222222",
     paddingTop: "2rem",
     [theme.breakpoints.down("xs")]: {
       textAlign: "center"

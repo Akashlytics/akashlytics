@@ -48,7 +48,7 @@ export const Footer: React.FunctionComponent<IFooterProps> = ({}) => {
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} lg={4}>
             <Typography variant="h3" className={classes.title}>
-              Akashlytics
+              akashlytics
             </Typography>
             <Typography variant="h5" className={classes.subSitle}>
               We make tools to boost and enhance <strong>web3</strong> adoption.

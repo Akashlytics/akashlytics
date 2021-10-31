@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1
   },
   appBar: {
-    backgroundColor: "#282c34"
+    backgroundColor: "#242526"
   },
   menuButton: {
     marginRight: theme.spacing(2),
@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     left: 0
   },
-  logo: { height: "2.5rem", width: "2.5rem", marginRight: 15 },
+  logo: { height: "5rem" },
   title: {
     flexGrow: 1,
     fontWeight: "bold",
@@ -114,16 +114,7 @@ export function Header() {
           })}
         >
           <Link to="/" className={classes.logoContainer}>
-            <img src="/images/akash-network-akt-logo.png" alt="Akashlytics logo" className={clsx(classes.logo, "App-logo")} />
-
-            <Typography
-              className={clsx(classes.title, {
-                [classes.titleSmall]: mediaQuery.smallScreen && !mediaQuery.phoneView
-              })}
-              variant="h5"
-            >
-              Akashlytics
-            </Typography>
+            <img src="/images/akashlytics_logo_compact.png" alt="Akashlytics logo" className={clsx(classes.logo, "App-logo")} />
           </Link>
         </div>
 
