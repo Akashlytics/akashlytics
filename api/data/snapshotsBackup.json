@@ -2933,14 +2933,14 @@
 "minActiveDeploymentCount": 432,
 "maxActiveDeploymentCount": 439,
 "minCompute": 1498860,
-"maxCompute": 1548360,
+"maxCompute": 1556860,
 "minMemory": 546448683110,
 "maxMemory": 556112359526,
-"minStorage": 2152984418098,
+"minStorage": 2152581764914,
 "maxStorage": 2441820968754,
-"allTimeDeploymentCount": 31522,
-"totalAktSpent": 7825411587,
+"allTimeDeploymentCount": 31557,
+"totalAktSpent": 7826786890,
 "createdAt": "2021-10-31T00:03:07.865Z",
-"updatedAt": "2021-10-31T18:11:17.768Z"
+"updatedAt": "2021-10-31T20:10:26.172Z"
 }
 ]
