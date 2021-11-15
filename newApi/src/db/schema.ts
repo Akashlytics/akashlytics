@@ -7,22 +7,29 @@ export const sequelize = new Sequelize({
   storage: sqliteDatabasePath,
   logging: false,
   define: {
-    freezeTableName: true,
-  },
+    freezeTableName: true
+  }
 });
+// export const sequelize = new Sequelize("postgres://postgres:@localhost:5432/postgres",{
+//     logging: false,
+//     define: {
+//       freezeTableName: true
+//     }
+//   });
 
 export { Op, Sequelize } from "sequelize";
 
 export class Lease extends Model {
   public id!: string;
   public deploymentId!: string;
-  public readonly deployment?: Deployment;
+  public readonly deployment: Deployment;
+  public deploymentGroupId!: string;
+  public readonly deploymentGroup: DeploymentGroup;
   public owner!: string;
   public dseq!: number;
-  public oseq!: string;
-  public gseq!: string;
+  public oseq!: number;
+  public gseq!: number;
   public provider!: string;
-  public state!: string;
   public startDate!: Date;
   public endDate!: Date;
   public createdHeight!: number;
@@ -32,27 +39,31 @@ export class Lease extends Model {
   public lastWithdrawHeight?: number;
 }
 
-Lease.init({
-  id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
-  deploymentId: { type: DataTypes.UUID },
-  owner: { type: DataTypes.STRING, allowNull: false },
-  dseq: { type: DataTypes.INTEGER, allowNull: false },
-  oseq: { type: DataTypes.STRING, allowNull: false },
-  gseq: { type: DataTypes.STRING, allowNull: false },
-  provider: { type: DataTypes.STRING, allowNull: false },
-  state: { type: DataTypes.STRING, allowNull: false },
-  startDate: { type: DataTypes.DATE, allowNull: false },
-  endDate: { type: DataTypes.DATE, allowNull: true },
-  createdHeight: { type: DataTypes.NUMBER, allowNull: false },
-  closedHeight: { type: DataTypes.NUMBER, allowNull: true },
-  price: { type: DataTypes.NUMBER, allowNull: false },
-  withdrawnAmount: { type: DataTypes.NUMBER, defaultValue: 0, allowNull: false },
-  lastWithdrawHeight: { type: DataTypes.NUMBER, allowNull: true },
-}, {
-  tableName: "lease",
-  modelName: "lease",
-  sequelize
-});
+Lease.init(
+  {
+    id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+    deploymentId: { type: DataTypes.UUID },
+    deploymentGroupId: { type: DataTypes.UUID, references: { model: "deploymentGroup", key: "id" } },
+    owner: { type: DataTypes.STRING, allowNull: false },
+    dseq: { type: DataTypes.INTEGER, allowNull: false },
+    oseq: { type: DataTypes.INTEGER, allowNull: false },
+    gseq: { type: DataTypes.INTEGER, allowNull: false },
+    provider: { type: DataTypes.STRING, allowNull: false },
+    startDate: { type: DataTypes.DATE, allowNull: false },
+    endDate: { type: DataTypes.DATE, allowNull: true },
+    createdHeight: { type: DataTypes.INTEGER, allowNull: false },
+    closedHeight: { type: DataTypes.INTEGER, allowNull: true },
+    price: { type: DataTypes.INTEGER, allowNull: false },
+    withdrawnAmount: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
+    lastWithdrawHeight: { type: DataTypes.INTEGER, allowNull: true }
+  },
+  {
+    tableName: "lease",
+    modelName: "lease",
+    indexes: [{ unique: false, fields: ["closedHeight"] }],
+    sequelize
+  }
+);
 
 export class Deployment extends Model {
   public id!: string;
@@ -66,50 +77,81 @@ export class Deployment extends Model {
   public balance!: number;
   public deposit!: number;
   public readonly leases?: Lease[];
-};
+}
 
-Deployment.init({
-  id: { type: DataTypes.UUID, defaultValue: UUIDV4, primaryKey: true, allowNull: false },
-  owner: { type: DataTypes.STRING, allowNull: false },
-  dseq: { type: DataTypes.INTEGER, allowNull: false },
-  state: { type: DataTypes.STRING, allowNull: false },
-  escrowAccountTransferredAmount: { type: DataTypes.NUMBER, allowNull: false },
-  startDate: { type: DataTypes.DATE, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false },
-  createdHeight: { type: DataTypes.NUMBER, allowNull: false },
-  balance: { type: DataTypes.NUMBER, allowNull: false },
-  deposit: { type: DataTypes.NUMBER, allowNull: false },
-},{
-  tableName: "deployment",
-  modelName: "deployment",
-  sequelize
-});
-
-export const DeploymentGroup = sequelize.define("deploymentGroup", {
-  id: { type: DataTypes.UUID, defaultValue: UUIDV4, primaryKey: true, allowNull: false },
-  deploymentId: {
-    type: DataTypes.UUID,
-    references: { model: "deployment", key: "id" },
+Deployment.init(
+  {
+    id: { type: DataTypes.UUID, defaultValue: UUIDV4, primaryKey: true, allowNull: false },
+    owner: { type: DataTypes.STRING, allowNull: false },
+    dseq: { type: DataTypes.INTEGER, allowNull: false },
+    state: { type: DataTypes.STRING, allowNull: false },
+    escrowAccountTransferredAmount: { type: DataTypes.INTEGER, allowNull: false },
+    startDate: { type: DataTypes.DATE, allowNull: false },
+    datetime: { type: DataTypes.DATE, allowNull: false },
+    createdHeight: { type: DataTypes.INTEGER, allowNull: false },
+    balance: { type: DataTypes.INTEGER, allowNull: false },
+    deposit: { type: DataTypes.INTEGER, allowNull: false }
   },
-  owner: { type: DataTypes.STRING, allowNull: false },
-  dseq: { type: DataTypes.STRING, allowNull: false },
-  gseq: { type: DataTypes.NUMBER, allowNull: false },
-  state: { type: DataTypes.STRING, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false },
-});
+  {
+    tableName: "deployment",
+    modelName: "deployment",
+    sequelize
+  }
+);
 
-export const DeploymentGroupResource = sequelize.define("deploymentGroupResource", {
-  deploymentGroupId: {
-    type: DataTypes.UUID,
-    references: { model: "deploymentGroup", key: "id" },
+export class DeploymentGroup extends Model {
+  public id!: string;
+  public owner!: string;
+  public dseq!: number;
+  public gseq!: number;
+  public readonly leases?: Lease[];
+}
+
+DeploymentGroup.init(
+  {
+    id: { type: DataTypes.UUID, defaultValue: UUIDV4, primaryKey: true, allowNull: false },
+    deploymentId: {
+      type: DataTypes.UUID,
+      references: { model: "deployment", key: "id" }
+    },
+    owner: { type: DataTypes.STRING, allowNull: false },
+    dseq: { type: DataTypes.INTEGER, allowNull: false },
+    gseq: { type: DataTypes.INTEGER, allowNull: false }
   },
-  cpuUnits: { type: DataTypes.STRING, allowNull: true },
-  memoryQuantity: { type: DataTypes.STRING, allowNull: true },
-  storageQuantity: { type: DataTypes.STRING, allowNull: true },
-  count: { type: DataTypes.NUMBER, allowNull: false },
-  price: { type: DataTypes.NUMBER, allowNull: false },
-});
+  {
+    tableName: "deploymentGroup",
+    modelName: "deploymentGroup",
+    sequelize
+  }
+);
 
+export class DeploymentGroupResource extends Model {
+  public deploymentGroupId!: string;
+  public cpuUnits!: number;
+  public memoryQuantity!: number;
+  public storageQuantity!: number;
+  public count!: number;
+  public price!: number;
+}
+
+DeploymentGroupResource.init(
+  {
+    deploymentGroupId: {
+      type: DataTypes.UUID,
+      references: { model: "deploymentGroup", key: "id" }
+    },
+    cpuUnits: { type: DataTypes.INTEGER, allowNull: true },
+    memoryQuantity: { type: DataTypes.BIGINT, allowNull: true },
+    storageQuantity: { type: DataTypes.BIGINT, allowNull: true },
+    count: { type: DataTypes.INTEGER, allowNull: false },
+    price: { type: DataTypes.INTEGER, allowNull: false }
+  },
+  {
+    tableName: "deploymentGroupResource",
+    modelName: "deploymentGroupResource",
+    sequelize
+  }
+);
 
 export class Bid extends Model {
   public owner!: string;
@@ -118,36 +160,25 @@ export class Bid extends Model {
   public oseq!: number;
   public provider!: number;
   public price!: number;
-};
+}
 
-Bid.init({
-  owner: { type: DataTypes.STRING, allowNull: false },
-  dseq: { type: DataTypes.INTEGER, allowNull: false },
-  gseq: { type: DataTypes.NUMBER, allowNull: false },
-  oseq: { type: DataTypes.NUMBER, allowNull: false },
-  provider: { type: DataTypes.STRING, allowNull: false },
-  state: { type: DataTypes.STRING, allowNull: false },
-  price: { type: DataTypes.NUMBER, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false },
-}, {
-  tableName: "bid",
-  modelName: "bid",
-  sequelize
-});
-
-export const StatsSnapshot = sequelize.define("statsSnapshot", {
-  date: { type: DataTypes.STRING, allowNull: false },
-  minActiveDeploymentCount: { type: DataTypes.NUMBER, allowNull: true },
-  maxActiveDeploymentCount: { type: DataTypes.NUMBER, allowNull: true },
-  minCompute: { type: DataTypes.NUMBER, allowNull: true },
-  maxCompute: { type: DataTypes.NUMBER, allowNull: true },
-  minMemory: { type: DataTypes.NUMBER, allowNull: true },
-  maxMemory: { type: DataTypes.NUMBER, allowNull: true },
-  minStorage: { type: DataTypes.NUMBER, allowNull: true },
-  maxStorage: { type: DataTypes.NUMBER, allowNull: true },
-  allTimeDeploymentCount: { type: DataTypes.NUMBER, allowNull: true },
-  totalAktSpent: { type: DataTypes.NUMBER, allowNull: true },
-});
+Bid.init(
+  {
+    owner: { type: DataTypes.STRING, allowNull: false },
+    dseq: { type: DataTypes.INTEGER, allowNull: false },
+    gseq: { type: DataTypes.INTEGER, allowNull: false },
+    oseq: { type: DataTypes.INTEGER, allowNull: false },
+    provider: { type: DataTypes.STRING, allowNull: false },
+    state: { type: DataTypes.STRING, allowNull: false },
+    price: { type: DataTypes.INTEGER, allowNull: false },
+    datetime: { type: DataTypes.DATE, allowNull: false }
+  },
+  {
+    tableName: "bid",
+    modelName: "bid",
+    sequelize
+  }
+);
 
 export class PriceHistory extends Model {
   public id!: string;
@@ -155,15 +186,18 @@ export class PriceHistory extends Model {
   public price!: number;
 }
 
-PriceHistory.init({
-  id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
-  date: { type: DataTypes.DATE, allowNull: false },
-  price: { type: DataTypes.NUMBER, allowNull: false },
-}, {
-  tableName: "priceHistory",
-  modelName: "priceHistory",
-  sequelize
-});
+PriceHistory.init(
+  {
+    id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+    date: { type: DataTypes.DATE, allowNull: false },
+    price: { type: DataTypes.INTEGER, allowNull: false }
+  },
+  {
+    tableName: "priceHistory",
+    modelName: "priceHistory",
+    sequelize
+  }
+);
 
 export class DailyNetworkRevenue extends Model {
   public id!: string;
@@ -174,18 +208,21 @@ export class DailyNetworkRevenue extends Model {
   public leaseCount!: number;
 }
 
-DailyNetworkRevenue.init({
-  id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
-  date: { type: DataTypes.DATE, allowNull: false },
-  amount: { type: DataTypes.NUMBER, allowNull: false },
-  amountUAkt: { type: DataTypes.NUMBER, allowNull: false },
-  aktPrice: { type: DataTypes.NUMBER, allowNull: false },
-  leaseCount: { type: DataTypes.NUMBER, allowNull: false }
-}, {
-  tableName: "dailyNetworkRevenue",
-  modelName: "dailyNetworkRevenue",
-  sequelize
-});
+DailyNetworkRevenue.init(
+  {
+    id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+    date: { type: DataTypes.DATE, allowNull: false },
+    amount: { type: DataTypes.DECIMAL, allowNull: false },
+    amountUAkt: { type: DataTypes.INTEGER, allowNull: false },
+    aktPrice: { type: DataTypes.DECIMAL, allowNull: false },
+    leaseCount: { type: DataTypes.INTEGER, allowNull: false }
+  },
+  {
+    tableName: "dailyNetworkRevenue",
+    modelName: "dailyNetworkRevenue",
+    sequelize
+  }
+);
 
 export class Block extends Model {
   public height!: number;
@@ -193,15 +230,46 @@ export class Block extends Model {
   public firstBlockOfDay: boolean;
 }
 
-Block.init({
-  height: { type: DataTypes.NUMBER, primaryKey: true, allowNull: false },
-  datetime: { type: DataTypes.DATE, allowNull: false },
-  firstBlockOfDay: { type: DataTypes.BOOLEAN, allowNull: false }
-}, {
-  tableName: "block",
-  modelName: "block",
-  sequelize
-});
+Block.init(
+  {
+    height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
+    datetime: { type: DataTypes.DATE, allowNull: false },
+    firstBlockOfDay: { type: DataTypes.BOOLEAN, allowNull: false }
+  },
+  {
+    tableName: "block",
+    modelName: "block",
+    sequelize
+  }
+);
+
+export class BlockStatistic extends Model {
+  public height!: number;
+  public activeLeaseCount: number;
+  public totalLeaseCount: number;
+  public activeCPU: number;
+  public activeMemory: number;
+  public activeStorage: number;
+}
+
+BlockStatistic.init(
+  {
+    height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false, references: { model: Block, key: "height" } },
+    activeLeaseCount: { type: DataTypes.INTEGER, allowNull: false },
+    totalLeaseCount: { type: DataTypes.INTEGER, allowNull: false },
+    activeCPU: { type: DataTypes.INTEGER, allowNull: false },
+    activeMemory: { type: DataTypes.BIGINT, allowNull: false },
+    activeStorage: { type: DataTypes.BIGINT, allowNull: false }
+  },
+  {
+    tableName: "blockStatistic",
+    modelName: "blockStatistic",
+    sequelize
+  }
+);
+
+// BlockStatistic.hasOne(Block);
+// Block.hasOne(BlockStatistic);
 
 export class Transaction extends Model {
   public id!: string;
@@ -215,24 +283,27 @@ export class Transaction extends Model {
   public readonly block?: Block;
 }
 
-Transaction.init({
-  id: { type: DataTypes.UUID, primaryKey: true },
-  hash: { type: DataTypes.STRING, allowNull: false },
-  index: { type: DataTypes.NUMBER, allowNull: false },
-  height: {
-    type: DataTypes.NUMBER,
-    allowNull: false,
-    references: { model: Block, key: "height" }
+Transaction.init(
+  {
+    id: { type: DataTypes.UUID, primaryKey: true },
+    hash: { type: DataTypes.STRING, allowNull: false },
+    index: { type: DataTypes.INTEGER, allowNull: false },
+    height: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: Block, key: "height" }
+    },
+    downloaded: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    hasInterestingTypes: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    hasDownloadError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    hasProcessingError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   },
-  downloaded: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-  hasInterestingTypes: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-  hasDownloadError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-  hasProcessingError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
-}, {
-  tableName: "transaction",
-  modelName: "transaction",
-  sequelize
-});
+  {
+    tableName: "transaction",
+    modelName: "transaction",
+    sequelize
+  }
+);
 
 export class Message extends Model {
   public id!: string;
@@ -242,27 +313,30 @@ export class Message extends Model {
   public isInterestingType!: boolean;
   public isProcessed!: boolean;
   public readonly transaction?: Transaction;
-  
+
   public static associations: {
     transaction: Association<Message, Transaction>;
   };
 }
 
-Message.init({
-  id: { type: DataTypes.UUID, primaryKey: true },
-  txId: {
-    type: DataTypes.UUID,
-    references: { model: Transaction, key: "id" }
+Message.init(
+  {
+    id: { type: DataTypes.UUID, primaryKey: true },
+    txId: {
+      type: DataTypes.UUID,
+      references: { model: Transaction, key: "id" }
+    },
+    type: { type: DataTypes.STRING, allowNull: false },
+    index: { type: DataTypes.INTEGER, allowNull: false },
+    isInterestingType: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   },
-  type: { type: DataTypes.STRING, allowNull: false },
-  index: { type: DataTypes.NUMBER, allowNull: false },
-  isInterestingType: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-  isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
-}, {
-  tableName: "message",
-  modelName: "message",
-  sequelize
-});
+  {
+    tableName: "message",
+    modelName: "message",
+    sequelize
+  }
+);
 
 Transaction.hasMany(Message);
 Message.belongsTo(Transaction, { foreignKey: "txId" });

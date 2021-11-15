@@ -113,8 +113,8 @@ export async function syncBlocks() {
       await downloadBlocks(startHeight, latestAvailableHeight);
     }
 
-    let latestInsertedHeight: number = await Block.max("height");
-
+    let latestInsertedHeight: number = await Block.max("height") || 0;
+    
     await insertBlocks(latestInsertedHeight + 1, latestAvailableHeight);
     await downloadTransactions();
 

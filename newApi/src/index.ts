@@ -4,10 +4,11 @@ import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue, getTotalSpent,
 import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
-import { isProd } from "./shared/constants";
+import { isProd, rebuildDatabase } from "./shared/constants";
 import { bytesToHumanReadableSize } from "./shared/utils/files";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
+import { rebuildStatsTables } from "./akash/statsProcessor";
 
 const app = express();
 const { PORT = 3081 } = process.env;
@@ -56,11 +57,11 @@ app.get("/getTotalSpent", async (req, res) => {
 app.get("/getDailySpentGraph", async (req, res) => {
   try {
     const dailySpentGraph = await getDailySpentGraph();
-    res.send(dailySpentGraph)
+    res.send(dailySpentGraph);
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
-})
+});
 
 app.get("/status", async (req, res) => {
   console.log("getting debug infos");
@@ -120,12 +121,16 @@ async function initApp() {
   try {
     await initDatabase();
 
-    await syncPriceHistory();
+    if (rebuildDatabase) {
+      await rebuildStatsTables();
+    }
 
-    await computeAtInterval();
-    setInterval(async () => {
-      await computeAtInterval();
-    }, 15 * 60 * 1000); // 15min
+    //await syncPriceHistory();
+
+    //await computeAtInterval();
+    // setInterval(async () => {
+    //   await computeAtInterval();
+    // }, 15 * 60 * 1000); // 15min
   } catch (err) {
     latestSyncingError = err;
     latestSyncingErrorDate = new Date();

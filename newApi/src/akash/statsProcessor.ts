@@ -11,8 +11,9 @@ const {
 } = require("./ProtoAkashTypes");
 const uuid = require("uuid");
 const sha256 = require("js-sha256");
+const { PerformanceObserver, performance } = require("perf_hooks");
 import { blocksDb, txsDb } from "@src/akash/dataStore";
-import { Deployment, Transaction, Message, Block, Bid, Lease, Op } from "@src/db/schema";
+import { Deployment, Transaction, Message, Block, Bid, Lease, Op, BlockStatistic, DeploymentGroup, DeploymentGroupResource } from "@src/db/schema";
 import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
 export let processingStatus = null;
@@ -71,10 +72,18 @@ async function tryAndLog(fn, obj) {
 export async function rebuildStatsTables() {
   await Bid.drop();
   await Lease.drop();
+  await DeploymentGroupResource.drop();
+  await DeploymentGroup.drop();
   await Deployment.drop();
+  await BlockStatistic.drop();
+  await BlockStatistic.sync({ force: true });
   await Deployment.sync({ force: true });
+  await DeploymentGroup.sync({ force: true });
+  await DeploymentGroupResource.sync({ force: true });
   await Lease.sync({ force: true });
   await Bid.sync({ force: true });
+
+  // console.log('Setting "isProcessed" to false');
   await Message.update(
     {
       isProcessed: false
@@ -132,11 +141,34 @@ export async function processMessages() {
 
   console.log("Found " + messages.length + " messages");
 
+  let latestStatsHeight = 0;
+  let currentBlockStatistics: BlockStatistic = BlockStatistic.build({ activeLeaseCount: 0, totalLeaseCount: 0 });
   let processedMessageCount = 0;
+  messageTimes["stats"] = [];
 
   for (let msg of messages) {
     const height = msg.transaction.height;
     const time = msg.transaction.block.datetime;
+    let computingStatsTime = 0;
+
+    if (height != latestStatsHeight) {
+      const perfA = performance.now();
+      console.time("save");
+      if (latestStatsHeight > 0) {
+        await currentBlockStatistics.save();
+      }
+      currentBlockStatistics = BlockStatistic.build({
+        height: height,
+        activeLeaseCount: currentBlockStatistics.activeLeaseCount,
+        totalLeases: currentBlockStatistics.totalLeaseCount,
+        activeCPU: currentBlockStatistics.activeCPU,
+        activeMemory: currentBlockStatistics.activeMemory,
+        activeStorage: currentBlockStatistics.activeStorage
+      });
+      latestStatsHeight = height;
+      computingStatsTime += performance.now() - perfA;
+      console.timeEnd("save");
+    }
 
     processingStatus = `Processing message of block #${height}`;
 
@@ -145,86 +177,86 @@ export async function processMessages() {
     const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === msg.transaction.hash);
     let encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
 
-    await processMessage(msg, encodedMessage, height, time);
+    await processMessage(msg, encodedMessage, height, time, currentBlockStatistics);
+
+    console.time("compute");
+    const compA = performance.now();
+    currentBlockStatistics.totalLeaseCount = await Lease.count();
+    const totalResources = await getTotalResources();
+    currentBlockStatistics.activeCPU = totalResources.cpuSum;
+    currentBlockStatistics.activeMemory = totalResources.memorySum;
+    currentBlockStatistics.activeStorage = totalResources.storageSum;
+    computingStatsTime += performance.now() - compA;
+    console.timeEnd("compute");
 
     processedMessageCount++;
     const progress = ((processedMessageCount * 100) / messages.length).toFixed(2);
     console.log(`Processing message ${processedMessageCount} / ${messages.length} (${progress}%)  -  Block #${height} - ${msg.type}`);
+
+    messageTimes["stats"].push(computingStatsTime);
+
+    if (processedMessageCount > 10000) break;
   }
-
-  const totalDeployment = await Deployment.count({
-    distinct: true,
-    include: {
-      model: Lease,
-      required: true
-    }
-  });
-
-  const activeDeployment = await Deployment.findAll({
-    include: {
-      model: Lease,
-      required: true,
-      attributes: [],
-      where: {
-        closedHeight: { [Op.is]: null }
-      }
-    }
-  });
-  let ids = activeDeployment.map((x) => x.id);
-  ids.filter(function (item, pos) {
-    return ids.indexOf(item) == pos;
-  });
-
-  const latestDeployment = await Deployment.max("startDate");
-  const totalLeases = await Lease.count();
-  const activeLeases = await Lease.findAll({
-    where: {
-      endDate: {
-        [Op.is]: null
-      }
-    }
-  });
-
-  const allDeployments = await Deployment.findAll({
-    include: {
-      model: Lease,
-      required: true
-    }
-  });
-  let sumUAkt = 0;
-  for (let d of allDeployments) {
-    let deploymentSum = 0;
-    for (let l of d.leases) {
-      const endBlock = l.closedHeight || latestHeight;
-      const qty = endBlock - l.createdHeight;
-      const calculated = qty * l.price;
-      deploymentSum += calculated;
-    }
-    const calculatedCapped = Math.min(deploymentSum, d.deposit);
-    
-    sumUAkt += calculatedCapped;
-  }
-
-  console.table([
-    {
-      totalDeployment,
-      activeDeployment: ids.length,
-      latestDeployment,
-      totalLeases,
-      activeLeases: activeLeases.length,
-      sumUAkt,
-      sumAkt: sumUAkt / 1000000
-    }
-  ]);
 
   processingStatus = null;
   console.timeEnd("processMessages");
+  const all = Object.values(messageTimes)
+    .map((x) => x.reduce((a, b) => a + b, 0))
+    .reduce((a, b) => a + b, 0);
+  console.table(
+    Object.keys(messageTimes)
+      .map((key) => {
+        const total = Math.round(messageTimes[key].reduce((a, b) => a + b, 0));
+        return {
+          type: key,
+          count: messageTimes[key].length,
+          total: total + "ms",
+          percentage: Math.round((total / all) * 100),
+          average: Math.round((total / messageTimes[key].length) * 100) / 100 + "ms"
+        };
+      })
+      .sort((a, b) => b.percentage - a.percentage)
+  );
 }
 
-//let messageTimes = [];
+async function getTotalResources() {
+  return { cpuSum: 0, memorySum: 0, storageSum: 0 };
+  const totalResources = await DeploymentGroupResource.findAll({
+    attributes: ["count", "cpuUnits", "memoryQuantity", "storageQuantity"],
+    include: [
+      {
+        model: DeploymentGroup,
+        attributes: [],
+        required: true,
+        include: [
+          {
+            model: Lease,
+            attributes: [],
+            required: true,
+            where: {
+              closedHeight: { [Op.is]: null }
+            }
+          }
+        ]
+      }
+    ]
+  });
 
-async function processMessage(msg, encodedMessage, height, time) {
-  //let a = performance.now();
+  //console.log(JSON.stringify(totalResources, null, 2));
+  //if(totalResources.length > 0)throw "stop";
+
+  return {
+    cpuSum: totalResources.map((x) => x.cpuUnits * x.count).reduce((a, b) => a + b, 0),
+    memorySum: totalResources.map((x) => x.memoryQuantity * x.count).reduce((a, b) => a + b, 0),
+    storageSum: totalResources.map((x) => x.storageQuantity * x.count).reduce((a, b) => a + b, 0)
+  };
+}
+
+let messageTimes = [];
+
+async function processMessage(msg, encodedMessage, height, time, currentBlockStatistics: BlockStatistic) {
+  let a = performance.now();
+
   if (msg.type === "/akash.deployment.v1beta1.MsgCreateDeployment") {
     await handleCreateDeployment(encodedMessage, height, time);
   } else if (msg.type === "/akash.deployment.v1beta1.MsgCloseDeployment") {
@@ -243,15 +275,17 @@ async function processMessage(msg, encodedMessage, height, time) {
     await handleWithdrawLease(encodedMessage, height, time);
   }
 
-  // let processingTime = performance.now() - a;
-  // if (!messageTimes[msg.type]) {
-  //   messageTimes[msg.type] = [];
-  // }
-  // messageTimes[msg.type].push(processingTime);
+  let processingTime = performance.now() - a;
+  if (!messageTimes[msg.type]) {
+    messageTimes[msg.type] = [];
+  }
+  messageTimes[msg.type].push(processingTime);
 
   await msg.update({
     isProcessed: true
   });
+
+  currentBlockStatistics.activeLeaseCount++;
 }
 
 async function handleCreateDeployment(encodedMessage, height, time) {
@@ -272,6 +306,27 @@ async function handleCreateDeployment(encodedMessage, height, time) {
     });
 
     addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
+
+    for (const group of decodedMessage.groups) {
+      const createdGroup = await DeploymentGroup.create({
+        id: uuid.v4(),
+        deploymentId: created.id,
+        owner: created.owner,
+        dseq: created.dseq,
+        gseq: decodedMessage.groups.indexOf(group) + 1
+      });
+
+      for (const groupResource of group.resources) {
+        await DeploymentGroupResource.create({
+          deploymentGroupId: createdGroup.id,
+          cpuUnits: parseInt(groupResource.resources.cpu.units.val),
+          memoryQuantity: parseInt(groupResource.resources.memory.quantity.val),
+          storageQuantity: parseInt(groupResource.resources.storage.quantity.val),
+          count: groupResource.count,
+          price: parseInt(groupResource.price.amount) // TODO: handle denom
+        });
+      }
+    }
   } catch (err) {
     console.error(err);
     throw err;
@@ -330,9 +385,18 @@ async function handleCreateLease(encodedMessage, height, time) {
     }
   });
 
+  const deploymentGroup = await DeploymentGroup.findOne({
+    where: {
+      owner: decodedMessage.bid_id.owner,
+      dseq: decodedMessage.bid_id.dseq.toNumber(),
+      gseq: decodedMessage.bid_id.gseq
+    }
+  });
+
   await Lease.create({
     id: uuid.v4(),
     deploymentId: getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber()),
+    deploymentGroupId: deploymentGroup.id,
     owner: decodedMessage.bid_id.owner,
     dseq: decodedMessage.bid_id.dseq.toNumber(),
     oseq: decodedMessage.bid_id.oseq,
@@ -340,7 +404,6 @@ async function handleCreateLease(encodedMessage, height, time) {
     provider: decodedMessage.bid_id.provider,
     startDate: time,
     createdHeight: height,
-    state: "-", // TODO
     price: bid.price
   });
 }
