@@ -150,6 +150,7 @@ async function insertBlocks(startHeight, endHeight) {
 
     if (!blockData) throw "Block # " + i + " was not in cache";
 
+    let msgIndexInBlock = 0;
     const blockDatetime = new Date(blockData.block.header.time);
     const blockDate = new Date(Date.UTC(blockDatetime.getUTCFullYear(), blockDatetime.getUTCMonth(), blockDatetime.getUTCDate()));
     const firstBlockOfDay = blockDate > lastInsertedDate;
@@ -174,7 +175,10 @@ async function insertBlocks(startHeight, endHeight) {
           id: uuid.v4(),
           txId: txId,
           type: msg.typeUrl,
+          typeCategory: msg.typeUrl.split(".")[0].substring(1),
           index: msgIndex,
+          height: i,
+          indexInBlock: msgIndexInBlock++,
           isInterestingType: isInterestingType
         });
 
@@ -202,6 +206,7 @@ async function insertBlocks(startHeight, endHeight) {
       await Block.bulkCreate(blocksToAdd);
       await Transaction.bulkCreate(txsToAdd);
       await Message.bulkCreate(msgsToAdd);
+      
       blocksToAdd = [];
       txsToAdd = [];
       msgsToAdd = [];

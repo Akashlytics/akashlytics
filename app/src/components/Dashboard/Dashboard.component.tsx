@@ -21,13 +21,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
   const showAktPrice = dashboardData && dashboardData.marketData;
   const showAveragePrice = dashboardData && dashboardData.marketData && dashboardData.averagePrice > 0;
 
-  let tileClassName = "col-lg-6";
-  if (showAktPrice) {
-    tileClassName = "col-lg-4";
-  }
-  if (showAveragePrice) {
-    tileClassName = "col-lg-3";
-  }
+  let tileClassName = "col-lg-3";
 
   return (
     <>
@@ -79,14 +73,16 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={uaktToAKT(dashboardData.spentStats?.revenueLast24.uakt)} maximumFractionDigits={2} /> AKT
+                <FormattedNumber value={uaktToAKT(dashboardData.now.totalUAktSpent - dashboardData.compare.totalUAktSpent)} maximumFractionDigits={2} /> AKT
               </>
             }
             text="Daily AKT spent"
             tooltip="Last 24h"
             graphPath={`/revenue/daily`}
-            diffNumber={uaktToAKT(dashboardData.spentStats?.revenueLast24.uakt - dashboardData.spentStats?.revenuePrevious24.uakt)}
-            diffPercent={percIncrease(dashboardData.spentStats?.revenuePrevious24.uakt, dashboardData.spentStats?.revenueLast24.uakt)}
+            diffNumber={0}
+            diffPercent={0}
+            //diffNumber={uaktToAKT(dashboardData.spentStats?.revenueLast24.uakt - dashboardData.spentStats?.revenuePrevious24.uakt)}
+            //diffPercent={percIncrease(dashboardData.spentStats?.revenuePrevious24.uakt, dashboardData.spentStats?.revenueLast24.uakt)}
           />
         </div>
 
@@ -94,153 +90,121 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={dashboardData.spentStats?.amountAkt} maximumFractionDigits={2} /> AKT
+                <FormattedNumber value={uaktToAKT(dashboardData.now.totalUAktSpent)} maximumFractionDigits={2} /> AKT
               </>
             }
             text="Total spent on decloud"
             tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
             graphPath={`/revenue/total`}
-            diffNumber={dashboardData.spentStats?.amountAkt - (dashboardData.spentStats?.amountAkt - dashboardData.spentStats?.revenueLast24.akt)}
-            diffPercent={percIncrease(dashboardData.spentStats?.amountAkt - dashboardData.spentStats?.revenueLast24.akt, dashboardData.spentStats?.amountAkt)}
+            diffNumber={uaktToAKT(dashboardData.now.totalUAktSpent - dashboardData.compare.totalUAktSpent)}
+            diffPercent={percIncrease(dashboardData.compare.totalUAktSpent, dashboardData.now.totalUAktSpent)}
           />
         </div>
 
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
-            number={<FormattedNumber value={dashboardData.dailyDeploymentCount} />}
+            number={<FormattedNumber value={dashboardData.now.totalDeploymentCount - dashboardData.compare.totalDeploymentCount} />}
             text="Daily new deployment count"
             tooltip="Last 24h"
             graphPath={`/graph/${SnapshotsUrlParam.dailyDeploymentCount}`}
-            diffNumber={dashboardData.dailyDeploymentCount - dashboardData.lastSnapshot.dailyDeploymentCount}
-            diffPercent={percIncrease(dashboardData.lastSnapshot.dailyDeploymentCount, dashboardData.dailyDeploymentCount)}
+            diffNumber={dashboardData.now.totalDeploymentCount - dashboardData.compare.totalDeploymentCount}
+            diffPercent={0}
+            // diffPercent={percIncrease(dashboardData.lastSnapshot.dailyDeploymentCount, dashboardData.dailyDeploymentCount)}
           />
         </div>
 
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
-            number={<FormattedNumber value={dashboardData.deploymentCount} />}
+            number={<FormattedNumber value={dashboardData.now.totalDeploymentCount} />}
             text="Total deployment count"
             tooltip="The total deployment count consists of all deployments that were live(leased) at some point and that someone paid for. This includes deployments that were deployed for testing or that were meant to be only temporary."
             graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
-            diffNumber={dashboardData.deploymentCount - dashboardData.lastSnapshot.allTimeDeploymentCount}
-            diffPercent={percIncrease(dashboardData.lastSnapshot.allTimeDeploymentCount, dashboardData.deploymentCount)}
+            diffNumber={dashboardData.now.totalDeploymentCount - dashboardData.compare.totalDeploymentCount}
+            diffPercent={percIncrease(dashboardData.compare.totalDeploymentCount, dashboardData.now.totalDeploymentCount)}
           />
         </div>
       </div>
 
-      {dashboardData.totalResourcesLeased && (
-        <>
-          <div
-            className={clsx("row mt-5", {
-              "mb-4": !mediaQuery.smallScreen,
-              "mb-2 text-center": mediaQuery.smallScreen
-            })}
-          >
-            <div className="col-xs-12">
-              <Typography variant="h1" className={clsx(classes.title, { "text-center": mediaQuery.smallScreen })}>
-                Total resources currently leased
-                {/* <Chip
+      <div
+        className={clsx("row mt-5", {
+          "mb-4": !mediaQuery.smallScreen,
+          "mb-2 text-center": mediaQuery.smallScreen
+        })}
+      >
+        <div className="col-xs-12">
+          <Typography variant="h1" className={clsx(classes.title, { "text-center": mediaQuery.smallScreen })}>
+            Total resources currently leased
+            {/* <Chip
                   size="small"
                   label="Live"
                   icon={<FiberManualRecordIcon />}
                   classes={{ root: classes.liveChip, icon: classes.liveChipIcon }}
                 /> */}
-              </Typography>
-            </div>
-          </div>
-          <div className="row">
-            {dashboardData.activeDeploymentCount && (
-              <div className={clsx("col-xs-12 col-lg-3")}>
-                <StatsCard
-                  number={<FormattedNumber value={dashboardData.activeDeploymentCount} />}
-                  text="Active deployments"
-                  tooltip={
-                    <>
-                      <div>This is number of deployments currently active on the network. A deployment can be anything. </div>
-                      <div>For example: a simple website to a blockchain node or a video game server.</div>
-                    </>
-                  }
-                  graphPath={`/graph/${SnapshotsUrlParam.activeDeployment}`}
-                  diffNumber={
-                    dashboardData.activeDeploymentCount -
-                    Math.ceil(average(dashboardData.lastSnapshot.minActiveDeploymentCount, dashboardData.lastSnapshot.maxActiveDeploymentCount))
-                  }
-                  diffPercent={percIncrease(
-                    Math.ceil(average(dashboardData.lastSnapshot.minActiveDeploymentCount, dashboardData.lastSnapshot.maxActiveDeploymentCount)),
-                    dashboardData.activeDeploymentCount
-                  )}
-                />
-              </div>
-            )}
+          </Typography>
+        </div>
+      </div>
+      <div className="row">
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={<FormattedNumber value={dashboardData.now.activeDeploymentCount} />}
+            text="Active deployments"
+            tooltip={
+              <>
+                <div>This is number of deployments currently active on the network. A deployment can be anything. </div>
+                <div>For example: a simple website to a blockchain node or a video game server.</div>
+              </>
+            }
+            graphPath={`/graph/${SnapshotsUrlParam.activeDeployment}`}
+            diffNumber={dashboardData.now.activeDeploymentCount - dashboardData.compare.activeDeploymentCount}
+            diffPercent={percIncrease(dashboardData.compare.activeDeploymentCount, dashboardData.now.activeDeploymentCount)}
+          />
+        </div>
 
-            <div className={clsx("col-xs-12 col-lg-3")}>
-              <StatsCard
-                number={
-                  <>
-                    <FormattedNumber value={dashboardData.totalResourcesLeased.cpuSum / 1000} maximumFractionDigits={2} />
-                    <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>vCPUs</small>
-                  </>
-                }
-                text="Compute"
-                graphPath={`/graph/${SnapshotsUrlParam.compute}`}
-                diffNumber={
-                  (dashboardData.totalResourcesLeased.cpuSum - average(dashboardData.lastSnapshot.minCompute, dashboardData.lastSnapshot.maxCompute)) / 1000
-                }
-                diffPercent={percIncrease(
-                  average(dashboardData.lastSnapshot.minCompute, dashboardData.lastSnapshot.maxCompute),
-                  dashboardData.totalResourcesLeased.cpuSum
-                )}
-              />
-            </div>
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={
+              <>
+                <FormattedNumber value={dashboardData.now.activeCPU / 1000} maximumFractionDigits={2} />
+                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>vCPUs</small>
+              </>
+            }
+            text="Compute"
+            graphPath={`/graph/${SnapshotsUrlParam.compute}`}
+            diffNumber={(dashboardData.now.activeCPU - dashboardData.compare.activeCPU) / 1000}
+            diffPercent={percIncrease(dashboardData.compare.activeCPU, dashboardData.now.activeCPU)}
+          />
+        </div>
 
-            <div className={clsx("col-xs-12 col-lg-3")}>
-              <StatsCard
-                number={
-                  <>
-                    <FormattedNumber value={dashboardData.totalResourcesLeased.memorySum / 1024 / 1024 / 1024} maximumFractionDigits={2} />
-                    <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
-                  </>
-                }
-                text="Memory"
-                graphPath={`/graph/${SnapshotsUrlParam.memory}`}
-                diffNumber={
-                  (dashboardData.totalResourcesLeased.memorySum - average(dashboardData.lastSnapshot.minMemory, dashboardData.lastSnapshot.maxMemory)) /
-                  1024 /
-                  1024 /
-                  1024
-                }
-                diffPercent={percIncrease(
-                  average(dashboardData.lastSnapshot.minMemory, dashboardData.lastSnapshot.maxMemory),
-                  dashboardData.totalResourcesLeased.memorySum
-                )}
-              />
-            </div>
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={
+              <>
+                <FormattedNumber value={dashboardData.now.activeMemory / 1024 / 1024 / 1024} maximumFractionDigits={2} />
+                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+              </>
+            }
+            text="Memory"
+            graphPath={`/graph/${SnapshotsUrlParam.memory}`}
+            diffNumber={(dashboardData.now.activeMemory - dashboardData.compare.activeMemory) / 1024 / 1024 / 1024}
+            diffPercent={percIncrease(dashboardData.compare.activeMemory, dashboardData.now.activeMemory)}
+          />
+        </div>
 
-            <div className={clsx("col-xs-12 col-lg-3")}>
-              <StatsCard
-                number={
-                  <>
-                    <FormattedNumber value={dashboardData.totalResourcesLeased.storageSum / 1024 / 1024 / 1024} maximumFractionDigits={2} />
-                    <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
-                  </>
-                }
-                text="Storage"
-                graphPath={`/graph/${SnapshotsUrlParam.storage}`}
-                diffNumber={
-                  (dashboardData.totalResourcesLeased.storageSum - average(dashboardData.lastSnapshot.minStorage, dashboardData.lastSnapshot.maxStorage)) /
-                  1024 /
-                  1024 /
-                  1024
-                }
-                diffPercent={percIncrease(
-                  average(dashboardData.lastSnapshot.minStorage, dashboardData.lastSnapshot.maxStorage),
-                  dashboardData.totalResourcesLeased.storageSum
-                )}
-              />
-            </div>
-          </div>
-        </>
-      )}
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={
+              <>
+                <FormattedNumber value={dashboardData.now.activeStorage / 1024 / 1024 / 1024} maximumFractionDigits={2} />
+                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+              </>
+            }
+            text="Storage"
+            graphPath={`/graph/${SnapshotsUrlParam.storage}`}
+            diffNumber={(dashboardData.now.activeStorage - dashboardData.compare.activeStorage) / 1024 / 1024 / 1024}
+            diffPercent={percIncrease(dashboardData.compare.activeStorage, dashboardData.compare.activeStorage)}
+          />
+        </div>
+      </div>
     </>
   );
 };

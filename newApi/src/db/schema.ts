@@ -5,7 +5,7 @@ export const sqliteDatabasePath = "./data/database.sqlite";
 export const sequelize = new Sequelize({
   dialect: "sqlite",
   storage: sqliteDatabasePath,
-  logging: false,
+  logging: true,
   define: {
     freezeTableName: true
   }
@@ -18,6 +18,30 @@ export const sequelize = new Sequelize({
 //   });
 
 export { Op, Sequelize } from "sequelize";
+
+// export class ActiveLease extends Model {
+//   public id!: string;
+//   public deploymentId!: string;
+//   public readonly deployment: Deployment;
+//   public totalCpu!: number;
+//   public totalMemory!: number;
+//   public totalStorage!: number;
+// }
+
+// ActiveLease.init(
+//   {
+//     id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+//     deploymentId: { type: DataTypes.UUID },
+//     totalCpu: { type: DataTypes.INTEGER, allowNull: false },
+//     totalMemory: { type: DataTypes.BIGINT, allowNull: false },
+//     totalStorage: { type: DataTypes.BIGINT, allowNull: false },
+//   },
+//   {
+//     tableName: "activeLease",
+//     modelName: "activeLease",
+//     sequelize
+//   }
+// );
 
 export class Lease extends Model {
   public id!: string;
@@ -37,6 +61,11 @@ export class Lease extends Model {
   public price!: number;
   public withdrawnAmount!: number;
   public lastWithdrawHeight?: number;
+
+  // Stats
+  cpuUnits: number;
+  memoryQuantity: number;
+  storageQuantity: number;
 }
 
 Lease.init(
@@ -55,12 +84,19 @@ Lease.init(
     closedHeight: { type: DataTypes.INTEGER, allowNull: true },
     price: { type: DataTypes.INTEGER, allowNull: false },
     withdrawnAmount: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
-    lastWithdrawHeight: { type: DataTypes.INTEGER, allowNull: true }
+    lastWithdrawHeight: { type: DataTypes.INTEGER, allowNull: true },
+    // Stats
+    cpuUnits: { type: DataTypes.INTEGER, allowNull: false },
+    memoryQuantity: { type: DataTypes.BIGINT, allowNull: false },
+    storageQuantity: { type: DataTypes.BIGINT, allowNull: false }
   },
   {
     tableName: "lease",
     modelName: "lease",
-    indexes: [{ unique: false, fields: ["closedHeight"] }],
+    indexes: [
+      { unique: false, fields: ["closedHeight"] },
+      { unique: false, fields: ["deploymentId"] }
+    ],
     sequelize
   }
 );
@@ -105,6 +141,7 @@ export class DeploymentGroup extends Model {
   public dseq!: number;
   public gseq!: number;
   public readonly leases?: Lease[];
+  public readonly deploymentGroupResources?: DeploymentGroupResource[];
 }
 
 DeploymentGroup.init(
@@ -121,6 +158,12 @@ DeploymentGroup.init(
   {
     tableName: "deploymentGroup",
     modelName: "deploymentGroup",
+    indexes: [
+      {
+        unique: false,
+        fields: ["owner", "dseq", "gseq"]
+      }
+    ],
     sequelize
   }
 );
@@ -149,6 +192,7 @@ DeploymentGroupResource.init(
   {
     tableName: "deploymentGroupResource",
     modelName: "deploymentGroupResource",
+    indexes: [{ unique: false, fields: ["deploymentGroupId"] }],
     sequelize
   }
 );
@@ -176,6 +220,7 @@ Bid.init(
   {
     tableName: "bid",
     modelName: "bid",
+    indexes: [{ unique: false, fields: ["owner", "dseq", "gseq", "oseq", "provider"] }],
     sequelize
   }
 );
@@ -239,22 +284,26 @@ Block.init(
   {
     tableName: "block",
     modelName: "block",
+    indexes: [{ unique: false, fields: ["datetime"] }],
     sequelize
   }
 );
 
 export class BlockStatistic extends Model {
   public height!: number;
+  public totalUAktSpent!: number;
   public activeLeaseCount: number;
   public totalLeaseCount: number;
   public activeCPU: number;
   public activeMemory: number;
   public activeStorage: number;
+  public readonly block?: Block;
 }
 
 BlockStatistic.init(
   {
     height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false, references: { model: Block, key: "height" } },
+    totalUAktSpent: { type: DataTypes.BIGINT, allowNull: false },
     activeLeaseCount: { type: DataTypes.INTEGER, allowNull: false },
     totalLeaseCount: { type: DataTypes.INTEGER, allowNull: false },
     activeCPU: { type: DataTypes.INTEGER, allowNull: false },
@@ -267,9 +316,6 @@ BlockStatistic.init(
     sequelize
   }
 );
-
-// BlockStatistic.hasOne(Block);
-// Block.hasOne(BlockStatistic);
 
 export class Transaction extends Model {
   public id!: string;
@@ -308,8 +354,11 @@ Transaction.init(
 export class Message extends Model {
   public id!: string;
   public txId!: string;
+  public height!: number;
   public type!: string;
+  public typeGroup!: string;
   public index!: number;
+  public indexInBlock!: number;
   public isInterestingType!: boolean;
   public isProcessed!: boolean;
   public readonly transaction?: Transaction;
@@ -326,8 +375,11 @@ Message.init(
       type: DataTypes.UUID,
       references: { model: Transaction, key: "id" }
     },
+    height: { type: DataTypes.BIGINT, allowNull: false },
     type: { type: DataTypes.STRING, allowNull: false },
+    typeCategory: { type: DataTypes.STRING, allowNull: true },
     index: { type: DataTypes.INTEGER, allowNull: false },
+    indexInBlock: { type: DataTypes.INTEGER, allowNull: false },
     isInterestingType: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   },
@@ -343,3 +395,6 @@ Message.belongsTo(Transaction, { foreignKey: "txId" });
 
 Block.hasMany(Transaction);
 Transaction.belongsTo(Block, { foreignKey: "height" });
+
+//BlockStatistic.hasOne(Block, { foreignKey: "height" });
+Block.hasOne(BlockStatistic, { foreignKey: "height" });

@@ -3,7 +3,7 @@ import { UseQueryOptions, useQuery } from "react-query";
 import { queryKeys } from "./queryKeys";
 
 async function getDashboardData(): Promise<DashboardData> {
-  const res = await fetch(`/api/getDashboardData`);
+  const res = await fetch(`http://localhost:3081/getDashboardData`);
 
   if (!res.ok) {
     throw new Error("Error when fetching graph snapshot");

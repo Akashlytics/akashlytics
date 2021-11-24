@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue, getTotalSpent, getDailySpentGraph } from "./db/networkRevenueProvider";
 import { syncPriceHistory } from "./db/priceHistoryProvider";
@@ -9,8 +10,11 @@ import { bytesToHumanReadableSize } from "./shared/utils/files";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 import { rebuildStatsTables } from "./akash/statsProcessor";
+import { getDasahboardData as getDashboardData } from "./db/statsProvider";
 
 const app = express();
+app.use(cors());
+
 const { PORT = 3081 } = process.env;
 
 let latestSyncingError = null;
@@ -44,6 +48,15 @@ Sentry.init({
 app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
+
+app.get("/getDashboardData", async (req, res) => {
+  try {
+    const totalSpend = await getDashboardData();
+    res.send(totalSpend);
+  } catch (err) {
+    console.error(err);
+  }
+});
 
 app.get("/getTotalSpent", async (req, res) => {
   try {
@@ -123,14 +136,13 @@ async function initApp() {
 
     if (rebuildDatabase) {
       await rebuildStatsTables();
+    } else {
+      await syncPriceHistory();
+      await computeAtInterval();
+      // setInterval(async () => {
+      //   await computeAtInterval();
+      // }, 15 * 60 * 1000); // 15min
     }
-
-    //await syncPriceHistory();
-
-    //await computeAtInterval();
-    // setInterval(async () => {
-    //   await computeAtInterval();
-    // }, 15 * 60 * 1000); // 15min
   } catch (err) {
     latestSyncingError = err;
     latestSyncingErrorDate = new Date();
