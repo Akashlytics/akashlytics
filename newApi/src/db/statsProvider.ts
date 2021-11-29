@@ -1,32 +1,30 @@
-import { Block, BlockStatistic, Op } from "./schema";
+import { Block, Op } from "./schema";
 import { subHours } from "date-fns";
 
 export const getDasahboardData = async () => {
   console.time("latestBlock");
-  const latestBlockStats = await BlockStatistic.findOne({
-    order: [["height", "DESC"]],
-    include: [{ model: Block, attributes: ["datetime"] }]
+  const latestBlockStats = await Block.findOne({
+    order: [["height", "DESC"]]
   });
   console.timeEnd("latestBlock");
 
   console.time("compareBlock");
-  const compareDate = subHours(latestBlockStats.block.datetime, 24);
+  const compareDate = subHours(latestBlockStats.datetime, 24);
   console.log(compareDate);
-  const compareBlockStats = await BlockStatistic.findOne({
-    order: [[Block, "datetime", "ASC"]],
+  const compareBlockStats = await Block.findOne({
+    order: [["datetime", "ASC"]],
     where: {
-      "$block.datetime$": { [Op.gte]: compareDate }
-    },
-    include: [{ model: Block, attributes: ["datetime"] }]
+      datetime: { [Op.gte]: compareDate }
+    }
   });
   console.log(compareBlockStats.height);
-  console.log(compareBlockStats.block.datetime);
+  console.log(compareBlockStats.datetime);
   console.timeEnd("compareBlock");
 
   return {
     marketData: {},
     now: {
-      date: latestBlockStats.block.datetime,
+      date: latestBlockStats.datetime,
       height: latestBlockStats.height,
       activeDeploymentCount: latestBlockStats.activeLeaseCount,
       totalDeploymentCount: latestBlockStats.totalLeaseCount,
@@ -36,7 +34,7 @@ export const getDasahboardData = async () => {
       activeStorage: latestBlockStats.activeStorage
     },
     compare: {
-      date: compareBlockStats.block.datetime,
+      date: compareBlockStats.datetime,
       height: compareBlockStats.height,
       activeDeploymentCount: compareBlockStats.activeLeaseCount,
       totalDeploymentCount: compareBlockStats.totalLeaseCount,

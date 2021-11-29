@@ -14,8 +14,7 @@ import {
   Message,
   PriceHistory,
   sequelize,
-  sqliteDatabasePath,
-  BlockStatistic
+  sqliteDatabasePath
 } from "./schema";
 
 async function download(url, dest) {
@@ -66,14 +65,12 @@ export const initDatabase = async () => {
   // await DeploymentGroupResource.drop();
   // await DeploymentGroup.drop();
   // await Deployment.drop();
-  // await BlockStatistic.drop();
   // await Message.drop();
   // await Transaction.drop();
   // await Block.drop();
 
   await Block.sync();
   await Transaction.sync();
-  await BlockStatistic.sync();
   await Message.sync();
 
   await Deployment.sync({ force: false });

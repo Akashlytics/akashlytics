@@ -5,7 +5,7 @@ export const sqliteDatabasePath = "./data/database.sqlite";
 export const sequelize = new Sequelize({
   dialect: "sqlite",
   storage: sqliteDatabasePath,
-  logging: true,
+  logging: false,
   define: {
     freezeTableName: true
   }
@@ -18,30 +18,6 @@ export const sequelize = new Sequelize({
 //   });
 
 export { Op, Sequelize } from "sequelize";
-
-// export class ActiveLease extends Model {
-//   public id!: string;
-//   public deploymentId!: string;
-//   public readonly deployment: Deployment;
-//   public totalCpu!: number;
-//   public totalMemory!: number;
-//   public totalStorage!: number;
-// }
-
-// ActiveLease.init(
-//   {
-//     id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
-//     deploymentId: { type: DataTypes.UUID },
-//     totalCpu: { type: DataTypes.INTEGER, allowNull: false },
-//     totalMemory: { type: DataTypes.BIGINT, allowNull: false },
-//     totalStorage: { type: DataTypes.BIGINT, allowNull: false },
-//   },
-//   {
-//     tableName: "activeLease",
-//     modelName: "activeLease",
-//     sequelize
-//   }
-// );
 
 export class Lease extends Model {
   public id!: string;
@@ -95,7 +71,8 @@ Lease.init(
     modelName: "lease",
     indexes: [
       { unique: false, fields: ["closedHeight"] },
-      { unique: false, fields: ["deploymentId"] }
+      { unique: false, fields: ["deploymentId"] },
+      { unique: false, fields: ["owner", "dseq", "gseq", "oseq"] }
     ],
     sequelize
   }
@@ -273,13 +250,31 @@ export class Block extends Model {
   public height!: number;
   public readonly datetime!: Date;
   public firstBlockOfDay: boolean;
+  // Stats
+  public isProcessed!: boolean;
+  public totalUAktSpent!: number;
+  public activeLeaseCount: number;
+  public totalLeaseCount: number;
+  public activeCPU: number;
+  public activeMemory: number;
+  public activeStorage: number;
+
+  public readonly transactions?: Transaction[];
 }
 
 Block.init(
   {
     height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
     datetime: { type: DataTypes.DATE, allowNull: false },
-    firstBlockOfDay: { type: DataTypes.BOOLEAN, allowNull: false }
+    firstBlockOfDay: { type: DataTypes.BOOLEAN, allowNull: false },
+    // Stats
+    isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    totalUAktSpent: { type: DataTypes.BIGINT, allowNull: true },
+    activeLeaseCount: { type: DataTypes.INTEGER, allowNull: true },
+    totalLeaseCount: { type: DataTypes.INTEGER, allowNull: true },
+    activeCPU: { type: DataTypes.INTEGER, allowNull: true },
+    activeMemory: { type: DataTypes.BIGINT, allowNull: true },
+    activeStorage: { type: DataTypes.BIGINT, allowNull: true }
   },
   {
     tableName: "block",
@@ -289,44 +284,19 @@ Block.init(
   }
 );
 
-export class BlockStatistic extends Model {
-  public height!: number;
-  public totalUAktSpent!: number;
-  public activeLeaseCount: number;
-  public totalLeaseCount: number;
-  public activeCPU: number;
-  public activeMemory: number;
-  public activeStorage: number;
-  public readonly block?: Block;
-}
-
-BlockStatistic.init(
-  {
-    height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false, references: { model: Block, key: "height" } },
-    totalUAktSpent: { type: DataTypes.BIGINT, allowNull: false },
-    activeLeaseCount: { type: DataTypes.INTEGER, allowNull: false },
-    totalLeaseCount: { type: DataTypes.INTEGER, allowNull: false },
-    activeCPU: { type: DataTypes.INTEGER, allowNull: false },
-    activeMemory: { type: DataTypes.BIGINT, allowNull: false },
-    activeStorage: { type: DataTypes.BIGINT, allowNull: false }
-  },
-  {
-    tableName: "blockStatistic",
-    modelName: "blockStatistic",
-    sequelize
-  }
-);
-
 export class Transaction extends Model {
   public id!: string;
   public hash!: string;
   public index!: number;
   public height!: number;
+  public isProcessed!: boolean;
   public downloaded!: boolean;
   public hasInterestingType!: boolean;
   public hasDownloadError!: boolean;
   public hasProcessingError!: boolean;
+
   public readonly block?: Block;
+  public readonly messages?: Message[];
 }
 
 Transaction.init(
@@ -339,6 +309,7 @@ Transaction.init(
       allowNull: false,
       references: { model: Block, key: "height" }
     },
+    isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     downloaded: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     hasInterestingTypes: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     hasDownloadError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
@@ -347,6 +318,7 @@ Transaction.init(
   {
     tableName: "transaction",
     modelName: "transaction",
+    indexes: [{ unique: false, fields: ["height"] }],
     sequelize
   }
 );
@@ -361,6 +333,7 @@ export class Message extends Model {
   public indexInBlock!: number;
   public isInterestingType!: boolean;
   public isProcessed!: boolean;
+  public shouldProcess!: boolean;
   public readonly transaction?: Transaction;
 
   public static associations: {
@@ -375,26 +348,32 @@ Message.init(
       type: DataTypes.UUID,
       references: { model: Transaction, key: "id" }
     },
-    height: { type: DataTypes.BIGINT, allowNull: false },
+    height: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: { model: Block, key: "height" }
+    },
     type: { type: DataTypes.STRING, allowNull: false },
     typeCategory: { type: DataTypes.STRING, allowNull: true },
     index: { type: DataTypes.INTEGER, allowNull: false },
     indexInBlock: { type: DataTypes.INTEGER, allowNull: false },
     isInterestingType: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+    isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    shouldProcess: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
   },
   {
     tableName: "message",
     modelName: "message",
+    indexes: [{ unique: false, fields: ["txId"] }],
     sequelize
   }
 );
 
-Transaction.hasMany(Message);
+Transaction.hasMany(Message, { foreignKey: "txId" });
 Message.belongsTo(Transaction, { foreignKey: "txId" });
 
-Block.hasMany(Transaction);
+Block.hasMany(Transaction, { foreignKey: "height" });
 Transaction.belongsTo(Block, { foreignKey: "height" });
 
-//BlockStatistic.hasOne(Block, { foreignKey: "height" });
-Block.hasOne(BlockStatistic, { foreignKey: "height" });
+Block.hasMany(Message, { foreignKey: "height" });
+Message.belongsTo(Block, { foreignKey: "height" });

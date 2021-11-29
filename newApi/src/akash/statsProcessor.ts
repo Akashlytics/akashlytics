@@ -11,9 +11,9 @@ const {
 } = require("./ProtoAkashTypes");
 const uuid = require("uuid");
 const sha256 = require("js-sha256");
-const { PerformanceObserver, performance } = require("perf_hooks");
+const { performance } = require("perf_hooks");
 import { blocksDb, txsDb } from "@src/akash/dataStore";
-import { Deployment, Transaction, Message, Block, Bid, Lease, Op, BlockStatistic, DeploymentGroup, DeploymentGroupResource, sequelize } from "@src/db/schema";
+import { Deployment, Transaction, Message, Block, Bid, Lease, Op, DeploymentGroup, DeploymentGroupResource, sequelize } from "@src/db/schema";
 import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
 export let processingStatus = null;
@@ -68,14 +68,14 @@ async function getTx(txHash) {
   }
 }
 
-async function tryAndLog(fn, obj) {
-  try {
-    await fn();
-  } catch (err) {
-    console.log(obj);
-    throw err;
-  }
-}
+// async function tryAndLog(fn, obj) {
+//   try {
+//     await fn();
+//   } catch (err) {
+//     console.log(obj);
+//     throw err;
+//   }
+// }
 
 export async function rebuildStatsTables() {
   await Bid.drop();
@@ -83,8 +83,6 @@ export async function rebuildStatsTables() {
   await DeploymentGroupResource.drop();
   await DeploymentGroup.drop();
   await Deployment.drop();
-  await BlockStatistic.drop();
-  await BlockStatistic.sync({ force: true });
   await Deployment.sync({ force: true });
   await DeploymentGroup.sync({ force: true });
   await DeploymentGroupResource.sync({ force: true });
@@ -93,6 +91,18 @@ export async function rebuildStatsTables() {
 
   // console.log('Setting "isProcessed" to false');
   await Message.update(
+    {
+      isProcessed: false
+    },
+    { where: {} }
+  );
+  await Transaction.update(
+    {
+      isProcessed: false
+    },
+    { where: {} }
+  );
+  await Block.update(
     {
       isProcessed: false
     },
@@ -109,7 +119,7 @@ const groupBy = <T, K extends keyof any>(list: T[], getKey: (item: T) => K) =>
     previous[group].push(currentItem);
     return previous;
   }, {} as Record<K, T[]>);
-
+let totalLeaseCount = 0;
 export async function processMessages() {
   processingStatus = "Processing messages";
   console.time("processMessages");
@@ -129,113 +139,133 @@ export async function processMessages() {
 
   console.log("Querying unprocessed messages...");
 
-  const latestHeight: number = await Block.max("height");
+  const groupSize = 10_000;
+  //const latestHeight: number = await Block.max("height");
+  totalLeaseCount = await Lease.count();
 
-  const messages = await Message.findAll({
-    attributes: ["id", "type", "index", "indexInBlock"],
+  let previousProcessedBlock = await Block.findOne({
     where: {
-      isInterestingType: true,
-      isProcessed: false
+      isProcessed: true
     },
-    include: [
-      {
-        model: Transaction,
-        attributes: ["hash", "height"],
-        where: {
-          hasProcessingError: false,
-          hasDownloadError: false
-        },
-        include: [
-          {
-            model: Block,
-            attributes: ["datetime"]
-          }
-        ]
-      }
-    ],
-    order: [
-      [Transaction, "height", "ASC"],
-      [Transaction, "index", "ASC"],
-      ["index", "ASC"]
-    ]
+    order: [["height", "DESC"]]
+  });
+  const firstUnprocessedHeight: number = await Block.min("height", {
+    where: {
+      isProcessed: false
+    }
+  });
+  const lastUnprocessedHeight: number = await Block.max("height", {
+    where: {
+      isProcessed: false
+    }
   });
 
-  console.log("Found " + messages.length + " messages");
-
-  let latestStatsHeight = 0;
-  let previousBlockStats: BlockStatistic =
-    (await BlockStatistic.findOne({
-      order: [["height", "DESC"]]
-    })) || BlockStatistic.build({ activeLeaseCount: 0, totalLeaseCount: 0, totalUAktSpent: 0 });
-  let processedMessageCount = 0;
   messageTimes["stats"] = [];
-  messageTimes["statsA"] = [];
-  messageTimes["statsB"] = [];
-  messageTimes["statsC"] = [];
-  messageTimes["statsInsert"] = [];
-  messageTimes["statsSave"] = [];
 
-  const groupedMessages = groupBy(messages, (x) => x.transaction.height);
+  let firstBlockToProcess = firstUnprocessedHeight;
+  let lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize);
+  while (firstBlockToProcess <= lastUnprocessedHeight) {
+    console.log(`Loading blocks ${firstBlockToProcess} to ${lastBlockToProcess}`);
 
-  if (previousBlockStats.height > Object.values(groupedMessages)[0][0].transaction.height) {
-    throw "Invalid block stats";
-  }
+    const blocks = await Block.findAll({
+      attributes: ["height", "datetime"],
+      where: {
+        isProcessed: false,
+        height: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
+      },
+      include: [
+        {
+          model: Transaction,
+          //attributes: ["id", "type", "index", "indexInBlock"],
+          required: false,
+          where: {
+            isProcessed: false,
+            hasProcessingError: false
+          },
+          include: [
+            {
+              model: Message,
+              required: false,
+              where: {
+                isInterestingType: true,
+                isProcessed: false
+              }
+            }
+          ]
+        }
+      ],
+      order: [
+        ["height", "ASC"],
+        [Transaction, "index", "ASC"],
+        [Transaction, Message, "index", "ASC"]
+      ]
+    });
 
-  let shouldStop = false;
-  for (const height of Object.keys(groupedMessages)) {
-    for (let msg of groupedMessages[height]) {
-      //const height = msg.transaction.height;
-      const time = msg.transaction.block.datetime;
+    let processedMessageCount = 0;
 
-      processingStatus = `Processing message ${msg.index} of block #${height}`;
-      //console.log(processingStatus);
+    //const totalMessageCount = blocks.map((b) => b.transactions.map((t) => t.messages.length).reduce((a, b) => a + b, 0)).reduce((a, b) => a + b, 0);
 
-      const progress = ((processedMessageCount * 100) / messages.length).toFixed(2);
-      console.log(`Processing message ${processedMessageCount} / ${messages.length} (${progress}%)  -  Block #${height} - ${msg.type}`);
+    const blockGroupTransaction = await sequelize.transaction();
+    try {
+      for (const block of blocks) {
+        const blockData = await getBlockByHeight(block.height);
+        console.log(`Processing block ${block.height} / ${lastUnprocessedHeight}`);
 
-      const blockData = await getBlockByHeight(msg.transaction.height);
+        for (const transaction of block.transactions) {
+          for (let msg of transaction.messages) {
+            processingStatus = `Processing message ${msg.indexInBlock} of block #${block.height}`;
+            //console.log(processingStatus);
 
-      const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === msg.transaction.hash);
-      let encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
+            //const progress = ((processedMessageCount * 100) / totalMessageCount).toFixed(2);
+            console.log(`Processing message ${msg.type} - Block #${block.height}`);
 
-      await processMessage(msg, encodedMessage, height, time);
+            const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
+            let encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
 
-      processedMessageCount++;
-      //console.log(`Processing message ${processedMessageCount} / ${messages.length} (${progress}%)  -  Block #${height} - ${msg.type}`);
+            await processMessage(msg, encodedMessage, block.height, block.datetime, blockGroupTransaction);
+
+            processedMessageCount++;
+            //console.log(`Processing message ${processedMessageCount} / ${messages.length} (${progress}%)  -  Block #${height} - ${msg.type}`);
+          }
+
+          await transaction.update(
+            {
+              isProcessed: true
+            },
+            { transaction: blockGroupTransaction }
+          );
+        }
+
+        const statsA = performance.now();
+        const totalResources = await getTotalResources(blockGroupTransaction);
+        await block.update(
+          {
+            isProcessed: true,
+            activeLeaseCount: totalResources.count,
+            totalLeaseCount: totalLeaseCount,
+            activeCPU: totalResources.cpuSum,
+            activeMemory: totalResources.memorySum,
+            activeStorage: totalResources.storageSum,
+            totalUAktSpent: (previousProcessedBlock?.totalUAktSpent || 0) + totalResources.priceSum
+          },
+          { transaction: blockGroupTransaction }
+        );
+        previousProcessedBlock = block;
+
+        messageTimes["stats"].push(performance.now() - statsA);
+        //if (processedMessageCount > 40) break;
+        //console.timeEnd("compute");
+      }
+
+      blockGroupTransaction.commit();
+    } catch (err) {
+      blockGroupTransaction.rollback();
+      throw err;
     }
 
-    //console.time("compute");
-    const timeA = performance.now();
-    const activeLeaseCount = await Lease.count({ where: { closedHeight: { [Op.is]: null } } });
-    const timeB = performance.now();
-    const totalLeaseCount = await Lease.count();
-    const timeC = performance.now();
-    const totalResources = await getTotalResources();
-    const timeD = performance.now();
-    const blockStats = await BlockStatistic.create({
-      height: height,
-      activeLeaseCount: activeLeaseCount,
-      totalLeaseCount: totalLeaseCount,
-      activeCPU: totalResources.cpuSum,
-      activeMemory: totalResources.memorySum,
-      activeStorage: totalResources.storageSum,
-      totalUAktSpent: previousBlockStats.totalUAktSpent + totalResources.priceSum
-    });
-    previousBlockStats = blockStats;
-    const timeE = performance.now();
-    blockStats.totalUAktSpent += 10;
-    blockStats.save();
-    const timeF = performance.now();
-
-    messageTimes["stats"].push(timeF - timeA);
-    messageTimes["statsA"].push(timeB - timeA);
-    messageTimes["statsB"].push(timeC - timeB);
-    messageTimes["statsC"].push(timeD - timeC);
-    messageTimes["statsInsert"].push(timeE - timeD);
-    messageTimes["statsSave"].push(timeF - timeE);
-
-    if (processedMessageCount > 2000) break;
-    //console.timeEnd("compute");
+    firstBlockToProcess += groupSize;
+    lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize);
+    //if (firstBlockToProcess > 100_000) break;
   }
 
   processingStatus = null;
@@ -259,18 +289,20 @@ export async function processMessages() {
   );
 }
 
-async function getTotalResources() {
+async function getTotalResources(blockGroupTransaction) {
   const totalResources = await Lease.findAll({
     attributes: ["cpuUnits", "memoryQuantity", "storageQuantity", "price"],
     where: {
       closedHeight: { [Op.is]: null }
-    }
+    },
+    transaction: blockGroupTransaction
   });
 
   //console.log(JSON.stringify(totalResources, null, 2));
   //if(totalResources.length > 0)throw "stop";
 
   return {
+    count: totalResources.length,
     cpuSum: totalResources.map((x) => x.cpuUnits).reduce((a, b) => a + b, 0),
     memorySum: totalResources.map((x) => x.memoryQuantity).reduce((a, b) => a + b, 0),
     storageSum: totalResources.map((x) => x.storageQuantity).reduce((a, b) => a + b, 0),
@@ -280,141 +312,145 @@ async function getTotalResources() {
 
 let messageTimes = [];
 
-async function processMessage(msg, encodedMessage, height, time) {
+async function processMessage(msg, encodedMessage, height, time, blockGroupTransaction) {
   let a = performance.now();
 
   if (msg.type === "/akash.deployment.v1beta1.MsgCreateDeployment") {
-    await handleCreateDeployment(encodedMessage, height, time);
+    await handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction);
   } else if (msg.type === "/akash.deployment.v1beta1.MsgCloseDeployment") {
-    await handleCloseDeployment(encodedMessage, height, time);
+    await handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction);
   } else if (msg.type === "/akash.market.v1beta1.MsgCreateLease") {
-    await handleCreateLease(encodedMessage, height, time);
+    await handleCreateLease(encodedMessage, height, time, blockGroupTransaction);
   } else if (msg.type === "/akash.market.v1beta1.MsgCloseLease") {
-    await handleCloseLease(encodedMessage, height, time);
+    await handleCloseLease(encodedMessage, height, time, blockGroupTransaction);
   } else if (msg.type === "/akash.market.v1beta1.MsgCreateBid") {
-    await handleCreateBid(encodedMessage, height, time);
+    await handleCreateBid(encodedMessage, height, time, blockGroupTransaction);
   } else if (msg.type === "/akash.market.v1beta1.MsgCloseBid") {
-    await handleCloseBid(encodedMessage, height, time);
+    await handleCloseBid(encodedMessage, height, time, blockGroupTransaction);
   } else if (msg.type === "/akash.deployment.v1beta1.MsgDepositDeployment") {
-    await handleDepositDeployment(encodedMessage, height, time);
+    await handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction);
   } else if (msg.type === "/akash.market.v1beta1.MsgWithdrawLease") {
-    await handleWithdrawLease(encodedMessage, height, time);
+    await handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction);
   }
+
+  await msg.update(
+    {
+      isProcessed: true
+    },
+    { transaction: blockGroupTransaction }
+  );
 
   let processingTime = performance.now() - a;
   if (!messageTimes[msg.type]) {
     messageTimes[msg.type] = [];
   }
   messageTimes[msg.type].push(processingTime);
-
-  await msg.update({
-    isProcessed: true
-  });
 }
 
-async function handleCreateDeployment(encodedMessage, height, time) {
+async function handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction) {
   const decodedMessage = MsgCreateDeployment.decode(encodedMessage);
 
-  const t = await sequelize.transaction();
-  try {
-    const created = await Deployment.create(
+  //const t = await sequelize.transaction();
+  //try {
+  const created = await Deployment.create(
+    {
+      id: uuid.v4(),
+      owner: decodedMessage.id.owner,
+      dseq: decodedMessage.id.dseq.toNumber(),
+      deposit: parseInt(decodedMessage.deposit.amount),
+      balance: parseInt(decodedMessage.deposit.amount),
+      startDate: time,
+      createdHeight: height,
+      datetime: time,
+      state: "-",
+      escrowAccountTransferredAmount: 0
+    },
+    { transaction: blockGroupTransaction }
+  );
+
+  addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
+
+  for (const group of decodedMessage.groups) {
+    const createdGroup = await DeploymentGroup.create(
       {
         id: uuid.v4(),
-        owner: decodedMessage.id.owner,
-        dseq: decodedMessage.id.dseq.toNumber(),
-        deposit: parseInt(decodedMessage.deposit.amount),
-        balance: parseInt(decodedMessage.deposit.amount),
-        startDate: time,
-        createdHeight: height,
-        datetime: time,
-        state: "-",
-        escrowAccountTransferredAmount: 0
+        deploymentId: created.id,
+        owner: created.owner,
+        dseq: created.dseq,
+        gseq: decodedMessage.groups.indexOf(group) + 1
       },
-      { transaction: t }
+      { transaction: blockGroupTransaction }
     );
+    addToDeploymentGroupIdCache(createdGroup.owner, createdGroup.dseq, createdGroup.gseq, createdGroup.id);
 
-    addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
-
-    for (const group of decodedMessage.groups) {
-      const createdGroup = await DeploymentGroup.create(
+    for (const groupResource of group.resources) {
+      await DeploymentGroupResource.create(
         {
-          id: uuid.v4(),
-          deploymentId: created.id,
-          owner: created.owner,
-          dseq: created.dseq,
-          gseq: decodedMessage.groups.indexOf(group) + 1
+          deploymentGroupId: createdGroup.id,
+          cpuUnits: parseInt(groupResource.resources.cpu.units.val),
+          memoryQuantity: parseInt(groupResource.resources.memory.quantity.val),
+          storageQuantity: parseInt(groupResource.resources.storage.quantity.val),
+          count: groupResource.count,
+          price: parseInt(groupResource.price.amount) // TODO: handle denom
         },
-        { transaction: t }
+        { transaction: blockGroupTransaction }
       );
-      addToDeploymentGroupIdCache(createdGroup.owner, createdGroup.dseq, createdGroup.gseq, createdGroup.id);
-
-      for (const groupResource of group.resources) {
-        await DeploymentGroupResource.create(
-          {
-            deploymentGroupId: createdGroup.id,
-            cpuUnits: parseInt(groupResource.resources.cpu.units.val),
-            memoryQuantity: parseInt(groupResource.resources.memory.quantity.val),
-            storageQuantity: parseInt(groupResource.resources.storage.quantity.val),
-            count: groupResource.count,
-            price: parseInt(groupResource.price.amount) // TODO: handle denom
-          },
-          { transaction: t }
-        );
-      }
     }
-    await t.commit();
-  } catch (err) {
-    await t.rollback();
-    console.error(err);
-    throw err;
   }
+  //   await t.commit();
+  // } catch (err) {
+  //   await t.rollback();
+  //   console.error(err);
+  //   throw err;
+  // }
 }
 
-async function handleCloseDeployment(encodedMessage, height, time) {
+async function handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction) {
   const decodedMessage = MsgCloseDeployment.decode(encodedMessage);
 
-  const t = await sequelize.transaction();
+  //const t = await sequelize.transaction();
 
-  try {
-    const deployment = await Deployment.findOne({
-      where: {
-        id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
-      },
-      include: [
-        {
-          model: Lease,
-          required: false,
-          where: {
-            closedHeight: { [Op.is]: null }
-          }
+  //try {
+  const deployment = await Deployment.findOne({
+    where: {
+      id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
+    },
+    include: [
+      {
+        model: Lease,
+        required: false,
+        where: {
+          closedHeight: { [Op.is]: null }
         }
-      ]
-    });
+      }
+    ],
+    transaction: blockGroupTransaction
+  });
 
-    for (let lease of deployment.leases) {
-      const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
-      const blockCount = height - startBlock;
-      const amount = Math.min(lease.price * blockCount, deployment.balance); // TODO : Handle proportional distribution
+  for (let lease of deployment.leases) {
+    const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
+    const blockCount = height - startBlock;
+    const amount = Math.min(lease.price * blockCount, deployment.balance); // TODO : Handle proportional distribution
 
-      lease.withdrawnAmount += amount;
-      lease.lastWithdrawHeight = height;
-      deployment.balance -= amount;
+    lease.withdrawnAmount += amount;
+    lease.lastWithdrawHeight = height;
+    deployment.balance -= amount;
 
-      lease.endDate = time;
-      lease.closedHeight = height;
-      await lease.save({ transaction: t });
-    }
-
-    await deployment.save({ transaction: t }); // TODO: Save closed date/height
-    await t.commit();
-  } catch (err) {
-    await t.rollback();
-    console.error(err);
-    throw err;
+    lease.endDate = time;
+    lease.closedHeight = height;
+    await lease.save({ transaction: blockGroupTransaction });
   }
+
+  //await deployment.save({ transaction: t }); // TODO: Save closed date/height
+  //await t.commit();
+  //} catch (err) {
+  //  await t.rollback();
+  //  console.error(err);
+  //  throw err;
+  //}
 }
 
-async function handleCreateLease(encodedMessage, height, time) {
+async function handleCreateLease(encodedMessage, height, time, blockGroupTransaction) {
   const decodedMessage = MsgCreateLease.decode(encodedMessage);
   const bid = await Bid.findOne({
     where: {
@@ -423,7 +459,8 @@ async function handleCreateLease(encodedMessage, height, time) {
       gseq: decodedMessage.bid_id.gseq,
       oseq: decodedMessage.bid_id.oseq,
       provider: decodedMessage.bid_id.provider
-    }
+    },
+    transaction: blockGroupTransaction
   });
 
   const deploymentGroupId = getDeploymentGroupIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber(), decodedMessage.bid_id.gseq);
@@ -431,30 +468,36 @@ async function handleCreateLease(encodedMessage, height, time) {
     attributes: ["count", "cpuUnits", "memoryQuantity", "storageQuantity"],
     where: {
       deploymentGroupId: deploymentGroupId
-    }
+    },
+    transaction: blockGroupTransaction
   });
 
-  await Lease.create({
-    id: uuid.v4(),
-    deploymentId: getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber()),
-    deploymentGroupId: deploymentGroupId,
-    owner: decodedMessage.bid_id.owner,
-    dseq: decodedMessage.bid_id.dseq.toNumber(),
-    oseq: decodedMessage.bid_id.oseq,
-    gseq: decodedMessage.bid_id.gseq,
-    provider: decodedMessage.bid_id.provider,
-    startDate: time,
-    createdHeight: height,
-    price: bid.price,
+  await Lease.create(
+    {
+      id: uuid.v4(),
+      deploymentId: getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber()),
+      deploymentGroupId: deploymentGroupId,
+      owner: decodedMessage.bid_id.owner,
+      dseq: decodedMessage.bid_id.dseq.toNumber(),
+      oseq: decodedMessage.bid_id.oseq,
+      gseq: decodedMessage.bid_id.gseq,
+      provider: decodedMessage.bid_id.provider,
+      startDate: time,
+      createdHeight: height,
+      price: bid.price,
 
-    // Stats
-    cpuUnits: deploymentGroups.map((x) => x.cpuUnits * x.count).reduce((a, b) => a + b, 0),
-    memoryQuantity: deploymentGroups.map((x) => x.memoryQuantity * x.count).reduce((a, b) => a + b, 0),
-    storageQuantity: deploymentGroups.map((x) => x.storageQuantity * x.count).reduce((a, b) => a + b, 0)
-  });
+      // Stats
+      cpuUnits: deploymentGroups.map((x) => x.cpuUnits * x.count).reduce((a, b) => a + b, 0),
+      memoryQuantity: deploymentGroups.map((x) => x.memoryQuantity * x.count).reduce((a, b) => a + b, 0),
+      storageQuantity: deploymentGroups.map((x) => x.storageQuantity * x.count).reduce((a, b) => a + b, 0)
+    },
+    { transaction: blockGroupTransaction }
+  );
+
+  totalLeaseCount++;
 }
 
-async function handleCloseLease(encodedMessage, height, time) {
+async function handleCloseLease(encodedMessage, height, time, blockGroupTransaction) {
   const decodedMessage = MsgCloseLease.decode(encodedMessage);
 
   let lease = await Lease.findOne({
@@ -467,7 +510,8 @@ async function handleCloseLease(encodedMessage, height, time) {
     },
     include: {
       model: Deployment
-    }
+    },
+    transaction: blockGroupTransaction
   });
 
   const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
@@ -480,26 +524,29 @@ async function handleCloseLease(encodedMessage, height, time) {
 
   lease.endDate = time;
   lease.closedHeight = height;
-  await lease.save();
-  await lease.deployment.save();
+  await lease.save({ transaction: blockGroupTransaction });
+  await lease.deployment.save({ transaction: blockGroupTransaction });
 }
 
-async function handleCreateBid(encodedMessage, height, time) {
+async function handleCreateBid(encodedMessage, height, time, blockGroupTransaction) {
   const decodedMessage = MsgCreateBid.decode(encodedMessage);
 
-  await Bid.create({
-    owner: decodedMessage.order_id.owner,
-    dseq: decodedMessage.order_id.dseq.toNumber(),
-    gseq: decodedMessage.order_id.gseq,
-    oseq: decodedMessage.order_id.oseq,
-    provider: decodedMessage.provider,
-    price: parseInt(decodedMessage.price.amount),
-    state: "-",
-    datetime: time
-  });
+  await Bid.create(
+    {
+      owner: decodedMessage.order_id.owner,
+      dseq: decodedMessage.order_id.dseq.toNumber(),
+      gseq: decodedMessage.order_id.gseq,
+      oseq: decodedMessage.order_id.oseq,
+      provider: decodedMessage.provider,
+      price: parseInt(decodedMessage.price.amount),
+      state: "-",
+      datetime: time
+    },
+    { transaction: blockGroupTransaction }
+  );
 }
 
-async function handleCloseBid(encodedMessage, height, time) {
+async function handleCloseBid(encodedMessage, height, time, blockGroupTransaction) {
   const decodedMessage = MsgCloseBid.decode(encodedMessage);
 
   const deployment = await Deployment.findOne({
@@ -515,7 +562,8 @@ async function handleCloseBid(encodedMessage, height, time) {
         oseq: decodedMessage.bid_id.oseq,
         provider: decodedMessage.bid_id.provider
       }
-    }
+    },
+    transaction: blockGroupTransaction
   });
 
   for (let lease of deployment.leases) {
@@ -529,7 +577,7 @@ async function handleCloseBid(encodedMessage, height, time) {
 
     lease.endDate = time;
     lease.closedHeight = height;
-    await lease.save();
+    await lease.save({ transaction: blockGroupTransaction });
   }
 
   await Bid.destroy({
@@ -539,11 +587,12 @@ async function handleCloseBid(encodedMessage, height, time) {
       gseq: decodedMessage.bid_id.gseq,
       oseq: decodedMessage.bid_id.oseq,
       provider: decodedMessage.bid_id.provider
-    }
+    },
+    transaction: blockGroupTransaction
   });
 }
 
-async function handleDepositDeployment(encodedMessage, height, time) {
+async function handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction) {
   const decodedMessage = MsgDepositDeployment.decode(encodedMessage);
 
   const deployment = await Deployment.findOne({
@@ -554,18 +603,19 @@ async function handleDepositDeployment(encodedMessage, height, time) {
       {
         model: Lease
       }
-    ]
+    ],
+    transaction: blockGroupTransaction
   });
 
   deployment.deposit += parseFloat(decodedMessage.amount.amount);
   deployment.balance += parseFloat(decodedMessage.amount.amount);
-  await deployment.save();
+  await deployment.save({ transaction: blockGroupTransaction });
 }
 // messageTimes["withdrawA"] = [];
 // messageTimes["withdrawB"] = [];
 // messageTimes["withdrawC"] = [];
 // messageTimes["withdrawD"] = [];
-async function handleWithdrawLease(encodedMessage, height, time) {
+async function handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction) {
   const perfA = performance.now();
   const decodedMessage = MsgWithdrawLease.decode(encodedMessage);
 
@@ -583,48 +633,43 @@ async function handleWithdrawLease(encodedMessage, height, time) {
     include: {
       model: Deployment,
       attributes: ["id", "balance"]
-    }
+    },
+    transaction: blockGroupTransaction
   });
+  
   //messageTimes["withdrawA"].push(performance.now() - perfA);
   const perfB = performance.now();
 
-  const t = await sequelize.transaction();
+  const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
+  const blockCount = height - startBlock;
+  const amount = Math.min(lease.price * blockCount, lease.deployment.balance);
+  lease.withdrawnAmount += amount;
+  lease.lastWithdrawHeight = height;
+  lease.deployment.balance -= amount;
+  await lease.save({ transaction: blockGroupTransaction });
+  //messageTimes["withdrawB"].push(performance.now() - perfB);
+  const perfC = performance.now();
 
-  try {
-    const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
-    const blockCount = height - startBlock;
-    const amount = Math.min(lease.price * blockCount, lease.deployment.balance);
-    lease.withdrawnAmount += amount;
-    lease.lastWithdrawHeight = height;
-    lease.deployment.balance -= amount;
-    await lease.save({ transaction: t });
-    //messageTimes["withdrawB"].push(performance.now() - perfB);
-    const perfC = performance.now();
+  //console.table([{ startBlock, blockCount, amount, price: lease.price, balance: lease.deployment.balance }]);
 
-    //console.table([{ startBlock, blockCount, amount, price: lease.price, balance: lease.deployment.balance }]);
-
-    if (lease.deployment.balance == 0) {
-      await Lease.update(
-        {
-          closedHeight: height
+  if (lease.deployment.balance == 0) {
+    await Lease.update(
+      {
+        closedHeight: height
+      },
+      {
+        where: {
+          deploymentId: getDeploymentIdFromCache(owner, dseq)
         },
-        {
-          where: {
-            deploymentId: getDeploymentIdFromCache(owner, dseq)
-          },
-          transaction: t
-        }
-      );
-      //messageTimes["withdrawC"].push(performance.now() - perfC);
+        transaction: blockGroupTransaction
+      }
+    );
+    //messageTimes["withdrawC"].push(performance.now() - perfC);
 
-      //lease.deployment.closedHeight = height;
-    }
-    const perfD = performance.now();
-
-    await lease.deployment.save({ transaction: t });
-    //messageTimes["withdrawD"].push(performance.now() - perfC);
-    await t.commit();
-  } catch (err) {
-    await t.rollback();
+    //lease.deployment.closedHeight = height;
   }
+  const perfD = performance.now();
+
+  await lease.deployment.save({ transaction: blockGroupTransaction });
+  //messageTimes["withdrawD"].push(performance.now() - perfC);
 }
