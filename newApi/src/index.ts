@@ -10,7 +10,8 @@ import { bytesToHumanReadableSize } from "./shared/utils/files";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 import { rebuildStatsTables } from "./akash/statsProcessor";
-import { getDasahboardData as getDashboardData } from "./db/statsProvider";
+import { getDashboardData } from "./db/statsProvider";
+import marketDataProvider from "./providers/marketDataProvider";
 
 const app = express();
 app.use(cors());
@@ -52,7 +53,8 @@ app.use(Sentry.Handlers.tracingHandler());
 app.get("/getDashboardData", async (req, res) => {
   try {
     const totalSpend = await getDashboardData();
-    res.send(totalSpend);
+    const marketData = marketDataProvider.getAktMarketData();
+    res.send({ ...totalSpend, marketData });
   } catch (err) {
     console.error(err);
   }
@@ -138,6 +140,7 @@ async function initApp() {
       await rebuildStatsTables();
     } else {
       await syncPriceHistory();
+      await marketDataProvider.syncAtInterval();
       await computeAtInterval();
       // setInterval(async () => {
       //   await computeAtInterval();

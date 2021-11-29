@@ -1,7 +1,7 @@
 import { Block, Op } from "./schema";
 import { subHours } from "date-fns";
 
-export const getDasahboardData = async () => {
+export const getDashboardData = async () => {
   console.time("latestBlock");
   const latestBlockStats = await Block.findOne({
     order: [["height", "DESC"]]
@@ -22,7 +22,6 @@ export const getDasahboardData = async () => {
   console.timeEnd("compareBlock");
 
   return {
-    marketData: {},
     now: {
       date: latestBlockStats.datetime,
       height: latestBlockStats.height,
