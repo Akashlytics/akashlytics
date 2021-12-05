@@ -10,7 +10,7 @@ import { bytesToHumanReadableSize } from "./shared/utils/files";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 import { rebuildStatsTables } from "./akash/statsProcessor";
-import { getDashboardData } from "./db/statsProvider";
+import { getGraphData, getDashboardData } from "./db/statsProvider";
 import marketDataProvider from "./providers/marketDataProvider";
 
 const app = express();
@@ -56,6 +56,23 @@ app.get("/getDashboardData", async (req, res) => {
     const marketData = marketDataProvider.getAktMarketData();
     res.send({ ...totalSpend, marketData });
   } catch (err) {
+    console.error(err);
+  }
+});
+
+app.get("/getGraphData/:dataName", async (req, res) => {
+  try {
+    const authorizedDataNames = ["totalUAktSpent", "activeLeaseCount", "totalLeaseCount", "activeCPU", "activeMemory", "activeStorage"];
+
+    if (!authorizedDataNames.includes(req.params.dataName)) {
+      res.sendStatus(404);
+      return;
+    }
+
+    const graphData = await getGraphData(req.params.dataName);
+    res.send(graphData);
+  } catch (err) {
+    res.sendStatus(500);
     console.error(err);
   }
 });

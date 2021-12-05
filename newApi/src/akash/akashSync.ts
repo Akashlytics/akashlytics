@@ -3,7 +3,7 @@ import base64js from "base64-js";
 import { processMessages } from "./statsProcessor";
 import { blocksDb, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
-import { Block, Transaction, Message, Op } from "@src/db/schema";
+import { Block, Transaction, Message, Op, Day } from "@src/db/schema";
 
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
@@ -113,8 +113,8 @@ export async function syncBlocks() {
       await downloadBlocks(startHeight, latestAvailableHeight);
     }
 
-    let latestInsertedHeight: number = await Block.max("height") || 0;
-    
+    let latestInsertedHeight: number = (await Block.max("height")) || 0;
+
     await insertBlocks(latestInsertedHeight + 1, latestAvailableHeight);
     await downloadTransactions();
 
@@ -135,10 +135,17 @@ async function insertBlocks(startHeight, endHeight) {
   console.log("Inserting " + blockCount + " blocks into database");
   syncingStatus = "Inserting blocks";
 
-  let lastInsertedBlock = await Block.findOne({
+  let lastInsertedBlock = (await Block.findOne({
+    include: [
+      {
+        model: Day,
+        required: true
+      }
+    ],
     order: [["height", "DESC"]]
-  });
-  let lastInsertedDate = lastInsertedBlock?.datetime ?? new Date(2000, 1, 1);
+  })) as any;
+
+  //let lastInsertedDate = lastInsertedBlock?.datetime ?? new Date(2000, 1, 1);
 
   let blocksToAdd = [];
   let txsToAdd = [];
@@ -152,11 +159,6 @@ async function insertBlocks(startHeight, endHeight) {
 
     let msgIndexInBlock = 0;
     const blockDatetime = new Date(blockData.block.header.time);
-    const blockDate = new Date(Date.UTC(blockDatetime.getUTCFullYear(), blockDatetime.getUTCMonth(), blockDatetime.getUTCDate()));
-    const firstBlockOfDay = blockDate > lastInsertedDate;
-    if (firstBlockOfDay) {
-      lastInsertedDate = blockDate;
-    }
 
     const txs = blockData.block.data.txs;
     for (let txIndex = 0; txIndex < txs.length; ++txIndex) {
@@ -196,17 +198,39 @@ async function insertBlocks(startHeight, endHeight) {
       });
     }
 
-    blocksToAdd.push({
+    const blockEntry = {
       height: i,
       datetime: new Date(blockData.block.header.time),
-      firstBlockOfDay: firstBlockOfDay
-    });
+      dayId: lastInsertedBlock?.dayId,
+      day: lastInsertedBlock?.day
+    };
+    const blockDate = new Date(Date.UTC(blockDatetime.getUTCFullYear(), blockDatetime.getUTCMonth(), blockDatetime.getUTCDate()));
+    //console.log("Bock " + i + " date: " + blockDate + " last block date: " + lastInsertedBlock?.day.date);
+    if (blockDate.getTime() !== lastInsertedBlock?.day.date.getTime()) {
+      //console.log("NEW DAY!!!");
+      const newDay = await Day.create({
+        id: uuid.v4(),
+        date: blockDate,
+        firstBlockHeight: i
+      });
 
-    if (blocksToAdd.length >= 1000) {
+      blockEntry.dayId = newDay.id;
+      blockEntry.day = newDay;
+
+      if (lastInsertedBlock) {
+        lastInsertedBlock.day.lastBlockHeight = lastInsertedBlock.height;
+        await lastInsertedBlock.day.save();
+      }
+    }
+    lastInsertedBlock = blockEntry;
+
+    blocksToAdd.push(blockEntry);
+
+    if (blocksToAdd.length >= 1_000) {
       await Block.bulkCreate(blocksToAdd);
       await Transaction.bulkCreate(txsToAdd);
       await Message.bulkCreate(msgsToAdd);
-      
+
       blocksToAdd = [];
       txsToAdd = [];
       msgsToAdd = [];

@@ -221,6 +221,37 @@ PriceHistory.init(
   }
 );
 
+export class Day extends Model {
+  public id!: string;
+  public date!: Date;
+  public aktPrice?: number;
+  public firstBlockHeight!: number;
+  public lastBlockHeight?: number;
+
+  public readonly firstBlock!: Block;
+  public readonly lastBlock?: Block;
+}
+
+Day.init(
+  {
+    id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
+    date: { type: DataTypes.DATE, allowNull: false },
+    aktPrice: { type: DataTypes.INTEGER, allowNull: true },
+    firstBlockHeight: { type: DataTypes.INTEGER, allowNull: false },
+    lastBlockHeight: { type: DataTypes.INTEGER, allowNull: true }
+  },
+  {
+    tableName: "day",
+    modelName: "day",
+    indexes: [
+      { unique: true, fields: ["date"] },
+      { unique: true, fields: ["firstBlockHeight"] },
+      { unique: true, fields: ["lastBlockHeight"] }
+    ],
+    sequelize
+  }
+);
+
 export class DailyNetworkRevenue extends Model {
   public id!: string;
   public date!: string;
@@ -249,7 +280,8 @@ DailyNetworkRevenue.init(
 export class Block extends Model {
   public height!: number;
   public readonly datetime!: Date;
-  public firstBlockOfDay: boolean;
+  //public firstBlockOfDay: boolean;
+  public dayId!: string;
   // Stats
   public isProcessed!: boolean;
   public totalUAktSpent!: number;
@@ -259,6 +291,7 @@ export class Block extends Model {
   public activeMemory: number;
   public activeStorage: number;
 
+  public readonly day: Day;
   public readonly transactions?: Transaction[];
 }
 
@@ -266,7 +299,9 @@ Block.init(
   {
     height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
     datetime: { type: DataTypes.DATE, allowNull: false },
-    firstBlockOfDay: { type: DataTypes.BOOLEAN, allowNull: false },
+    //firstBlockOfDay: { type: DataTypes.BOOLEAN, allowNull: false },
+    dayId: { type: DataTypes.UUID, allowNull: false, references: { model: Day, key: "id" } },
+
     // Stats
     isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     totalUAktSpent: { type: DataTypes.BIGINT, allowNull: true },
@@ -279,7 +314,10 @@ Block.init(
   {
     tableName: "block",
     modelName: "block",
-    indexes: [{ unique: false, fields: ["datetime"] }],
+    indexes: [
+      { unique: false, fields: ["datetime"] },
+      { unique: false, fields: ["dayId"] }
+    ],
     sequelize
   }
 );
@@ -377,3 +415,9 @@ Transaction.belongsTo(Block, { foreignKey: "height" });
 
 Block.hasMany(Message, { foreignKey: "height" });
 Message.belongsTo(Block, { foreignKey: "height" });
+
+Day.hasMany(Block, { foreignKey: "dayId" });
+Block.belongsTo(Day, { foreignKey: "dayId" });
+
+Day.belongsTo(Block, { as: "firstBlock", foreignKey: "firstBlockHeight" });
+Day.belongsTo(Block, { as: "lastBlock", foreignKey: "lastBlockHeight" });

@@ -7,12 +7,12 @@ import { GraphResponse, Snapshots, SnapshotsUrlParam, SnapshotValue } from "@src
 import { Box, Button, ButtonGroup, CircularProgress, Typography } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import clsx from "clsx";
-import { useHistory, useLocation, useParams } from "react-router";
+import { useParams } from "react-router";
 import { Helmet } from "react-helmet-async";
-import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import { urlParamToSnapshot } from "@src/shared/utils/snapshotsUrlHelpers";
 import { useGraphSnapshot } from "@src/queries/useGrapsQuery";
-import { average, nFormatter, percIncrease, round, uaktToAKT } from "@src/shared/utils/mathHelpers";
+import { nFormatter, percIncrease, round, uaktToAKT } from "@src/shared/utils/mathHelpers";
 import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
 import { DiffNumber } from "@src/shared/components/DiffNumber";
 import { SelectedRange } from "@src/shared/contants";
@@ -29,9 +29,8 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
   const theme = getTheme();
   const intl = useIntl();
   const rangedData = snapshotData && snapshotData.snapshots.slice(snapshotData.snapshots.length - selectedRange, snapshotData.snapshots.length);
-  const minValue = rangedData && rangedData.map((x) => x.min || x.value).reduce((a, b) => (a < b ? a : b));
-  const maxValue = snapshotData && rangedData.map((x) => x.max || x.value).reduce((a, b) => (a > b ? a : b));
-  const isAverage = snapshotData && rangedData.some((x) => x.average);
+  const minValue = rangedData && rangedData.map((x) => x.value).reduce((a, b) => (a < b ? a : b));
+  const maxValue = snapshotData && rangedData.map((x) => x.value).reduce((a, b) => (a > b ? a : b));
   const graphData = snapshotData
     ? [
         {
@@ -39,7 +38,7 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
           color: "rgb(1,0,0)",
           data: rangedData.map((snapshot) => ({
             x: snapshot.date,
-            y: round(snapshot.average ? snapshot.average : snapshot.value)
+            y: round(snapshot.value)
           }))
         }
       ]
@@ -144,14 +143,6 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
               enableCrosshair={true}
             />
           </div>
-
-          {isAverage && (
-            <div className="row">
-              <div className="col-lg-12">
-                <p className={clsx(classes.graphExplanation)}>* The data points represent the average between the minimum and maximum value for the day.</p>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>
@@ -186,51 +177,49 @@ const getTheme = () => {
 };
 
 const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): { value?: number; diffNumber?: number; diffPercent?: number } => {
-  const lastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 1];
-  const previousLastSnapshot = snapshotData.snapshots[snapshotData.snapshots.length - 2];
   switch (snapshot) {
     case Snapshots.activeDeployment:
       return {
         value: snapshotData.currentValue,
-        diffPercent: percIncrease(Math.ceil(average(lastSnapshot.min, lastSnapshot.max)), snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - Math.ceil(average(lastSnapshot.min, lastSnapshot.max))
+        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
+        diffNumber: snapshotData.currentValue - snapshotData.compareValue
       };
     case Snapshots.totalAKTSpent:
       return {
         value: uaktToAKT(snapshotData.currentValue),
-        diffPercent: percIncrease(lastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - lastSnapshot.value
+        diffPercent: percIncrease(snapshotData.compareValue, uaktToAKT(snapshotData.currentValue)),
+        diffNumber: uaktToAKT(snapshotData.currentValue) - snapshotData.compareValue
       };
     case Snapshots.dailyAktSpent:
       return {
         value: uaktToAKT(snapshotData.currentValue),
-        diffPercent: percIncrease(previousLastSnapshot.value, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - previousLastSnapshot.value
+        diffPercent: percIncrease(snapshotData.compareValue, uaktToAKT(snapshotData.currentValue)),
+        diffNumber: uaktToAKT(snapshotData.currentValue) - snapshotData.compareValue
       };
     case Snapshots.allTimeDeploymentCount:
       return {
         value: snapshotData.currentValue,
-        diffPercent: percIncrease(lastSnapshot.value, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - lastSnapshot.value
+        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
+        diffNumber: snapshotData.currentValue - snapshotData.compareValue
       };
     case Snapshots.dailyDeploymentCount:
       return {
         value: snapshotData.currentValue,
-        diffPercent: percIncrease(previousLastSnapshot.value, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - previousLastSnapshot.value
+        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
+        diffNumber: snapshotData.currentValue - snapshotData.compareValue
       };
     case Snapshots.compute:
       return {
         value: snapshotData.currentValue / 1000,
-        diffPercent: percIncrease(average(lastSnapshot.min, lastSnapshot.max), snapshotData.currentValue / 1000),
-        diffNumber: snapshotData.currentValue / 1000 - average(lastSnapshot.min, lastSnapshot.max)
+        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
+        diffNumber: (snapshotData.currentValue - snapshotData.compareValue) / 1000
       };
     case Snapshots.memory:
     case Snapshots.storage:
       return {
         value: snapshotData.currentValue / 1024 / 1024 / 1024,
-        diffPercent: percIncrease(average(lastSnapshot.min, lastSnapshot.max), snapshotData.currentValue / 1024 / 1024 / 1024),
-        diffNumber: snapshotData.currentValue / 1024 / 1024 / 1024 - average(lastSnapshot.min, lastSnapshot.max)
+        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
+        diffNumber: (snapshotData.currentValue - snapshotData.compareValue) / 1024 / 1024 / 1024
       };
 
     default:

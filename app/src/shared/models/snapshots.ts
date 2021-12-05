@@ -1,11 +1,11 @@
 
 export enum Snapshots {
-  activeDeployment = "activeDeployment",
-  totalAKTSpent = "totalAKTSpent",
-  allTimeDeploymentCount = "allTimeDeploymentCount",
-  compute = "compute",
-  memory = "memory",
-  storage = "storage",
+  activeDeployment = "activeLeaseCount",
+  totalAKTSpent = "totalUAktSpent",
+  allTimeDeploymentCount = "totalLeaseCount",
+  compute = "activeCPU",
+  memory = "activeMemory",
+  storage = "activeStorage",
   dailyAktSpent = "dailyAktSpent",
   dailyDeploymentCount = "dailyDeploymentCount"
 }
@@ -23,13 +23,11 @@ export enum SnapshotsUrlParam {
 
 export interface SnapshotValue {
   date: string;
-  min?: number;
-  max?: number;
-  average?: number;
   value?: number;
 }
 
 export type GraphResponse = {
   snapshots: SnapshotValue[];
-  currentValue: number
+  currentValue: number,
+  compareValue: number
 }

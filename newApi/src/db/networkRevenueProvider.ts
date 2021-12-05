@@ -20,8 +20,8 @@ let cachedRevenueDate = null;
 let cachedTotalSpent = null;
 let cachedTotalSpentDate = null;
 
-let cachedDailySpentGraph = null
-let cachedDailySpentGraphDate = null
+let cachedDailySpentGraph = null;
+let cachedDailySpentGraphDate = null;
 
 export const getTotalSpent = async () => {
   if (cachedTotalSpent != null && differenceInMinutes(new Date(), cachedTotalSpentDate) <= 15) {
@@ -68,7 +68,7 @@ export const getTotalSpent = async () => {
   cachedTotalSpent = response;
   cachedTotalSpentDate = new Date();
 
-  console.timeEnd("compute")
+  console.timeEnd("compute");
 
   return response;
 };
@@ -140,7 +140,7 @@ async function computeRevenueForBlocks(startBlock: number, endBlock: number) {
 export const calculateNetworkRevenue = async () => {
   try {
     isCalculatingRevenue = true;
-
+    return;
     console.log("calculating network revenue");
     const leases = await Lease.findAll({
       include: [
@@ -420,14 +420,14 @@ export const getDailySpentGraph = async () => {
     date: new Date(r.date),
     revenue: r.amount,
     revenueUAkt: r.amountUAkt,
-    aktPrice: r.aktPrice,
+    aktPrice: r.aktPrice
   }));
 
   for (let i = 0; i < days.length; i++) {
     const current = days[i];
     if (i === 0) {
-      current.total = current.revenue
-      current.totalUAkt = current.revenueUAkt
+      current.total = current.revenue;
+      current.totalUAkt = current.revenueUAkt;
     } else {
       const prev = days[i - 1];
       current.total = prev.total + current.revenue;
@@ -455,7 +455,7 @@ export const getDailySpentGraph = async () => {
     totalUSD,
     last24: revenueLast24,
     days
-  }
+  };
 
   cachedDailySpentGraph = responseObj;
   cachedDailySpentGraphDate = new Date();

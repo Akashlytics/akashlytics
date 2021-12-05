@@ -3,7 +3,7 @@ import { UseQueryOptions, useQuery } from "react-query";
 import { queryKeys } from "./queryKeys";
 
 async function getGraphSnaphot(snapshot: string): Promise<GraphResponse> {
-  const res = await fetch(`/api/getSnapshot/${snapshot}`);
+  const res = await fetch(`http://localhost:3081/getGraphData/${snapshot}`);
 
   if (!res.ok) {
     throw new Error("Error when fetching graph snapshot");

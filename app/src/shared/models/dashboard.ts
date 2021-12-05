@@ -15,8 +15,8 @@ export interface SpentStats {
 export interface DashboardBlockStats {
   date: Date;
   height: number;
-  activeDeploymentCount: number;
-  totalDeploymentCount: number;
+  activeLeaseCount: number;
+  totalLeaseCount: number;
   totalUAktSpent: number;
   activeCPU: number;
   activeMemory: number;
@@ -24,6 +24,7 @@ export interface DashboardBlockStats {
 }
 
 export interface DashboardData {
+  marketData: MarketData;
   now: DashboardBlockStats;
   compare: DashboardBlockStats;
 }

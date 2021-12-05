@@ -14,7 +14,8 @@ import {
   Message,
   PriceHistory,
   sequelize,
-  sqliteDatabasePath
+  sqliteDatabasePath,
+  Day
 } from "./schema";
 
 async function download(url, dest) {
@@ -68,7 +69,9 @@ export const initDatabase = async () => {
   // await Message.drop();
   // await Transaction.drop();
   // await Block.drop();
+  // await Day.drop();
 
+  await Day.sync();
   await Block.sync();
   await Transaction.sync();
   await Message.sync();
