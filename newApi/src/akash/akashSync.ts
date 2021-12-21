@@ -167,7 +167,8 @@ async function insertBlocks(startHeight, endHeight) {
       const txId = uuid.v4();
 
       let hasInterestingTypes = false;
-      let msgs = decodeTxRaw(fromBase64(tx)).body.messages;
+      const decodedTx = decodeTxRaw(fromBase64(tx));
+      const msgs = decodedTx.body.messages;
 
       for (let msgIndex = 0; msgIndex < msgs.length; ++msgIndex) {
         const msg = msgs[msgIndex];

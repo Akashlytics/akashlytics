@@ -28,9 +28,12 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
   const classes = useStyles();
   const theme = getTheme();
   const intl = useIntl();
+
+  const title = getTitle(snapshot as Snapshots);
+  const snapshotMetadata = snapshotData && getSnapshotMetadata(snapshot as Snapshots, snapshotData);
   const rangedData = snapshotData && snapshotData.snapshots.slice(snapshotData.snapshots.length - selectedRange, snapshotData.snapshots.length);
-  const minValue = rangedData && rangedData.map((x) => x.value).reduce((a, b) => (a < b ? a : b));
-  const maxValue = snapshotData && rangedData.map((x) => x.value).reduce((a, b) => (a > b ? a : b));
+  const minValue = rangedData && snapshotMetadata.unitFn(rangedData.map((x) => x.value).reduce((a, b) => (a < b ? a : b)));
+  const maxValue = snapshotData && snapshotMetadata.unitFn(rangedData.map((x) => x.value).reduce((a, b) => (a > b ? a : b)));
   const graphData = snapshotData
     ? [
         {
@@ -38,13 +41,11 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
           color: "rgb(1,0,0)",
           data: rangedData.map((snapshot) => ({
             x: snapshot.date,
-            y: round(snapshot.value)
+            y: round(snapshotMetadata.unitFn(snapshot.value))
           }))
         }
       ]
     : null;
-  const title = getTitle(snapshot as Snapshots);
-  const snapshotMetadata = snapshotData && getSnapshotMetadata(snapshot as Snapshots, snapshotData);
   const graphMetadata = getGraphMetadataPerRange(selectedRange);
 
   return (
@@ -76,11 +77,11 @@ export const Graph: React.FunctionComponent<IGraphProps> = ({}) => {
           <Box className={classes.subTitle}>
             <Box className={classes.subTitleValues}>
               <Typography variant="h3" className={classes.titleValue}>
-                <FormattedNumber value={snapshotMetadata.value} maximumFractionDigits={2} />
+                <FormattedNumber value={snapshotMetadata.unitFn(snapshotData.currentValue)} maximumFractionDigits={2} />
                 &nbsp;
-                <DiffPercentageChip value={snapshotMetadata.diffPercent} size="medium" />
+                <DiffPercentageChip value={percIncrease(snapshotData.compareValue, snapshotData.currentValue)} size="medium" />
                 &nbsp;
-                <DiffNumber value={snapshotMetadata.diffNumber} className={classes.diffNumber} />
+                <DiffNumber value={snapshotMetadata.unitFn(snapshotData.currentValue - snapshotData.compareValue)} className={classes.diffNumber} />
               </Typography>
             </Box>
 
@@ -176,54 +177,25 @@ const getTheme = () => {
   };
 };
 
-const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): { value?: number; diffNumber?: number; diffPercent?: number } => {
+const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): { unitFn: (number) => number } => {
   switch (snapshot) {
-    case Snapshots.activeDeployment:
-      return {
-        value: snapshotData.currentValue,
-        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - snapshotData.compareValue
-      };
-    case Snapshots.totalAKTSpent:
-      return {
-        value: uaktToAKT(snapshotData.currentValue),
-        diffPercent: percIncrease(snapshotData.compareValue, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - snapshotData.compareValue
-      };
     case Snapshots.dailyAktSpent:
-      return {
-        value: uaktToAKT(snapshotData.currentValue),
-        diffPercent: percIncrease(snapshotData.compareValue, uaktToAKT(snapshotData.currentValue)),
-        diffNumber: uaktToAKT(snapshotData.currentValue) - snapshotData.compareValue
-      };
-    case Snapshots.allTimeDeploymentCount:
-      return {
-        value: snapshotData.currentValue,
-        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - snapshotData.compareValue
-      };
-    case Snapshots.dailyDeploymentCount:
-      return {
-        value: snapshotData.currentValue,
-        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
-        diffNumber: snapshotData.currentValue - snapshotData.compareValue
-      };
+    case Snapshots.totalAKTSpent:
+      return { unitFn: (x) => uaktToAKT(x) };
     case Snapshots.compute:
       return {
-        value: snapshotData.currentValue / 1000,
-        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
-        diffNumber: (snapshotData.currentValue - snapshotData.compareValue) / 1000
+        unitFn: (x) => x / 1000
       };
     case Snapshots.memory:
     case Snapshots.storage:
       return {
-        value: snapshotData.currentValue / 1024 / 1024 / 1024,
-        diffPercent: percIncrease(snapshotData.compareValue, snapshotData.currentValue),
-        diffNumber: (snapshotData.currentValue - snapshotData.compareValue) / 1024 / 1024 / 1024
+        unitFn: (x) => x / 1024 / 1024 / 1024
       };
 
     default:
-      return { value: 0, diffNumber: 0, diffPercent: 0 };
+      return {
+        unitFn: (x) => x
+      };
   }
 };
 

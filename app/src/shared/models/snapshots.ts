@@ -6,8 +6,8 @@ export enum Snapshots {
   compute = "activeCPU",
   memory = "activeMemory",
   storage = "activeStorage",
-  dailyAktSpent = "dailyAktSpent",
-  dailyDeploymentCount = "dailyDeploymentCount"
+  dailyAktSpent = "dailyUAktSpent",
+  dailyDeploymentCount = "dailyLeaseCount"
 }
 
 export enum SnapshotsUrlParam {

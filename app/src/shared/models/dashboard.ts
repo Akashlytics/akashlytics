@@ -17,7 +17,9 @@ export interface DashboardBlockStats {
   height: number;
   activeLeaseCount: number;
   totalLeaseCount: number;
+  dailyLeaseCount: number;
   totalUAktSpent: number;
+  dailyUAktSpent: number;
   activeCPU: number;
   activeMemory: number;
   activeStorage: number;

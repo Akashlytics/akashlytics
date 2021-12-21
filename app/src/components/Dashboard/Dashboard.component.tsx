@@ -71,16 +71,14 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={uaktToAKT(dashboardData.now.totalUAktSpent - dashboardData.compare.totalUAktSpent)} maximumFractionDigits={2} /> AKT
+                <FormattedNumber value={uaktToAKT(dashboardData.now.dailyUAktSpent)} maximumFractionDigits={2} /> AKT
               </>
             }
             text="Daily AKT spent"
             tooltip="Last 24h"
-            graphPath={`/revenue/daily`}
-            diffNumber={0}
-            diffPercent={0}
-            //diffNumber={uaktToAKT(dashboardData.spentStats?.revenueLast24.uakt - dashboardData.spentStats?.revenuePrevious24.uakt)}
-            //diffPercent={percIncrease(dashboardData.spentStats?.revenuePrevious24.uakt, dashboardData.spentStats?.revenueLast24.uakt)}
+            graphPath={`/graph/${SnapshotsUrlParam.dailyAktSpent}`}
+            diffNumber={uaktToAKT(dashboardData.now.dailyUAktSpent - dashboardData.compare.dailyUAktSpent)}
+            diffPercent={percIncrease(dashboardData.compare.dailyUAktSpent, dashboardData.now.dailyUAktSpent)}
           />
         </div>
 
@@ -93,7 +91,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             }
             text="Total spent on decloud"
             tooltip="This is the total amount akt spent to rent computing power on the akash network since the beginning of the network. (March 2021)"
-            graphPath={`/revenue/total`}
+            graphPath={`/graph/${SnapshotsUrlParam.totalAKTSpent}`}
             diffNumber={uaktToAKT(dashboardData.now.totalUAktSpent - dashboardData.compare.totalUAktSpent)}
             diffPercent={percIncrease(dashboardData.compare.totalUAktSpent, dashboardData.now.totalUAktSpent)}
           />
@@ -105,9 +103,8 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             text="Daily new deployment count"
             tooltip="Last 24h"
             graphPath={`/graph/${SnapshotsUrlParam.dailyDeploymentCount}`}
-            diffNumber={dashboardData.now.totalLeaseCount - dashboardData.compare.totalLeaseCount}
-            diffPercent={0}
-            // diffPercent={percIncrease(dashboardData.lastSnapshot.dailyDeploymentCount, dashboardData.dailyDeploymentCount)}
+            diffNumber={dashboardData.now.dailyLeaseCount - dashboardData.compare.dailyLeaseCount}
+            diffPercent={percIncrease(dashboardData.compare.dailyLeaseCount, dashboardData.now.dailyLeaseCount)}
           />
         </div>
 

@@ -62,9 +62,10 @@ app.get("/getDashboardData", async (req, res) => {
 
 app.get("/getGraphData/:dataName", async (req, res) => {
   try {
-    const authorizedDataNames = ["totalUAktSpent", "activeLeaseCount", "totalLeaseCount", "activeCPU", "activeMemory", "activeStorage"];
+    const authorizedDataNames = ["dailyUAktSpent", "dailyLeaseCount", "totalUAktSpent", "activeLeaseCount", "totalLeaseCount", "activeCPU", "activeMemory", "activeStorage"];
 
     if (!authorizedDataNames.includes(req.params.dataName)) {
+      console.log("Rejected graph request: " + req.params.dataName);
       res.sendStatus(404);
       return;
     }
