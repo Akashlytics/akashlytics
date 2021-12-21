@@ -16,7 +16,7 @@ import marketDataProvider from "./providers/marketDataProvider";
 const app = express();
 app.use(cors());
 
-const { PORT = 3081 } = process.env;
+const { PORT = 3080 } = process.env;
 
 let latestSyncingError = null;
 let latestSyncingErrorDate = null;
@@ -50,7 +50,10 @@ app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 
-app.get("/getDashboardData", async (req, res) => {
+const apiRouter = express.Router();
+const web3IndexRouter = express.Router();
+
+apiRouter.get("/getDashboardData", async (req, res) => {
   try {
     const totalSpend = await getDashboardData();
     const marketData = marketDataProvider.getAktMarketData();
@@ -60,9 +63,18 @@ app.get("/getDashboardData", async (req, res) => {
   }
 });
 
-app.get("/getGraphData/:dataName", async (req, res) => {
+apiRouter.get("/getGraphData/:dataName", async (req, res) => {
   try {
-    const authorizedDataNames = ["dailyUAktSpent", "dailyLeaseCount", "totalUAktSpent", "activeLeaseCount", "totalLeaseCount", "activeCPU", "activeMemory", "activeStorage"];
+    const authorizedDataNames = [
+      "dailyUAktSpent",
+      "dailyLeaseCount",
+      "totalUAktSpent",
+      "activeLeaseCount",
+      "totalLeaseCount",
+      "activeCPU",
+      "activeMemory",
+      "activeStorage"
+    ];
 
     if (!authorizedDataNames.includes(req.params.dataName)) {
       console.log("Rejected graph request: " + req.params.dataName);
@@ -78,25 +90,25 @@ app.get("/getGraphData/:dataName", async (req, res) => {
   }
 });
 
-app.get("/getTotalSpent", async (req, res) => {
-  try {
-    const totalSpend = await getTotalSpent();
-    res.send(totalSpend);
-  } catch (err) {
-    console.error(err);
-  }
-});
+// web3IndexRouter.get("/getTotalSpent", async (req, res) => {
+//   try {
+//     const totalSpend = await getTotalSpent();
+//     res.send(totalSpend);
+//   } catch (err) {
+//     console.error(err);
+//   }
+// });
 
-app.get("/getDailySpentGraph", async (req, res) => {
-  try {
-    const dailySpentGraph = await getDailySpentGraph();
-    res.send(dailySpentGraph);
-  } catch (err) {
-    console.error(err);
-  }
-});
+// web3IndexRouter.get("/getDailySpentGraph", async (req, res) => {
+//   try {
+//     const dailySpentGraph = await getDailySpentGraph();
+//     res.send(dailySpentGraph);
+//   } catch (err) {
+//     console.error(err);
+//   }
+// });
 
-app.get("/status", async (req, res) => {
+web3IndexRouter.get("/status", async (req, res) => {
   console.log("getting debug infos");
 
   try {
@@ -119,7 +131,7 @@ app.get("/status", async (req, res) => {
   }
 });
 
-app.get("/revenue", async (req, res) => {
+web3IndexRouter.get("/revenue", async (req, res) => {
   try {
     console.log("calculating revenue");
 
@@ -135,6 +147,14 @@ app.get("/revenue", async (req, res) => {
 
     res.status(500).send("An error occured");
   }
+});
+
+app.use("/api", apiRouter);
+app.use("/web3-index", web3IndexRouter);
+
+app.get("*", async (req, res) => {
+  console.error("Not found route: " + req.url);
+  res.sendStatus(404);
 });
 
 // the rest of your app

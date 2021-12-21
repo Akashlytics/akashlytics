@@ -14,14 +14,14 @@ module.exports = merge(commonConfig, {
     watchContentBase: true,
     hot: true,
     proxy: {
-      context: ["/api"],
-      target: "http://localhost:3080",
+      context: ["/api", "/web3-index"],
+      target: "http://localhost:3080"
     },
-    historyApiFallback: true,
+    historyApiFallback: true
   },
   plugins: [
     new webpack.DefinePlugin({
-      "process.env": { PACKAGE_VERSION: JSON.stringify(require("./package.json").version) },
-    }),
-  ],
+      "process.env": { PACKAGE_VERSION: JSON.stringify(require("./package.json").version) }
+    })
+  ]
 });
