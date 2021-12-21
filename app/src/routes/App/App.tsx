@@ -3,7 +3,7 @@ import clsx from "clsx";
 import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@src/components/Header";
-import { Switch, Route } from "react-router-dom";
+import { Switch, Route, Redirect } from "react-router-dom";
 import { Home } from "../Home";
 import { PriceCompare } from "../PriceCompare";
 import { Faq } from "@src/routes/Faq";
@@ -41,14 +41,13 @@ export function App() {
 
       <div className={clsx(classes.appBody, { [classes.appBodySmall]: mediaQuery.smallScreen })}>
         <Switch>
+          <Redirect from="/revenue/daily" to="/graph/daily-akt-spent" />
+          <Redirect from="/revenue/total" to="/graph/total-akt-spent" />
           <Route path="/faq">
             <Faq />
           </Route>
           <Route path="/price-compare">
             <PriceCompare />
-          </Route>
-          <Route path="/revenue/:variant">
-            <Revenue />
           </Route>
           <Route path="/graph/:snapshot">
             <Graph />
