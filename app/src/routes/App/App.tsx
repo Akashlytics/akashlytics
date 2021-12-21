@@ -13,7 +13,6 @@ import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { Deploy } from "@src/routes/Deploy";
 import { Footer } from "@src/components/Footer";
 import { BetaBanner } from "@src/components/BetaBanner";
-import { Revenue } from "../Revenue";
 
 const useStyles = makeStyles((theme) => ({
   appBody: {
@@ -27,7 +26,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export function App() {
-
   const mediaQuery = useMediaQueryContext();
   const classes = useStyles();
 
