@@ -202,34 +202,17 @@ Bid.init(
   }
 );
 
-export class PriceHistory extends Model {
-  public id!: string;
-  public date!: Date;
-  public price!: number;
-}
-
-PriceHistory.init(
-  {
-    id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
-    date: { type: DataTypes.DATE, allowNull: false },
-    price: { type: DataTypes.INTEGER, allowNull: false }
-  },
-  {
-    tableName: "priceHistory",
-    modelName: "priceHistory",
-    sequelize
-  }
-);
-
 export class Day extends Model {
   public id!: string;
   public date!: Date;
   public aktPrice?: number;
   public firstBlockHeight!: number;
   public lastBlockHeight?: number;
+  public lastBlockHeightYet!: number;
 
   public readonly firstBlock!: Block;
   public readonly lastBlock?: Block;
+  public readonly lastBlockYet!: Block;
 }
 
 Day.init(
@@ -238,7 +221,8 @@ Day.init(
     date: { type: DataTypes.DATE, allowNull: false },
     aktPrice: { type: DataTypes.INTEGER, allowNull: true },
     firstBlockHeight: { type: DataTypes.INTEGER, allowNull: false },
-    lastBlockHeight: { type: DataTypes.INTEGER, allowNull: true }
+    lastBlockHeight: { type: DataTypes.INTEGER, allowNull: true },
+    lastBlockHeightYet: { type: DataTypes.INTEGER, allowNull: false }
   },
   {
     tableName: "day",
@@ -252,35 +236,9 @@ Day.init(
   }
 );
 
-export class DailyNetworkRevenue extends Model {
-  public id!: string;
-  public date!: string;
-  public amount!: number;
-  public amountUAkt!: number;
-  public aktPrice!: number;
-  public leaseCount!: number;
-}
-
-DailyNetworkRevenue.init(
-  {
-    id: { type: DataTypes.UUID, primaryKey: true, allowNull: false },
-    date: { type: DataTypes.DATE, allowNull: false },
-    amount: { type: DataTypes.DECIMAL, allowNull: false },
-    amountUAkt: { type: DataTypes.INTEGER, allowNull: false },
-    aktPrice: { type: DataTypes.DECIMAL, allowNull: false },
-    leaseCount: { type: DataTypes.INTEGER, allowNull: false }
-  },
-  {
-    tableName: "dailyNetworkRevenue",
-    modelName: "dailyNetworkRevenue",
-    sequelize
-  }
-);
-
 export class Block extends Model {
   public height!: number;
   public readonly datetime!: Date;
-  //public firstBlockOfDay: boolean;
   public dayId!: string;
   // Stats
   public isProcessed!: boolean;
@@ -421,3 +379,4 @@ Block.belongsTo(Day, { foreignKey: "dayId" });
 
 Day.belongsTo(Block, { as: "firstBlock", foreignKey: "firstBlockHeight" });
 Day.belongsTo(Block, { as: "lastBlock", foreignKey: "lastBlockHeight" });
+Day.belongsTo(Block, { as: "lastBlockYet", foreignKey: "lastBlockHeightYet" });

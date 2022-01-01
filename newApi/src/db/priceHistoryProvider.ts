@@ -1,7 +1,5 @@
 import fetch from "node-fetch";
-import { PriceHistory } from "./schema";
-import { v4 } from "uuid";
-import { toUTC } from "@src/shared/utils/date";
+import { Day } from "./schema";
 import { isEqual } from "date-fns";
 
 export let isSyncingPrices = false;
@@ -38,16 +36,20 @@ const updatePriceHistory = async () => {
 
     console.log(`There are ${apiPrices.length} prices to update.`);
 
-    let pricesToInsert = apiPrices.map((p) => ({
-      id: v4(),
-      date: new Date(p.date),
-      price: p.price
-    }));
+    const days = await Day.findAll({
+      where: {
+        aktPrice: null
+      }
+    });
 
-    pricesToInsert = pricesToInsert.filter(x => x.date.getUTCHours() == 0);
+    for (const day of days) {
+      const priceData = apiPrices.find((x) => isEqual(new Date(x.date), day.date.getTime()));
 
-    await PriceHistory.destroy({ where: {} });
-    await PriceHistory.bulkCreate(pricesToInsert);
+      if (priceData && priceData.price != day.aktPrice) {
+        day.aktPrice = priceData.price;
+        await day.save();
+      }
+    }
   } catch (err) {
     console.error(err);
     throw err;

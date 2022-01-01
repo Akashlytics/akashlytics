@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
-import { calculateNetworkRevenue, getStatus, getWeb3IndexRevenue, getTotalSpent, getDailySpentGraph } from "./db/networkRevenueProvider";
+import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
 import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
@@ -89,24 +89,6 @@ apiRouter.get("/getGraphData/:dataName", async (req, res) => {
     console.error(err);
   }
 });
-
-// web3IndexRouter.get("/getTotalSpent", async (req, res) => {
-//   try {
-//     const totalSpend = await getTotalSpent();
-//     res.send(totalSpend);
-//   } catch (err) {
-//     console.error(err);
-//   }
-// });
-
-// web3IndexRouter.get("/getDailySpentGraph", async (req, res) => {
-//   try {
-//     const dailySpentGraph = await getDailySpentGraph();
-//     res.send(dailySpentGraph);
-//   } catch (err) {
-//     console.error(err);
-//   }
-// });
 
 web3IndexRouter.get("/status", async (req, res) => {
   console.log("getting debug infos");
@@ -198,7 +180,6 @@ async function computeAtInterval() {
     if (isSyncing) return;
 
     await syncBlocks();
-    await calculateNetworkRevenue();
 
     if (isProd) {
       await deleteCache();

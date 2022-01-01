@@ -244,6 +244,12 @@ async function insertBlocks(startHeight, endHeight) {
     await Transaction.bulkCreate(txsToAdd);
     await Message.bulkCreate(msgsToAdd);
     console.log("Blocks added to db: " + blockCount + " / " + blockCount + " (100%)");
+
+    if (lastInsertedBlock) {
+      console.log("Updating last block of day...", lastInsertedBlock.day.date, lastInsertedBlock.height);
+      lastInsertedBlock.day.lastBlockHeightYet = lastInsertedBlock.height;
+      await lastInsertedBlock.day.save();
+    }
   } catch (err) {
     console.log(err);
     throw err;

@@ -99,13 +99,12 @@ export const getGraphData = async (dataName: string) => {
     let relativeStats = stats.reduce((arr, dataPoint, index) => {
       arr[index] = {
         date: dataPoint.date,
-        value: index > 0 ? dataPoint.value - stats[index - 1].value : 0
+        value: dataPoint.value - (index > 0 ? stats[index - 1].value : 0)
       };
 
       return arr;
     }, []);
 
-    relativeStats.shift();
     stats = relativeStats;
   }
 
