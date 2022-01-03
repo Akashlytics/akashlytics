@@ -10,12 +10,6 @@ export const sequelize = new Sequelize({
     freezeTableName: true
   }
 });
-// export const sequelize = new Sequelize("postgres://postgres:@localhost:5432/postgres",{
-//     logging: false,
-//     define: {
-//       freezeTableName: true
-//     }
-//   });
 
 export { Op, Sequelize } from "sequelize";
 
@@ -251,7 +245,6 @@ Block.init(
   {
     height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
     datetime: { type: DataTypes.DATE, allowNull: false },
-    //firstBlockOfDay: { type: DataTypes.BOOLEAN, allowNull: false },
     dayId: { type: DataTypes.UUID, allowNull: false, references: { model: Day, key: "id" } },
 
     // Stats

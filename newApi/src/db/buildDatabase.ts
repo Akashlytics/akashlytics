@@ -23,20 +23,20 @@ async function download(url, dest) {
  */
 export const initDatabase = async () => {
   const databaseFileExists = fs.existsSync(sqliteDatabasePath);
-  // if (isProd || !databaseFileExists) {
-  //   if (databaseFileExists) {
-  //     console.log("Deleting existing database files.");
-  //     await fs.promises.rm(sqliteDatabasePath, { force: true });
-  //     await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });
-  //     await fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true });
-  //   }
+  if (databaseFileExists && executionMode === ExecutionMode.DownloadAndSync) {
+    console.log("Deleting existing database files.");
+    await fs.promises.rm(sqliteDatabasePath, { force: true });
+    await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });
+    await fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true });
+  }
 
-  //   console.log("Downloading database files...");
-  //   await download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath);
-  //   await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt");
-  //   await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt");
-  //   console.log("Database downloaded");
-  // }
+  if (executionMode === ExecutionMode.DownloadAndSync) {
+    console.log("Downloading database files...");
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath);
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt");
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt");
+    console.log("Database downloaded");
+  }
 
   try {
     await sequelize.authenticate();

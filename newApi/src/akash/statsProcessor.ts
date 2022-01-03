@@ -57,26 +57,6 @@ function getDeploymentGroupIdFromCache(owner, dseq, gseq) {
   return deploymentGroupIdCache[owner + "_" + dseq + "_" + gseq];
 }
 
-async function getTx(txHash) {
-  try {
-    const tx = await txsDb.get(txHash);
-    return JSON.parse(tx);
-  } catch (err) {
-    if (!err.notFound) throw err;
-
-    return null;
-  }
-}
-
-// async function tryAndLog(fn, obj) {
-//   try {
-//     await fn();
-//   } catch (err) {
-//     console.log(obj);
-//     throw err;
-//   }
-// }
-
 export async function rebuildStatsTables() {
   await Bid.drop();
   await Lease.drop();
@@ -89,7 +69,7 @@ export async function rebuildStatsTables() {
   await Lease.sync({ force: true });
   await Bid.sync({ force: true });
 
-  // console.log('Setting "isProcessed" to false');
+  console.log('Setting "isProcessed" to false');
   await Message.update(
     {
       isProcessed: false
@@ -112,13 +92,6 @@ export async function rebuildStatsTables() {
   await processMessages();
 }
 
-const groupBy = <T, K extends keyof any>(list: T[], getKey: (item: T) => K) =>
-  list.reduce((previous, currentItem) => {
-    const group = getKey(currentItem);
-    if (!previous[group]) previous[group] = [];
-    previous[group].push(currentItem);
-    return previous;
-  }, {} as Record<K, T[]>);
 let totalLeaseCount = 0;
 export async function processMessages() {
   processingStatus = "Processing messages";
@@ -140,7 +113,6 @@ export async function processMessages() {
   console.log("Querying unprocessed messages...");
 
   const groupSize = 10_000;
-  //const latestHeight: number = await Block.max("height");
   totalLeaseCount = await Lease.count();
 
   let previousProcessedBlock = await Block.findOne({
@@ -176,7 +148,6 @@ export async function processMessages() {
       include: [
         {
           model: Transaction,
-          //attributes: ["id", "type", "index", "indexInBlock"],
           required: false,
           where: {
             isProcessed: false,
@@ -262,14 +233,15 @@ export async function processMessages() {
 
     firstBlockToProcess += groupSize;
     lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize);
-    //if (firstBlockToProcess > 100_000) break;
   }
 
   processingStatus = null;
   console.timeEnd("processMessages");
+  
   const all = Object.values(messageTimes)
     .map((x) => x.reduce((a, b) => a + b, 0))
     .reduce((a, b) => a + b, 0);
+
   console.table(
     Object.keys(messageTimes)
       .map((key) => {

@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import { Block, Transaction, Day } from "./schema";
-import { add, addDays, differenceInMinutes } from "date-fns";
-import { getTodayUTC, toUTC } from "@src/shared/utils/date";
+import { add, differenceInMinutes } from "date-fns";
+import { getTodayUTC } from "@src/shared/utils/date";
 import { round, uaktToAKT } from "@src/shared/utils/math";
 import { isSyncing, syncingStatus } from "@src/akash/akashSync";
 import { processingStatus } from "@src/akash/statsProcessor";
@@ -227,8 +227,6 @@ async function getDailyRevenue() {
 
     return arr;
   }, []);
-
-  //relativeStats.shift();
 
   return relativeStats.map((x) => ({
     date: x.date,

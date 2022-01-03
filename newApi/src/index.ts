@@ -160,13 +160,15 @@ async function initApp() {
       await rebuildStatsTables();
     } else if (executionMode === ExecutionMode.RebuildAll) {
       await computeAtInterval();
-    } else if (executionMode === ExecutionMode.DownloadAndSync) {
+    } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
       await syncPriceHistory();
       await marketDataProvider.syncAtInterval();
       await computeAtInterval();
       setInterval(async () => {
         await computeAtInterval();
       }, 15 * 60 * 1000); // 15min
+    } else {
+      throw "Invalid execution mode";
     }
   } catch (err) {
     latestSyncingError = err;
