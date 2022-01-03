@@ -32,6 +32,7 @@ export class Lease extends Model {
   public provider!: string;
   public createdHeight!: number;
   public closedHeight?: number;
+  public predictedClosedHeight!: number;
   public price!: number;
   public withdrawnAmount!: number;
   public lastWithdrawHeight?: number;
@@ -54,6 +55,7 @@ Lease.init(
     provider: { type: DataTypes.STRING, allowNull: false },
     createdHeight: { type: DataTypes.INTEGER, allowNull: false },
     closedHeight: { type: DataTypes.INTEGER, allowNull: true },
+    predictedClosedHeight: { type: DataTypes.INTEGER, allowNull: false },
     price: { type: DataTypes.INTEGER, allowNull: false },
     withdrawnAmount: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
     lastWithdrawHeight: { type: DataTypes.INTEGER, allowNull: true },
@@ -371,6 +373,6 @@ Message.belongsTo(Block, { foreignKey: "height" });
 Day.hasMany(Block, { foreignKey: "dayId" });
 Block.belongsTo(Day, { foreignKey: "dayId" });
 
-Day.belongsTo(Block, { as: "firstBlock", foreignKey: "firstBlockHeight" });
-Day.belongsTo(Block, { as: "lastBlock", foreignKey: "lastBlockHeight" });
-Day.belongsTo(Block, { as: "lastBlockYet", foreignKey: "lastBlockHeightYet" });
+Day.belongsTo(Block, { as: "firstBlock", foreignKey: "firstBlockHeight", constraints: false });
+Day.belongsTo(Block, { as: "lastBlock", foreignKey: "lastBlockHeight", constraints: false });
+Day.belongsTo(Block, { as: "lastBlockYet", foreignKey: "lastBlockHeightYet", constraints: false });

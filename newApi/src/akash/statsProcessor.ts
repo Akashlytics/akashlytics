@@ -221,7 +221,7 @@ export async function processMessages() {
             await processMessage(msg, encodedMessage, block.height, block.datetime, blockGroupTransaction);
 
             if (msg.relatedDeploymentId) {
-              await msg.save();
+              await msg.save({ transaction: blockGroupTransaction });
             }
 
             processedMessageCount++;
@@ -236,7 +236,7 @@ export async function processMessages() {
         }
 
         const statsA = performance.now();
-        const totalResources = await getTotalResources(blockGroupTransaction);
+        const totalResources = await getTotalResources(blockGroupTransaction, block.height);
         await block.update(
           {
             isProcessed: true,
@@ -286,17 +286,15 @@ export async function processMessages() {
   );
 }
 
-async function getTotalResources(blockGroupTransaction) {
+async function getTotalResources(blockGroupTransaction, height) {
   const totalResources = await Lease.findAll({
     attributes: ["cpuUnits", "memoryQuantity", "storageQuantity", "price"],
     where: {
-      closedHeight: { [Op.is]: null }
+      closedHeight: { [Op.is]: null },
+      predictedClosedHeight: { [Op.gt]: height }
     },
     transaction: blockGroupTransaction
   });
-
-  //console.log(JSON.stringify(totalResources, null, 2));
-  //if(totalResources.length > 0)throw "stop";
 
   return {
     count: totalResources.length,
@@ -455,6 +453,15 @@ async function handleCreateLease(encodedMessage, height, time, blockGroupTransac
 
   const deploymentId = getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber());
 
+  const deployment = await Deployment.findOne({
+    attributes: ["balance"],
+    where: {
+      id: deploymentId
+    },
+    transaction: blockGroupTransaction
+  });
+  const predictedClosedHeight = Math.ceil(height + deployment.balance / bid.price);
+
   await Lease.create(
     {
       id: uuid.v4(),
@@ -467,6 +474,7 @@ async function handleCreateLease(encodedMessage, height, time, blockGroupTransac
       provider: decodedMessage.bid_id.provider,
       startDate: time,
       createdHeight: height,
+      predictedClosedHeight: predictedClosedHeight,
       price: bid.price,
 
       // Stats
@@ -601,11 +609,13 @@ async function handleDepositDeployment(encodedMessage, height, time, blockGroupT
   deployment.deposit += parseFloat(decodedMessage.amount.amount);
   deployment.balance += parseFloat(decodedMessage.amount.amount);
   await deployment.save({ transaction: blockGroupTransaction });
+
+  for (const lease of deployment.leases) {
+    lease.predictedClosedHeight = Math.ceil(height + deployment.balance / lease.price);
+    await lease.save({ transaction: blockGroupTransaction });
+  }
 }
-// messageTimes["withdrawA"] = [];
-// messageTimes["withdrawB"] = [];
-// messageTimes["withdrawC"] = [];
-// messageTimes["withdrawD"] = [];
+
 async function handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgWithdrawLease.decode(encodedMessage);
 
@@ -634,7 +644,7 @@ async function handleWithdrawLease(encodedMessage, height, time, blockGroupTrans
   lease.lastWithdrawHeight = height;
   lease.deployment.balance -= amount;
   await lease.save({ transaction: blockGroupTransaction });
-  
+
   if (lease.deployment.balance == 0) {
     await Lease.update(
       {

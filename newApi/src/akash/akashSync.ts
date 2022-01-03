@@ -205,12 +205,12 @@ async function insertBlocks(startHeight, endHeight) {
       dayId: lastInsertedBlock?.dayId,
       day: lastInsertedBlock?.day
     };
-    
+
     const blockDate = new Date(Date.UTC(blockDatetime.getUTCFullYear(), blockDatetime.getUTCMonth(), blockDatetime.getUTCDate()));
     //console.log("Bock " + i + " date: " + blockDate + " last block date: " + lastInsertedBlock?.day.date);
     if (blockDate.getTime() !== lastInsertedBlock?.day.date.getTime()) {
       //console.log("NEW DAY!!!");
-      
+
       console.log("Creating day: ", blockDate, i);
       const newDay = await Day.create({
         id: uuid.v4(),
@@ -242,7 +242,6 @@ async function insertBlocks(startHeight, endHeight) {
       console.log(`Blocks added to db: ${i - startHeight} / ${blockCount} (${(((i - startHeight) * 100) / blockCount).toFixed(2)}%)`);
 
       if (lastInsertedBlock) {
-        console.log("Updating last block of day...", lastInsertedBlock.day.date, lastInsertedBlock.height);
         lastInsertedBlock.day.lastBlockHeightYet = lastInsertedBlock.height;
         await lastInsertedBlock.day.save();
       }
@@ -256,7 +255,6 @@ async function insertBlocks(startHeight, endHeight) {
     console.log("Blocks added to db: " + blockCount + " / " + blockCount + " (100%)");
 
     if (lastInsertedBlock) {
-      console.log("Updating last block of day...", lastInsertedBlock.day.date, lastInsertedBlock.height);
       lastInsertedBlock.day.lastBlockHeightYet = lastInsertedBlock.height;
       await lastInsertedBlock.day.save();
     }
