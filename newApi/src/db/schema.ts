@@ -30,8 +30,6 @@ export class Lease extends Model {
   public oseq!: number;
   public gseq!: number;
   public provider!: string;
-  public startDate!: Date;
-  public endDate!: Date;
   public createdHeight!: number;
   public closedHeight?: number;
   public price!: number;
@@ -54,8 +52,6 @@ Lease.init(
     oseq: { type: DataTypes.INTEGER, allowNull: false },
     gseq: { type: DataTypes.INTEGER, allowNull: false },
     provider: { type: DataTypes.STRING, allowNull: false },
-    startDate: { type: DataTypes.DATE, allowNull: false },
-    endDate: { type: DataTypes.DATE, allowNull: true },
     createdHeight: { type: DataTypes.INTEGER, allowNull: false },
     closedHeight: { type: DataTypes.INTEGER, allowNull: true },
     price: { type: DataTypes.INTEGER, allowNull: false },
@@ -84,8 +80,6 @@ export class Deployment extends Model {
   public dseq!: number;
   public state?: string;
   public escrowAccountTransferredAmount?: number;
-  public readonly datetime?: Date;
-  public readonly startDate?: Date;
   public createdHeight!: number;
   public balance!: number;
   public deposit!: number;
@@ -99,8 +93,6 @@ Deployment.init(
     dseq: { type: DataTypes.INTEGER, allowNull: false },
     state: { type: DataTypes.STRING, allowNull: false },
     escrowAccountTransferredAmount: { type: DataTypes.INTEGER, allowNull: false },
-    startDate: { type: DataTypes.DATE, allowNull: false },
-    datetime: { type: DataTypes.DATE, allowNull: false },
     createdHeight: { type: DataTypes.INTEGER, allowNull: false },
     balance: { type: DataTypes.INTEGER, allowNull: false },
     deposit: { type: DataTypes.INTEGER, allowNull: false }
@@ -330,6 +322,7 @@ export class Message extends Model {
   public isInterestingType!: boolean;
   public isProcessed!: boolean;
   public shouldProcess!: boolean;
+  public relatedDeploymentId?: string;
   public readonly transaction?: Transaction;
 
   public static associations: {
@@ -355,7 +348,8 @@ Message.init(
     indexInBlock: { type: DataTypes.INTEGER, allowNull: false },
     isInterestingType: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    shouldProcess: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+    shouldProcess: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    relatedDeploymentId: { type: DataTypes.STRING, allowNull: true }
   },
   {
     tableName: "message",

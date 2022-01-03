@@ -157,7 +157,8 @@ async function initApp() {
     await initDatabase();
 
     if (rebuildDatabase) {
-      await rebuildStatsTables();
+      //await rebuildStatsTables();
+      await computeAtInterval();
     } else {
       await syncPriceHistory();
       await marketDataProvider.syncAtInterval();

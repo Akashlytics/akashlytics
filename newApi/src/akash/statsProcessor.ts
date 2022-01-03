@@ -203,8 +203,6 @@ export async function processMessages() {
 
     let processedMessageCount = 0;
 
-    //const totalMessageCount = blocks.map((b) => b.transactions.map((t) => t.messages.length).reduce((a, b) => a + b, 0)).reduce((a, b) => a + b, 0);
-
     const blockGroupTransaction = await sequelize.transaction();
     try {
       for (const block of blocks) {
@@ -214,9 +212,7 @@ export async function processMessages() {
         for (const transaction of block.transactions) {
           for (let msg of transaction.messages) {
             processingStatus = `Processing message ${msg.indexInBlock} of block #${block.height}`;
-            //console.log(processingStatus);
 
-            //const progress = ((processedMessageCount * 100) / totalMessageCount).toFixed(2);
             console.log(`Processing message ${msg.type} - Block #${block.height}`);
 
             const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
@@ -224,8 +220,11 @@ export async function processMessages() {
 
             await processMessage(msg, encodedMessage, block.height, block.datetime, blockGroupTransaction);
 
+            if (msg.relatedDeploymentId) {
+              await msg.save();
+            }
+
             processedMessageCount++;
-            //console.log(`Processing message ${processedMessageCount} / ${messages.length} (${progress}%)  -  Block #${height} - ${msg.type}`);
           }
 
           await transaction.update(
@@ -253,8 +252,6 @@ export async function processMessages() {
         previousProcessedBlock = block;
 
         messageTimes["stats"].push(performance.now() - statsA);
-        //if (processedMessageCount > 40) break;
-        //console.timeEnd("compute");
       }
 
       blockGroupTransaction.commit();
@@ -316,21 +313,21 @@ async function processMessage(msg, encodedMessage, height, time, blockGroupTrans
   let a = performance.now();
 
   if (msg.type === "/akash.deployment.v1beta1.MsgCreateDeployment") {
-    await handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction);
+    await handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
   } else if (msg.type === "/akash.deployment.v1beta1.MsgCloseDeployment") {
-    await handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction);
+    await handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
   } else if (msg.type === "/akash.market.v1beta1.MsgCreateLease") {
-    await handleCreateLease(encodedMessage, height, time, blockGroupTransaction);
+    await handleCreateLease(encodedMessage, height, time, blockGroupTransaction, msg);
   } else if (msg.type === "/akash.market.v1beta1.MsgCloseLease") {
-    await handleCloseLease(encodedMessage, height, time, blockGroupTransaction);
+    await handleCloseLease(encodedMessage, height, time, blockGroupTransaction, msg);
   } else if (msg.type === "/akash.market.v1beta1.MsgCreateBid") {
-    await handleCreateBid(encodedMessage, height, time, blockGroupTransaction);
+    await handleCreateBid(encodedMessage, height, time, blockGroupTransaction, msg);
   } else if (msg.type === "/akash.market.v1beta1.MsgCloseBid") {
-    await handleCloseBid(encodedMessage, height, time, blockGroupTransaction);
+    await handleCloseBid(encodedMessage, height, time, blockGroupTransaction, msg);
   } else if (msg.type === "/akash.deployment.v1beta1.MsgDepositDeployment") {
-    await handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction);
+    await handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
   } else if (msg.type === "/akash.market.v1beta1.MsgWithdrawLease") {
-    await handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction);
+    await handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction, msg);
   }
 
   await msg.update(
@@ -347,11 +344,9 @@ async function processMessage(msg, encodedMessage, height, time, blockGroupTrans
   messageTimes[msg.type].push(processingTime);
 }
 
-async function handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction) {
+async function handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCreateDeployment.decode(encodedMessage);
 
-  //const t = await sequelize.transaction();
-  //try {
   const created = await Deployment.create(
     {
       id: uuid.v4(),
@@ -367,6 +362,8 @@ async function handleCreateDeployment(encodedMessage, height, time, blockGroupTr
     },
     { transaction: blockGroupTransaction }
   );
+
+  msg.relatedDeploymentId = created.id;
 
   addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
 
@@ -397,20 +394,11 @@ async function handleCreateDeployment(encodedMessage, height, time, blockGroupTr
       );
     }
   }
-  //   await t.commit();
-  // } catch (err) {
-  //   await t.rollback();
-  //   console.error(err);
-  //   throw err;
-  // }
 }
 
-async function handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction) {
+async function handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCloseDeployment.decode(encodedMessage);
 
-  //const t = await sequelize.transaction();
-
-  //try {
   const deployment = await Deployment.findOne({
     where: {
       id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
@@ -427,6 +415,8 @@ async function handleCloseDeployment(encodedMessage, height, time, blockGroupTra
     transaction: blockGroupTransaction
   });
 
+  msg.relatedDeploymentId = deployment.id;
+
   for (let lease of deployment.leases) {
     const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
     const blockCount = height - startBlock;
@@ -436,21 +426,12 @@ async function handleCloseDeployment(encodedMessage, height, time, blockGroupTra
     lease.lastWithdrawHeight = height;
     deployment.balance -= amount;
 
-    lease.endDate = time;
     lease.closedHeight = height;
     await lease.save({ transaction: blockGroupTransaction });
   }
-
-  //await deployment.save({ transaction: t }); // TODO: Save closed date/height
-  //await t.commit();
-  //} catch (err) {
-  //  await t.rollback();
-  //  console.error(err);
-  //  throw err;
-  //}
 }
 
-async function handleCreateLease(encodedMessage, height, time, blockGroupTransaction) {
+async function handleCreateLease(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCreateLease.decode(encodedMessage);
   const bid = await Bid.findOne({
     where: {
@@ -472,10 +453,12 @@ async function handleCreateLease(encodedMessage, height, time, blockGroupTransac
     transaction: blockGroupTransaction
   });
 
+  const deploymentId = getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber());
+
   await Lease.create(
     {
       id: uuid.v4(),
-      deploymentId: getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber()),
+      deploymentId: deploymentId,
       deploymentGroupId: deploymentGroupId,
       owner: decodedMessage.bid_id.owner,
       dseq: decodedMessage.bid_id.dseq.toNumber(),
@@ -494,10 +477,12 @@ async function handleCreateLease(encodedMessage, height, time, blockGroupTransac
     { transaction: blockGroupTransaction }
   );
 
+  msg.relatedDeploymentId = deploymentId;
+
   totalLeaseCount++;
 }
 
-async function handleCloseLease(encodedMessage, height, time, blockGroupTransaction) {
+async function handleCloseLease(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCloseLease.decode(encodedMessage);
 
   let lease = await Lease.findOne({
@@ -514,6 +499,8 @@ async function handleCloseLease(encodedMessage, height, time, blockGroupTransact
     transaction: blockGroupTransaction
   });
 
+  msg.relatedDeploymentId = lease.deployment.id;
+
   const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
   const blockCount = height - startBlock;
   const amount = Math.min(lease.price * blockCount, lease.deployment.balance); // TODO : Handle proportional distribution
@@ -522,13 +509,12 @@ async function handleCloseLease(encodedMessage, height, time, blockGroupTransact
   lease.lastWithdrawHeight = height;
   lease.deployment.balance -= amount;
 
-  lease.endDate = time;
   lease.closedHeight = height;
   await lease.save({ transaction: blockGroupTransaction });
   await lease.deployment.save({ transaction: blockGroupTransaction });
 }
 
-async function handleCreateBid(encodedMessage, height, time, blockGroupTransaction) {
+async function handleCreateBid(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCreateBid.decode(encodedMessage);
 
   await Bid.create(
@@ -544,9 +530,11 @@ async function handleCreateBid(encodedMessage, height, time, blockGroupTransacti
     },
     { transaction: blockGroupTransaction }
   );
+
+  msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
 }
 
-async function handleCloseBid(encodedMessage, height, time, blockGroupTransaction) {
+async function handleCloseBid(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCloseBid.decode(encodedMessage);
 
   const deployment = await Deployment.findOne({
@@ -566,6 +554,8 @@ async function handleCloseBid(encodedMessage, height, time, blockGroupTransactio
     transaction: blockGroupTransaction
   });
 
+  msg.relatedDeploymentId = deployment.id;
+
   for (let lease of deployment.leases) {
     const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
     const blockCount = height - startBlock;
@@ -575,7 +565,6 @@ async function handleCloseBid(encodedMessage, height, time, blockGroupTransactio
     lease.lastWithdrawHeight = height;
     deployment.balance -= amount;
 
-    lease.endDate = time;
     lease.closedHeight = height;
     await lease.save({ transaction: blockGroupTransaction });
   }
@@ -592,7 +581,7 @@ async function handleCloseBid(encodedMessage, height, time, blockGroupTransactio
   });
 }
 
-async function handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction) {
+async function handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgDepositDeployment.decode(encodedMessage);
 
   const deployment = await Deployment.findOne({
@@ -607,6 +596,8 @@ async function handleDepositDeployment(encodedMessage, height, time, blockGroupT
     transaction: blockGroupTransaction
   });
 
+  msg.relatedDeploymentId = deployment.id;
+
   deployment.deposit += parseFloat(decodedMessage.amount.amount);
   deployment.balance += parseFloat(decodedMessage.amount.amount);
   await deployment.save({ transaction: blockGroupTransaction });
@@ -615,8 +606,7 @@ async function handleDepositDeployment(encodedMessage, height, time, blockGroupT
 // messageTimes["withdrawB"] = [];
 // messageTimes["withdrawC"] = [];
 // messageTimes["withdrawD"] = [];
-async function handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction) {
-  const perfA = performance.now();
+async function handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgWithdrawLease.decode(encodedMessage);
 
   const owner = decodedMessage.lease_id.owner;
@@ -636,9 +626,6 @@ async function handleWithdrawLease(encodedMessage, height, time, blockGroupTrans
     },
     transaction: blockGroupTransaction
   });
-  
-  //messageTimes["withdrawA"].push(performance.now() - perfA);
-  const perfB = performance.now();
 
   const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
   const blockCount = height - startBlock;
@@ -647,11 +634,7 @@ async function handleWithdrawLease(encodedMessage, height, time, blockGroupTrans
   lease.lastWithdrawHeight = height;
   lease.deployment.balance -= amount;
   await lease.save({ transaction: blockGroupTransaction });
-  //messageTimes["withdrawB"].push(performance.now() - perfB);
-  const perfC = performance.now();
-
-  //console.table([{ startBlock, blockCount, amount, price: lease.price, balance: lease.deployment.balance }]);
-
+  
   if (lease.deployment.balance == 0) {
     await Lease.update(
       {
@@ -664,12 +647,9 @@ async function handleWithdrawLease(encodedMessage, height, time, blockGroupTrans
         transaction: blockGroupTransaction
       }
     );
-    //messageTimes["withdrawC"].push(performance.now() - perfC);
-
-    //lease.deployment.closedHeight = height;
   }
-  const perfD = performance.now();
 
   await lease.deployment.save({ transaction: blockGroupTransaction });
-  //messageTimes["withdrawD"].push(performance.now() - perfC);
+
+  msg.relatedDeploymentId = lease.deployment.id;
 }

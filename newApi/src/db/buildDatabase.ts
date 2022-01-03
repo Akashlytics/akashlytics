@@ -1,4 +1,4 @@
-import { isProd } from "@src/shared/constants";
+import { isProd, rebuildDatabase } from "@src/shared/constants";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 import fs from "fs";
 import https from "https";
@@ -47,15 +47,17 @@ export const initDatabase = async () => {
 
   // First time
 
-  // await Bid.drop();
-  // await Lease.drop();
-  // await DeploymentGroupResource.drop();
-  // await DeploymentGroup.drop();
-  // await Deployment.drop();
-  // await Message.drop();
-  // await Transaction.drop();
-  // await Block.drop();
-  // await Day.drop();
+  if (rebuildDatabase) {
+    await Bid.drop();
+    await Lease.drop();
+    await DeploymentGroupResource.drop();
+    await DeploymentGroup.drop();
+    await Deployment.drop();
+    await Message.drop();
+    await Transaction.drop();
+    await Block.drop();
+    await Day.drop();
+  }
 
   await Day.sync();
   await Block.sync();
