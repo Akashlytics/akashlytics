@@ -1,4 +1,4 @@
-import { isProd, rebuildDatabase } from "@src/shared/constants";
+import { isProd, executionMode, ExecutionMode } from "@src/shared/constants";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 import fs from "fs";
 import https from "https";
@@ -45,9 +45,7 @@ export const initDatabase = async () => {
     console.error("Unable to connect to the database:", error);
   }
 
-  // First time
-
-  if (rebuildDatabase) {
+  if (executionMode === ExecutionMode.RebuildAll) {
     await Bid.drop();
     await Lease.drop();
     await DeploymentGroupResource.drop();

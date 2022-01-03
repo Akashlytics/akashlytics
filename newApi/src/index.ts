@@ -5,7 +5,7 @@ import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
 import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
-import { isProd, rebuildDatabase } from "./shared/constants";
+import { executionMode, ExecutionMode, isProd } from "./shared/constants";
 import { bytesToHumanReadableSize } from "./shared/utils/files";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
@@ -156,17 +156,17 @@ async function initApp() {
   try {
     await initDatabase();
 
-    if (false) {
+    if (executionMode === ExecutionMode.RebuildStats) {
       await rebuildStatsTables();
-    } else if (rebuildDatabase) {
+    } else if (executionMode === ExecutionMode.RebuildAll) {
       await computeAtInterval();
-    } else {
+    } else if (executionMode === ExecutionMode.DownloadAndSync) {
       await syncPriceHistory();
       await marketDataProvider.syncAtInterval();
       await computeAtInterval();
-      // setInterval(async () => {
-      //   await computeAtInterval();
-      // }, 15 * 60 * 1000); // 15min
+      setInterval(async () => {
+        await computeAtInterval();
+      }, 15 * 60 * 1000); // 15min
     }
   } catch (err) {
     latestSyncingError = err;
