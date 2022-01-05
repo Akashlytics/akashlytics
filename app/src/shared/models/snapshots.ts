@@ -1,13 +1,13 @@
 
 export enum Snapshots {
-  activeDeployment = "activeLeaseCount",
-  totalAKTSpent = "totalUAktSpent",
-  allTimeDeploymentCount = "totalLeaseCount",
-  compute = "activeCPU",
-  memory = "activeMemory",
-  storage = "activeStorage",
-  dailyAktSpent = "dailyUAktSpent",
-  dailyDeploymentCount = "dailyLeaseCount"
+  activeLeaseCount = "activeLeaseCount",
+  totalUAktSpent = "totalUAktSpent",
+  totalLeaseCount = "totalLeaseCount",
+  activeCPU = "activeCPU",
+  activeMemory = "activeMemory",
+  activeStorage = "activeStorage",
+  dailyUAktSpent = "dailyUAktSpent",
+  dailyLeaseCount = "dailyLeaseCount"
 }
 
 export enum SnapshotsUrlParam {

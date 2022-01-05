@@ -179,15 +179,15 @@ const getTheme = () => {
 
 const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): { unitFn: (number) => number } => {
   switch (snapshot) {
-    case Snapshots.dailyAktSpent:
-    case Snapshots.totalAKTSpent:
+    case Snapshots.dailyUAktSpent:
+    case Snapshots.totalUAktSpent:
       return { unitFn: (x) => uaktToAKT(x) };
-    case Snapshots.compute:
+    case Snapshots.activeCPU:
       return {
         unitFn: (x) => x / 1000
       };
-    case Snapshots.memory:
-    case Snapshots.storage:
+    case Snapshots.activeMemory:
+    case Snapshots.activeStorage:
       return {
         unitFn: (x) => x / 1024 / 1024 / 1024
       };
@@ -201,21 +201,21 @@ const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): 
 
 const getTitle = (snapshot: Snapshots): string => {
   switch (snapshot) {
-    case Snapshots.activeDeployment:
+    case Snapshots.activeLeaseCount:
       return "Active deployments";
-    case Snapshots.totalAKTSpent:
+    case Snapshots.totalUAktSpent:
       return "Total AKT spent";
-    case Snapshots.allTimeDeploymentCount:
+    case Snapshots.totalLeaseCount:
       return "All-time deployment count";
-    case Snapshots.compute:
+    case Snapshots.activeCPU:
       return "Number of vCPUs currently leased";
-    case Snapshots.memory:
+    case Snapshots.activeMemory:
       return "Number of Gi of memory currently leased";
-    case Snapshots.storage:
+    case Snapshots.activeStorage:
       return "Number of Gi of disk currently leased";
-    case Snapshots.dailyAktSpent:
+    case Snapshots.dailyUAktSpent:
       return "Daily AKT spent";
-    case Snapshots.dailyDeploymentCount:
+    case Snapshots.dailyLeaseCount:
       return "Daily new deployment count";
 
     default:

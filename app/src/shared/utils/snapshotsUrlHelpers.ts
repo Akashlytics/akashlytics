@@ -5,21 +5,21 @@ export const NOT_FOUND = "NOT_FOUND";
 export const urlParamToSnapshot = (snapshotsUrlParam: SnapshotsUrlParam) => {
   switch (snapshotsUrlParam) {
     case SnapshotsUrlParam.activeDeployment:
-      return Snapshots.activeDeployment;
+      return Snapshots.activeLeaseCount;
     case SnapshotsUrlParam.allTimeDeploymentCount:
-      return Snapshots.allTimeDeploymentCount;
+      return Snapshots.totalLeaseCount;
     case SnapshotsUrlParam.compute:
-      return Snapshots.compute;
+      return Snapshots.activeCPU;
     case SnapshotsUrlParam.memory:
-      return Snapshots.memory;
+      return Snapshots.activeMemory;
     case SnapshotsUrlParam.storage:
-      return Snapshots.storage;
+      return Snapshots.activeStorage;
     case SnapshotsUrlParam.totalAKTSpent:
-      return Snapshots.totalAKTSpent;
+      return Snapshots.totalUAktSpent;
     case SnapshotsUrlParam.dailyAktSpent:
-      return Snapshots.dailyAktSpent;
+      return Snapshots.dailyUAktSpent;
     case SnapshotsUrlParam.dailyDeploymentCount:
-      return Snapshots.dailyDeploymentCount;
+      return Snapshots.dailyLeaseCount;
 
     default:
       return NOT_FOUND;

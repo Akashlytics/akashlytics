@@ -23,7 +23,7 @@ async function download(url, dest) {
  */
 export const initDatabase = async () => {
   const databaseFileExists = fs.existsSync(sqliteDatabasePath);
-  if (databaseFileExists && executionMode === ExecutionMode.DownloadAndSync) {
+  if (databaseFileExists && (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.RebuildAll)) {
     console.log("Deleting existing database files.");
     await fs.promises.rm(sqliteDatabasePath, { force: true });
     await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });

@@ -237,7 +237,7 @@ export async function processMessages() {
 
   processingStatus = null;
   console.timeEnd("processMessages");
-  
+
   const all = Object.values(messageTimes)
     .map((x) => x.reduce((a, b) => a + b, 0))
     .reduce((a, b) => a + b, 0);

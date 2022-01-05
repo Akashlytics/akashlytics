@@ -8,6 +8,7 @@ import { Block, Transaction, Message, Op, Day } from "@src/db/schema";
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
 import { isProd } from "@src/shared/constants";
+import { isEqual } from "date-fns";
 
 export let isSyncing = false;
 export let syncingStatus = null;
@@ -131,7 +132,7 @@ export async function syncBlocks() {
 }
 
 async function insertBlocks(startHeight, endHeight) {
-  const blockCount = endHeight - startHeight;
+  const blockCount = endHeight - startHeight + 1;
   console.log("Inserting " + blockCount + " blocks into database");
   syncingStatus = "Inserting blocks";
 
@@ -144,8 +145,6 @@ async function insertBlocks(startHeight, endHeight) {
     ],
     order: [["height", "DESC"]]
   })) as any;
-
-  //let lastInsertedDate = lastInsertedBlock?.datetime ?? new Date(2000, 1, 1);
 
   let blocksToAdd = [];
   let txsToAdd = [];
@@ -207,10 +206,8 @@ async function insertBlocks(startHeight, endHeight) {
     };
 
     const blockDate = new Date(Date.UTC(blockDatetime.getUTCFullYear(), blockDatetime.getUTCMonth(), blockDatetime.getUTCDate()));
-    //console.log("Bock " + i + " date: " + blockDate + " last block date: " + lastInsertedBlock?.day.date);
-    if (blockDate.getTime() !== lastInsertedBlock?.day.date.getTime()) {
-      //console.log("NEW DAY!!!");
 
+    if (!lastInsertedBlock || !isEqual(blockDate, lastInsertedBlock.day.date)) {
       console.log("Creating day: ", blockDate, i);
       const newDay = await Day.create({
         id: uuid.v4(),
@@ -224,6 +221,7 @@ async function insertBlocks(startHeight, endHeight) {
 
       if (lastInsertedBlock) {
         lastInsertedBlock.day.lastBlockHeight = lastInsertedBlock.height;
+        lastInsertedBlock.day.lastBlockHeightYet = lastInsertedBlock.height;
         await lastInsertedBlock.day.save();
       }
     }
@@ -231,7 +229,7 @@ async function insertBlocks(startHeight, endHeight) {
 
     blocksToAdd.push(blockEntry);
 
-    if (blocksToAdd.length >= 1_000) {
+    if (blocksToAdd.length >= 1_000 || i === endHeight) {
       await Block.bulkCreate(blocksToAdd);
       await Transaction.bulkCreate(txsToAdd);
       await Message.bulkCreate(msgsToAdd);
@@ -239,28 +237,13 @@ async function insertBlocks(startHeight, endHeight) {
       blocksToAdd = [];
       txsToAdd = [];
       msgsToAdd = [];
-      console.log(`Blocks added to db: ${i - startHeight} / ${blockCount} (${(((i - startHeight) * 100) / blockCount).toFixed(2)}%)`);
+      console.log(`Blocks added to db: ${i - startHeight + 1} / ${blockCount} (${(((i - startHeight + 1) * 100) / blockCount).toFixed(2)}%)`);
 
       if (lastInsertedBlock) {
         lastInsertedBlock.day.lastBlockHeightYet = lastInsertedBlock.height;
         await lastInsertedBlock.day.save();
       }
     }
-  }
-
-  try {
-    await Block.bulkCreate(blocksToAdd);
-    await Transaction.bulkCreate(txsToAdd);
-    await Message.bulkCreate(msgsToAdd);
-    console.log("Blocks added to db: " + blockCount + " / " + blockCount + " (100%)");
-
-    if (lastInsertedBlock) {
-      lastInsertedBlock.day.lastBlockHeightYet = lastInsertedBlock.height;
-      await lastInsertedBlock.day.save();
-    }
-  } catch (err) {
-    console.log(err);
-    throw err;
   }
 
   let totalBlockCount = await Block.count();

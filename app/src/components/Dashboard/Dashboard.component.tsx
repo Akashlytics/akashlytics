@@ -100,7 +100,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
             number={<FormattedNumber value={dashboardData.now.totalLeaseCount - dashboardData.compare.totalLeaseCount} />}
-            text="Daily new deployment count"
+            text="Daily new leases"
             tooltip="Last 24h"
             graphPath={`/graph/${SnapshotsUrlParam.dailyDeploymentCount}`}
             diffNumber={dashboardData.now.dailyLeaseCount - dashboardData.compare.dailyLeaseCount}
@@ -111,8 +111,8 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
         <div className={clsx("col-xs-12", tileClassName)}>
           <StatsCard
             number={<FormattedNumber value={dashboardData.now.totalLeaseCount} />}
-            text="Total deployment count"
-            tooltip="The total deployment count consists of all deployments that were live(leased) at some point and that someone paid for. This includes deployments that were deployed for testing or that were meant to be only temporary."
+            text="Total lease count"
+            tooltip="The total lease count consists of all deployments that were live at some point and that someone paid for. This includes deployments that were deployed for testing or that were meant to be only temporary."
             graphPath={`/graph/${SnapshotsUrlParam.allTimeDeploymentCount}`}
             diffNumber={dashboardData.now.totalLeaseCount - dashboardData.compare.totalLeaseCount}
             diffPercent={percIncrease(dashboardData.compare.totalLeaseCount, dashboardData.now.totalLeaseCount)}

@@ -1,10 +1,10 @@
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
 
 const reftreshInterval = 5 * 60 * 1000; // 5min
 
 let aktMarketData = null;
 
-exports.syncAtInterval = async () => {
+export const syncAtInterval = async () => {
   await fetchLatestData();
   setInterval(async () => {
     await fetchLatestData();
@@ -25,10 +25,10 @@ async function fetchLatestData() {
     marketCap: parseInt(data.market_data.market_cap.usd),
     marketCapRank: data.market_cap_rank,
     priceChange24h: parseFloat(data.market_data.price_change_24h),
-    priceChangePercentage24: parseFloat(data.market_data.price_change_percentage_24h),
+    priceChangePercentage24: parseFloat(data.market_data.price_change_percentage_24h)
   };
 }
 
-exports.getAktMarketData = () => {
+export const getAktMarketData = () => {
   return aktMarketData;
 };

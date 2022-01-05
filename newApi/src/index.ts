@@ -11,7 +11,7 @@ import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 import { rebuildStatsTables } from "./akash/statsProcessor";
 import { getGraphData, getDashboardData } from "./db/statsProvider";
-import marketDataProvider from "./providers/marketDataProvider";
+import * as marketDataProvider from "./providers/marketDataProvider";
 
 const app = express();
 app.use(cors());
@@ -65,6 +65,7 @@ apiRouter.get("/getDashboardData", async (req, res) => {
 
 apiRouter.get("/getGraphData/:dataName", async (req, res) => {
   try {
+    const dataName = req.params.dataName;
     const authorizedDataNames = [
       "dailyUAktSpent",
       "dailyLeaseCount",
@@ -76,13 +77,13 @@ apiRouter.get("/getGraphData/:dataName", async (req, res) => {
       "activeStorage"
     ];
 
-    if (!authorizedDataNames.includes(req.params.dataName)) {
-      console.log("Rejected graph request: " + req.params.dataName);
+    if (!authorizedDataNames.includes(dataName)) {
+      console.log("Rejected graph request: " + dataName);
       res.sendStatus(404);
       return;
     }
 
-    const graphData = await getGraphData(req.params.dataName);
+    const graphData = await getGraphData(dataName);
     res.send(graphData);
   } catch (err) {
     res.sendStatus(500);

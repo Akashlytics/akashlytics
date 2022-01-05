@@ -9,10 +9,9 @@ import { FormattedDate, FormattedTime } from "react-intl";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { useDashboardData } from "@src/queries/useDashboardData";
 
-export interface IHomeProps {
-}
+export interface IHomeProps {}
 
-export const Home: React.FunctionComponent<IHomeProps> = ({ }) => {
+export const Home: React.FunctionComponent<IHomeProps> = ({}) => {
   const { data: dashboardData, status } = useDashboardData();
   const classes = useStyles();
   const mediaQuery = useMediaQueryContext();
@@ -28,11 +27,10 @@ export const Home: React.FunctionComponent<IHomeProps> = ({ }) => {
             <div className="row mt-5">
               <div
                 className={clsx("col-12", classes.refreshDate, {
-                  "text-center": mediaQuery.smallScreen,
+                  "text-center": mediaQuery.smallScreen
                 })}
               >
-                Last updated: <FormattedDate value={dashboardData.lastRefreshDate} />{" "}
-                <FormattedTime value={dashboardData.lastRefreshDate} />
+                Last updated: <FormattedDate value={dashboardData.now.date} /> <FormattedTime value={dashboardData.now.date} />
               </div>
             </div>
           </>
