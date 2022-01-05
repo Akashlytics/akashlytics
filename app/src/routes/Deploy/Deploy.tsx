@@ -106,7 +106,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
               </a>
             </Grid>
             <Grid item xs={6} sm={3}>
-              <a href="https://twitter.com/thereisnomax" target="_blank" className={classes.socialLink}>
+              <a href="https://twitter.com/akashlytics" target="_blank" className={classes.socialLink}>
                 <TwitterIcon className={classes.socialIcon} />
               </a>
             </Grid>

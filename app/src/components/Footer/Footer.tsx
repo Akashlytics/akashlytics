@@ -86,7 +86,7 @@ export const Footer: React.FunctionComponent<IFooterProps> = ({}) => {
                     </a>
                   </li>
                   <li>
-                    <a href="https://twitter.com/thereisnomax" target="_blank" className={classes.socialLink}>
+                    <a href="https://twitter.com/akashlytics" target="_blank" className={classes.socialLink}>
                       <TwitterIcon className={classes.socialIcon} />
                     </a>
                   </li>
