@@ -71,7 +71,7 @@ export class Deployment extends Model {
 Deployment.init({
   id: { type: DataTypes.UUID, defaultValue: UUIDV4, primaryKey: true, allowNull: false },
   owner: { type: DataTypes.STRING, allowNull: false },
-  dseq: { type: DataTypes.STRING, allowNull: false },
+  dseq: { type: DataTypes.INTEGER, allowNull: false },
   state: { type: DataTypes.STRING, allowNull: false },
   escrowAccountTransferredAmount: { type: DataTypes.NUMBER, allowNull: false },
   startDate: { type: DataTypes.DATE, allowNull: false },
