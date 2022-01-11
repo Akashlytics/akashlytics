@@ -583,7 +583,7 @@ async function handleDepositDeployment(encodedMessage, height, time, blockGroupT
   await deployment.save({ transaction: blockGroupTransaction });
 
   for (const lease of deployment.leases) {
-    lease.predictedClosedHeight = Math.ceil(lease.lastWithdrawHeight + deployment.balance / lease.price);
+    lease.predictedClosedHeight = Math.ceil((lease.lastWithdrawHeight || lease.createdHeight) + deployment.balance / lease.price);
     await lease.save({ transaction: blockGroupTransaction });
   }
 }
