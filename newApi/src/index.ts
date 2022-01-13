@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
-import { syncPriceHistory } from "./db/priceHistoryProvider";
+import { syncPriceHistoryAtInterval, updatePriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
 import { executionMode, ExecutionMode, isProd } from "./shared/constants";
@@ -12,6 +12,7 @@ import * as Tracing from "@sentry/tracing";
 import { rebuildStatsTables } from "./akash/statsProcessor";
 import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
+import path from "path";
 
 const app = express();
 app.use(cors());
@@ -135,9 +136,13 @@ web3IndexRouter.get("/revenue", async (req, res) => {
 app.use("/api", apiRouter);
 app.use("/web3-index", web3IndexRouter);
 
-app.get("*", async (req, res) => {
-  console.error("Not found route: " + req.url);
-  res.sendStatus(404);
+app.use(express.static(path.join(__dirname, "../../app/dist")));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../app/dist/index.html"));
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../app/dist/index.html"));
 });
 
 // the rest of your app
@@ -162,11 +167,12 @@ async function initApp() {
     } else if (executionMode === ExecutionMode.RebuildAll) {
       await computeAtInterval();
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
-      await syncPriceHistory();
       await marketDataProvider.syncAtInterval();
       await computeAtInterval();
+      await syncPriceHistoryAtInterval();
       setInterval(async () => {
         await computeAtInterval();
+        await updatePriceHistory();
       }, 15 * 60 * 1000); // 15min
     } else {
       throw "Invalid execution mode";

@@ -202,11 +202,11 @@ const getSnapshotMetadata = (snapshot: Snapshots, snapshotData: GraphResponse): 
 const getTitle = (snapshot: Snapshots): string => {
   switch (snapshot) {
     case Snapshots.activeLeaseCount:
-      return "Active deployments";
+      return "Active leases";
     case Snapshots.totalUAktSpent:
       return "Total AKT spent";
     case Snapshots.totalLeaseCount:
-      return "All-time deployment count";
+      return "All-time lease count";
     case Snapshots.activeCPU:
       return "Number of vCPUs currently leased";
     case Snapshots.activeMemory:
@@ -216,7 +216,7 @@ const getTitle = (snapshot: Snapshots): string => {
     case Snapshots.dailyUAktSpent:
       return "Daily AKT spent";
     case Snapshots.dailyLeaseCount:
-      return "Daily new deployment count";
+      return "Daily new leases";
 
     default:
       return "Graph not found.";

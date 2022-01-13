@@ -142,10 +142,10 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
         <div className={clsx("col-xs-12 col-lg-3")}>
           <StatsCard
             number={<FormattedNumber value={dashboardData.now.activeLeaseCount} />}
-            text="Active deployments"
+            text="Active leases"
             tooltip={
               <>
-                <div>This is number of deployments currently active on the network. A deployment can be anything. </div>
+                <div>This is number of leases currently active on the network. A deployment can be anything. </div>
                 <div>For example: a simple website to a blockchain node or a video game server.</div>
               </>
             }

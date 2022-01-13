@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import { Day } from "./schema";
-import { isEqual } from "date-fns";
+import { isEqual, isSameDay } from "date-fns";
 
 export let isSyncingPrices = false;
 
@@ -13,14 +13,14 @@ interface PriceHistoryResponse {
 const reftreshInterval = 60 * 60 * 1000; // 60min
 // const reftreshInterval = 1 * 10 * 1000; // 10sec
 
-export const syncPriceHistory = async () => {
+export const syncPriceHistoryAtInterval = async () => {
   await updatePriceHistory();
   setInterval(async () => {
     await updatePriceHistory();
   }, reftreshInterval);
 };
 
-const updatePriceHistory = async () => {
+export const updatePriceHistory = async () => {
   try {
     isSyncingPrices = true;
     const endpointUrl = "https://api.coingecko.com/api/v3/coins/akash-network/market_chart?vs_currency=usd&days=max";
@@ -43,7 +43,7 @@ const updatePriceHistory = async () => {
     });
 
     for (const day of days) {
-      const priceData = apiPrices.find((x) => isEqual(new Date(x.date), day.date.getTime()));
+      const priceData = apiPrices.find((x) => isSameDay(new Date(x.date), day.date));
 
       if (priceData && priceData.price != day.aktPrice) {
         day.aktPrice = priceData.price;
