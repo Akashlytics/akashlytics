@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useStyles } from "./Deploy.styles";
-import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
 import { HelmetSocial } from "@src/shared/components/HelmetSocial";
-import { Box, Chip, Grid, Typography } from "@material-ui/core";
+import { Box, Chip, CircularProgress, Grid, Typography } from "@material-ui/core";
 import { Button } from "@material-ui/core";
 import ReactPlayer from "react-player/lazy";
 import YouTubeIcon from "@material-ui/icons/YouTube";
@@ -10,11 +9,35 @@ import TwitterIcon from "@material-ui/icons/Twitter";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import { DiscordIcon } from "@src/shared/components/icons";
 import Alert from "@material-ui/lab/Alert";
+import { Remarkable } from "remarkable";
 
 export interface IDeployProps {}
 
 export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [releaseInfo, setReleaseInfo] = useState(null);
+  const [releaseNote, setReleaseNote] = useState(null);
   const classes = useStyles();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch("/api/latestDeployToolVersion");
+        const data = await response.json();
+
+        setReleaseInfo(data);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (releaseInfo) {
+      var md = new Remarkable();
+      setReleaseNote(md.render(releaseInfo.note));
+    }
+  }, [releaseInfo?.note]);
 
   return (
     <>
@@ -35,52 +58,75 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
             Akashlytics Deploy is a desktop app that greatly simplifies and enhances deployments on the Akash Network.
           </Typography>
 
-          <Box marginTop="2rem">
-            <Typography variant="h6">Download</Typography>
+          {!isLoading && releaseInfo && (
+            <Box marginTop="2rem">
+              <Typography variant="h6">Download</Typography>
 
-            <div className={classes.actionButtonContainer}>
-              <Button
-                size="large"
-                variant="contained"
-                classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
-                component="a"
-                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics-Deploy-0.5.0.exe"
-              >
-                Windows
-              </Button>
+              <div className={classes.actionButtonContainer}>
+                {releaseInfo.windowsUrl && (
+                  <Button
+                    size="large"
+                    variant="contained"
+                    classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
+                    component="a"
+                    href={releaseInfo.windowsUrl}
+                  >
+                    Windows
+                  </Button>
+                )}
 
-              <Button
-                size="large"
-                variant="contained"
-                classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
-                component="a"
-                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics-Deploy-0.5.0.dmg"
-              >
-                macOS
-              </Button>
+                {releaseInfo.macUrl && (
+                  <Button
+                    size="large"
+                    variant="contained"
+                    classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
+                    component="a"
+                    href={releaseInfo.macUrl}
+                  >
+                    macOS
+                  </Button>
+                )}
 
-              <Button
-                size="large"
-                variant="contained"
-                classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
-                component="a"
-                href="https://storage.googleapis.com/akashlytics-deploy-public/Akashlytics-Deploy-0.5.0.AppImage"
-              >
-                Linux
-              </Button>
-            </div>
+                {releaseInfo.linuxUrl && (
+                  <Button
+                    size="large"
+                    variant="contained"
+                    classes={{ root: classes.actionButton, label: classes.actionButtonLabel }}
+                    component="a"
+                    href={releaseInfo.linuxUrl}
+                  >
+                    Linux
+                  </Button>
+                )}
+              </div>
 
-            <Box display="flex" alignItems="center" justifyContent="center">
-              <Chip color="primary" label="BETA" size="small" />
-              &nbsp;&nbsp;
-              <Typography variant="caption">v0.5.0</Typography>
+              <Box display="flex" alignItems="center" justifyContent="center">
+                <Chip color="primary" label="BETA" size="small" />
+                &nbsp;&nbsp;
+                <Typography variant="caption">{releaseInfo.version}</Typography>
+              </Box>
+
+              <Alert severity="info" className={classes.alert}>
+                We haven't set up code signing yet for the mvp, so you will get a warning when installing the app!
+                <br /> Will be done soon.
+              </Alert>
+
+              <Typography variant="h6">Release Note ({releaseInfo.version})</Typography>
+              <div dangerouslySetInnerHTML={{ __html: releaseNote }}></div>
             </Box>
-
-            <Alert severity="info" className={classes.alert}>
-              We haven't set up code signing yet for the mvp, so you will get a warning when installing the app!
-              <br /> Will be done soon.
-            </Alert>
-          </Box>
+          )}
+          {!isLoading && !releaseInfo && (
+            <Box marginTop={2}>
+              You can find the latest version of the deploy tool on <a className={classes.link} target="_blank" rel="noopener noreferrer" href="https://github.com/Akashlytics/akashlytics-deploy/releases">Github</a>.
+            </Box>
+          )}
+          {isLoading && (
+            <>
+              <div className={classes.loading}>
+                <CircularProgress size={80} />
+              </div>
+            </>
+          )}
         </Box>
 
         <Box margin="1rem auto" display="flex" justifyContent="center">

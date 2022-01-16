@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
+import cache from "./cache/cacheMiddleware";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
 import { syncPriceHistoryAtInterval, updatePriceHistory } from "./db/priceHistoryProvider";
@@ -12,7 +14,9 @@ import * as Tracing from "@sentry/tracing";
 import { rebuildStatsTables } from "./akash/statsProcessor";
 import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
-import path from "path";
+import { fetchGithubReleases } from "./providers/githubProvider";
+
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
@@ -53,6 +57,16 @@ app.use(Sentry.Handlers.tracingHandler());
 
 const apiRouter = express.Router();
 const web3IndexRouter = express.Router();
+
+apiRouter.get("/latestDeployToolVersion", cache(120), async (req, res) => {
+  try {
+    const releaseData = await fetchGithubReleases();
+    res.send(releaseData);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
 
 apiRouter.get("/getDashboardData", async (req, res) => {
   try {

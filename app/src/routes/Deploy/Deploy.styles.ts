@@ -46,14 +46,14 @@ export const useStyles = makeStyles((theme) => ({
   },
   disclaimerTitle: {
     fontWeight: "bold",
-    marginBottom: "2rem",
+    marginBottom: "2rem"
   },
   disclaimerList: {
-    textDecoration: "none",
+    textDecoration: "none"
   },
   link: {
     fontWeight: "bold",
-    textDecoration: "underline",
+    textDecoration: "underline"
   },
   socials: {
     textAlign: "center"
@@ -63,7 +63,7 @@ export const useStyles = makeStyles((theme) => ({
     transition: ".3s all ease",
     "& path": {
       fill: "#fff",
-      transition: ".3s all ease",
+      transition: ".3s all ease"
     },
     "&:hover": {
       color: theme.palette.primary.main,
@@ -82,5 +82,6 @@ export const useStyles = makeStyles((theme) => ({
   alert: {
     margin: "1rem auto",
     maxWidth: 640
-  }
+  },
+  loading: { textAlign: "center", marginTop: "4rem", marginBottom: "1rem" }
 }));
