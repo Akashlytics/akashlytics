@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
-import cache from "./cache/cacheMiddleware";
+import cache from "./caching/cacheMiddleware";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
 import { syncPriceHistoryAtInterval, updatePriceHistory } from "./db/priceHistoryProvider";
