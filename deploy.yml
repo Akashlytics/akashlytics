@@ -4,6 +4,8 @@ version: "2.0"
 services:
   web:
     image: baktun/akashlytics:1.0.0
+    env:
+      - AkashlyticsGithubPAT=<GITHUB_PAT>
     expose:
       - port: 3080
         as: 80
