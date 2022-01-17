@@ -83,5 +83,6 @@ export const useStyles = makeStyles((theme) => ({
     margin: "1rem auto",
     maxWidth: 640
   },
-  loading: { textAlign: "center", marginTop: "4rem", marginBottom: "1rem" }
+  loading: { textAlign: "center", marginTop: "4rem", marginBottom: "1rem" },
+  releaseNote: { listStylePosition: "inside" }
 }));

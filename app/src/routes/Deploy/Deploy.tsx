@@ -112,7 +112,7 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
               </Alert>
 
               <Typography variant="h6">Release Note ({releaseInfo.version})</Typography>
-              <div dangerouslySetInnerHTML={{ __html: releaseNote }}></div>
+              <div className={classes.releaseNote} dangerouslySetInnerHTML={{ __html: releaseNote }}></div>
             </Box>
           )}
           {!isLoading && !releaseInfo && (
