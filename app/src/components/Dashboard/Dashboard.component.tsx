@@ -196,7 +196,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             text="Storage"
             graphPath={`/graph/${SnapshotsUrlParam.storage}`}
             diffNumber={(dashboardData.now.activeStorage - dashboardData.compare.activeStorage) / 1024 / 1024 / 1024}
-            diffPercent={percIncrease(dashboardData.compare.activeStorage, dashboardData.compare.activeStorage)}
+            diffPercent={percIncrease(dashboardData.compare.activeStorage, dashboardData.now.activeStorage)}
           />
         </div>
       </div>
