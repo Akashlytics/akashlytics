@@ -18,9 +18,9 @@ WORKDIR /app/app
 RUN npm ci
 RUN npm run build
 
-WORKDIR /app/newApi
+WORKDIR /app/api
 RUN npm ci
 RUN npm run build
 
 EXPOSE 3080
-CMD [ "node", "/app/newApi/dist/server.js" ]
+CMD [ "node", "/app/api/dist/server.js" ]
