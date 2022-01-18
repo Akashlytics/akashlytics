@@ -4,4 +4,4 @@ MakeFile
 deploy.yml
 # **/cache
 .git
-**/newApi/data/**
+**/api/data/**

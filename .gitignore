@@ -38,7 +38,7 @@ node_modules/
 .env
 
 # akash
-/newApi/data
+/api/data
 
 .DS_Store
 .vim
