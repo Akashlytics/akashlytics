@@ -1,7 +1,0 @@
-**/node_modules
-npm-debug.log
-MakeFile
-deploy.yml
-# **/cache
-.git
-**/api/data/**

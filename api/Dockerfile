@@ -1,26 +1,20 @@
-FROM node:14-alpine
+FROM node:14-alpine as build
 
 # Create app directory
-WORKDIR /app
 
-RUN mkdir app
+#RUN mkdir app
+WORKDIR /app
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
-COPY app/package*.json ./
+#COPY app/package*.json ./
 
 # Bundle app source
 COPY . .
 
-WORKDIR /app/app
-
-RUN npm ci
-RUN npm run build
-
-WORKDIR /app/api
 RUN npm ci
 RUN npm run build
 
 EXPOSE 3080
-CMD [ "node", "/app/api/dist/server.js" ]
+CMD [ "node", "/app/dist/server.js" ]

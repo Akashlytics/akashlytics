@@ -1,10 +1,19 @@
 services:
-  app:
-    image: baktun/akashlytics:1.0.1
-    container_name: akashlytics
+  web:
+    image: baktun/akashlytics-web
+    container_name: akashlytics-web
     build:
-      context: .
+      context: app/
       dockerfile: Dockerfile
     ports:
-      - "5001:3080"
-      - "5002:3081"
+      - "3000:80"
+  api:
+    image: baktun/akashlytics-api
+    container_name: akashlytics-api
+    environment:
+      - AKASHLYTICS_WEBSITE_URL=http://localhost:3080
+    build:
+      context: api/
+      dockerfile: Dockerfile
+    ports:
+      - "3080:3080"
