@@ -1,9 +1,10 @@
+import { baseApiUrl } from "@src/shared/contants";
 import { GraphResponse } from "@src/shared/models";
 import { UseQueryOptions, useQuery } from "react-query";
 import { queryKeys } from "./queryKeys";
 
 async function getGraphSnaphot(snapshot: string): Promise<GraphResponse> {
-  const res = await fetch(`/api/getGraphData/${snapshot}`);
+  const res = await fetch(`${baseApiUrl}/api/getGraphData/${snapshot}`);
 
   if (!res.ok) {
     throw new Error("Error when fetching graph snapshot");
