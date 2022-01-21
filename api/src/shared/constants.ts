@@ -2,6 +2,7 @@ export const averageBlockTime = 6.174;
 export const isProd = process.env.NODE_ENV === "production";
 
 export enum ExecutionMode {
+  DoNotSync,
   SyncOnly,
   DownloadAndSync,
   RebuildStats,
