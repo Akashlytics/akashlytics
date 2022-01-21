@@ -3,26 +3,38 @@ version: "2.0"
 
 services:
   web:
-    image: baktun/akashlytics:1.0.1
+    image: redm4x/akashlytics-web
+    expose:
+      - port: 80
+        as: 80
+        accept:
+          - www.akashlytics.com
+        to:
+          - global: true
+  api:
+    image: redm4x/akashlytics-api
     env:
       - AkashlyticsGithubPAT=<GITHUB_PAT>
+      - AKASHLYTICS_WEBSITE_URL=https://www.beta.akashlytics.com/
     expose:
       - port: 3080
         as: 80
         accept:
-          - beta.akashlytics.com
-          - www.akashlytics.com
-          - akashlytics.com
+          - api.akashlytics.com
         to:
           - global: true
-      - port: 3081
-        as: 3081
-        to:
-          - global: false
 
 profiles:
   compute:
     web:
+      resources:
+        cpu:
+          units: 0.5
+        memory:
+          size: 500mi
+        storage:
+          size: 500mi
+    api:
       resources:
         cpu:
           units: 1
@@ -41,9 +53,16 @@ profiles:
         web:
           denom: uakt
           amount: 1000
+        api:
+          denom: uakt
+          amount: 1000
 
 deployment:
   web:
     dcloud:
       profile: web
+      count: 1
+  api:
+    dcloud:
+      profile: api
       count: 1
