@@ -8,6 +8,7 @@ services:
       - port: 80
         as: 80
         accept:
+          - akashlytics.com
           - www.akashlytics.com
         to:
           - global: true
@@ -15,7 +16,7 @@ services:
     image: redm4x/akashlytics-api
     env:
       - AkashlyticsGithubPAT=<GITHUB_PAT>
-      - AKASHLYTICS_WEBSITE_URL=https://www.beta.akashlytics.com/
+      - AKASHLYTICS_WEBSITE_URL=https://akashlytics.com/
     expose:
       - port: 3080
         as: 80
