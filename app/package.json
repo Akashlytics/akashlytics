@@ -8,7 +8,6 @@
     "dev": "webpack --config webpack.dev.js --watch",
     "build": "webpack --config webpack.prod.js"
   },
-  "proxy": "http://localhost:3080",
   "eslintConfig": {
     "extends": [
       "react-app",
