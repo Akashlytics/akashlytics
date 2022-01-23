@@ -15,7 +15,8 @@ module.exports = merge(commonConfig, {
     new webpack.DefinePlugin({
       "process.env": {
         PACKAGE_VERSION: JSON.stringify(require("./package.json").version),
-        NODE_ENV: JSON.stringify("production")
+        NODE_ENV: JSON.stringify("production"),
+        API_BASE_URL: JSON.stringify(process.env.API_BASE_URL)
       }
     })
     // new webpack.HashedModuleIdsPlugin()

@@ -6,5 +6,4 @@ export enum SelectedRange {
   "ALL" = Number.MAX_SAFE_INTEGER
 }
 
-export const baseApiUrl =
-  window.location.hostname === "localhost" ? "http://localhost:3080" : `${window.location.protocol}//api.${window.location.hostname.replace(/^(www\.)/, "")}`;
+export const baseApiUrl = process.env.API_BASE_URL;
