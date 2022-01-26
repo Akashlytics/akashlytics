@@ -11,7 +11,7 @@ services:
     image: baktun/akashlytics-api
     container_name: akashlytics-api
     environment:
-      - AKASHLYTICS_WEBSITE_URL=http://localhost:3080
+      - AKASHLYTICS_CORS_WEBSITE_URLS=http://localhost:3080
     build:
       context: api/
       dockerfile: Dockerfile

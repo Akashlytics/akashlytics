@@ -3,7 +3,7 @@ version: "2.0"
 
 services:
   web:
-    image: redm4x/akashlytics-web
+    image: baktun/akashlytics-web
     expose:
       - port: 80
         as: 80
@@ -13,10 +13,10 @@ services:
         to:
           - global: true
   api:
-    image: redm4x/akashlytics-api
+    image: baktun/akashlytics-api
     env:
       - AkashlyticsGithubPAT=<GITHUB_PAT>
-      - AKASHLYTICS_WEBSITE_URL=https://akashlytics.com/
+      - AKASHLYTICS_CORS_WEBSITE_URLS=https://akashlytics.com,https://www.akashlytics.com
     expose:
       - port: 3080
         as: 80
