@@ -22,7 +22,7 @@ const app = express();
 app.use(
   cors({
     origin: process.env.AKASHLYTICS_CORS_WEBSITE_URLS.split(",") || "http://localhost:3080",
-    optionsSuccessStatus: 20
+    optionsSuccessStatus: 200
   })
 );
 
