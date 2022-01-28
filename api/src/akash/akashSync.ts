@@ -7,7 +7,7 @@ import { Block, Transaction, Message, Op, Day } from "@src/db/schema";
 
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
-import { isProd } from "@src/shared/constants";
+import { isProd, lastBlockToSync } from "@src/shared/constants";
 import { isEqual } from "date-fns";
 
 export let isSyncing = false;
@@ -100,23 +100,24 @@ export async function syncBlocks() {
 
     const latestAvailableBlock = await nodeAccessor.fetch("/blocks/latest");
     const latestAvailableHeight = parseInt(latestAvailableBlock.block.header.height);
+    const latestBlockToDownload = Math.min(lastBlockToSync, latestAvailableHeight);
 
     let latestDownloadedHeight = await getLatestDownloadedHeight();
 
-    if (latestDownloadedHeight >= latestAvailableHeight) {
+    if (latestDownloadedHeight >= latestBlockToDownload) {
       console.log("Already downloaded all blocks");
     } else {
       const startHeight = latestDownloadedHeight + 1;
       console.log("Starting download at block #" + startHeight);
-      console.log("Will end download at block #" + latestAvailableHeight);
-      console.log(latestAvailableHeight - startHeight + " blocks to download");
+      console.log("Will end download at block #" + latestBlockToDownload);
+      console.log(latestBlockToDownload - startHeight + " blocks to download");
 
-      await downloadBlocks(startHeight, latestAvailableHeight);
+      await downloadBlocks(startHeight, latestBlockToDownload);
     }
 
     let latestInsertedHeight: number = (await Block.max("height")) || 0;
 
-    await insertBlocks(latestInsertedHeight + 1, latestAvailableHeight);
+    await insertBlocks(latestInsertedHeight + 1, latestBlockToDownload);
     await downloadTransactions();
 
     syncingStatus = "Processing messages";
@@ -201,6 +202,7 @@ async function insertBlocks(startHeight, endHeight) {
     const blockEntry = {
       height: i,
       datetime: new Date(blockData.block.header.time),
+      totalTxCount: (lastInsertedBlock?.totalTxCount || 0) + txs.length,
       dayId: lastInsertedBlock?.dayId,
       day: lastInsertedBlock?.day
     };

@@ -9,7 +9,8 @@ export enum ExecutionMode {
   RebuildAll
 }
 
-export const executionMode: ExecutionMode = isProd ? ExecutionMode.DownloadAndSync : ExecutionMode.SyncOnly;
+export const executionMode: ExecutionMode = isProd ? ExecutionMode.DownloadAndSync : ExecutionMode.RebuildAll;
+export const lastBlockToSync = 10_000;
 
 export const mainNet = "https://raw.githubusercontent.com/ovrclk/net/master/mainnet";
 export const testNet = "https://raw.githubusercontent.com/ovrclk/net/master/testnet";

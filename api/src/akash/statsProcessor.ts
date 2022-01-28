@@ -93,6 +93,7 @@ export async function rebuildStatsTables() {
 }
 
 let totalLeaseCount = 0;
+
 export async function processMessages() {
   processingStatus = "Processing messages";
   console.time("processMessages");

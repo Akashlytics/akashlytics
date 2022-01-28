@@ -230,7 +230,8 @@ export class Block extends Model {
   public dayId!: string;
   // Stats
   public isProcessed!: boolean;
-  public totalUAktSpent!: number;
+  public totalTxCount!: number;
+  public totalUAktSpent: number;
   public activeLeaseCount: number;
   public totalLeaseCount: number;
   public activeCPU: number;
@@ -249,6 +250,7 @@ Block.init(
 
     // Stats
     isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    totalTxCount: { type: DataTypes.BIGINT, allowNull: false },
     totalUAktSpent: { type: DataTypes.BIGINT, allowNull: true },
     activeLeaseCount: { type: DataTypes.INTEGER, allowNull: true },
     totalLeaseCount: { type: DataTypes.INTEGER, allowNull: true },
