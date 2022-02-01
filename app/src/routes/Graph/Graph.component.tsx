@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ResponsiveLineCanvas } from "@nivo/line";
 import { FormattedDate, FormattedNumber, useIntl } from "react-intl";
 import { useMediaQueryContext } from "../../context/MediaQueryProvider";
@@ -210,9 +210,9 @@ const getTitle = (snapshot: Snapshots): string => {
     case Snapshots.activeCPU:
       return "Number of vCPUs currently leased";
     case Snapshots.activeMemory:
-      return "Number of Gi of memory currently leased";
+      return "Number of GB of memory currently leased";
     case Snapshots.activeStorage:
-      return "Number of Gi of disk currently leased";
+      return "Number of GB of disk currently leased";
     case Snapshots.dailyUAktSpent:
       return "Daily AKT spent";
     case Snapshots.dailyLeaseCount:

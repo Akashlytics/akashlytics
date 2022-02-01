@@ -2,14 +2,13 @@ import React from "react";
 import clsx from "clsx";
 import { useStyles } from "./Dashboard.styles";
 import { useMediaQueryContext } from "@src/context/MediaQueryProvider";
-import { Box, Button, Chip, Paper, Typography } from "@material-ui/core";
+import { Box, Paper, Typography } from "@material-ui/core";
 import { StatsCard } from "../StatsCard";
 import { FormattedNumber } from "react-intl";
 import { DashboardData, SnapshotsUrlParam } from "@src/shared/models";
-import { Link as RouterLink } from "react-router-dom";
-import { average, percIncrease, uaktToAKT } from "@src/shared/utils/mathHelpers";
-import { DiffNumber } from "@src/shared/components/DiffNumber";
+import { percIncrease, uaktToAKT } from "@src/shared/utils/mathHelpers";
 import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
+import { HumanReadableBytes } from "@src/shared/components/HumanReadableBytes";
 
 interface IDashboardProps {
   dashboardData: DashboardData;
@@ -175,7 +174,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             number={
               <>
                 <FormattedNumber value={dashboardData.now.activeMemory / 1024 / 1024 / 1024} maximumFractionDigits={2} />
-                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>GB</small>
               </>
             }
             text="Memory"
@@ -190,7 +189,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             number={
               <>
                 <FormattedNumber value={dashboardData.now.activeStorage / 1024 / 1024 / 1024} maximumFractionDigits={2} />
-                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>GB</small>
               </>
             }
             text="Storage"
@@ -242,8 +241,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={dashboardData.networkCapacity.totalMemory / 1024 / 1024 / 1024} maximumFractionDigits={0} />
-                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+                <HumanReadableBytes value={dashboardData.networkCapacity.totalMemory} />
               </>
             }
             text="Memory"
@@ -254,8 +252,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={dashboardData.networkCapacity.totalStorage / 1024 / 1024 / 1024} maximumFractionDigits={0} />
-                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+                <HumanReadableBytes value={dashboardData.networkCapacity.totalStorage} />
               </>
             }
             text="Storage"
