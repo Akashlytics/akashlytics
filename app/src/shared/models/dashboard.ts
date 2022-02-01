@@ -27,9 +27,18 @@ export interface DashboardBlockStats {
 
 export interface NetworkCapacity {
   activeProviderCount: number;
-  cpu: number;
-  memory: number;
-  storage: number;
+  activeCPU: number;
+  activeMemory: number;
+  activeStorage: number;
+  pendingCPU: number;
+  pendingMemory: number;
+  pendingStorage: number;
+  availableCPU: number;
+  availableMemory: number;
+  availableStorage: number;
+  totalCPU: number;
+  totalMemory: number;
+  totalStorage: number;
 }
 
 export interface DashboardData {

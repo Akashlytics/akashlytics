@@ -220,8 +220,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
             text="Active providers"
             tooltip={
               <>
-                <div>This is number of leases currently active on the network. A deployment can be anything. </div>
-                <div>For example: a simple website to a blockchain node or a video game server.</div>
+                <div>This is number of providers currently active on the network.</div>
               </>
             }
           />
@@ -231,7 +230,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={dashboardData.networkCapacity.cpu / 1000} maximumFractionDigits={0} />
+                <FormattedNumber value={dashboardData.networkCapacity.totalCPU / 1000} maximumFractionDigits={0} />
                 <small style={{ paddingLeft: "5-px", fontWeight: "bold", fontSize: 16 }}>vCPUs</small>
               </>
             }
@@ -243,7 +242,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={dashboardData.networkCapacity.memory / 1024 / 1024 / 1024} maximumFractionDigits={0} />
+                <FormattedNumber value={dashboardData.networkCapacity.totalMemory / 1024 / 1024 / 1024} maximumFractionDigits={0} />
                 <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
               </>
             }
@@ -255,7 +254,7 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           <StatsCard
             number={
               <>
-                <FormattedNumber value={dashboardData.networkCapacity.storage / 1024 / 1024 / 1024} maximumFractionDigits={0} />
+                <FormattedNumber value={dashboardData.networkCapacity.totalStorage / 1024 / 1024 / 1024} maximumFractionDigits={0} />
                 <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
               </>
             }

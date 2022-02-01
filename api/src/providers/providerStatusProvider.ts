@@ -116,10 +116,23 @@ export async function getNetworkCapacity() {
     }
   });
 
-  return {
+  const stats = {
     activeProviderCount: providers.length,
-    cpu: providers.map((x) => x.availableCPU + x.pendingCPU + x.activeCPU).reduce((a, b) => a + b, 0),
-    memory: providers.map((x) => x.availableMemory + x.pendingMemory + x.activeMemory).reduce((a, b) => a + b, 0),
-    storage: providers.map((x) => x.availableStorage + x.pendingStorage + x.activeStorage).reduce((a, b) => a + b, 0)
+    activeCPU: providers.map((x) => x.activeCPU).reduce((a, b) => a + b, 0),
+    activeMemory: providers.map((x) => x.activeMemory).reduce((a, b) => a + b, 0),
+    activeStorage: providers.map((x) => x.activeStorage).reduce((a, b) => a + b, 0),
+    pendingCPU: providers.map((x) => x.pendingCPU).reduce((a, b) => a + b, 0),
+    pendingMemory: providers.map((x) => x.pendingMemory).reduce((a, b) => a + b, 0),
+    pendingStorage: providers.map((x) => x.pendingStorage).reduce((a, b) => a + b, 0),
+    availableCPU: providers.map((x) => x.availableCPU).reduce((a, b) => a + b, 0),
+    availableMemory: providers.map((x) => x.availableMemory).reduce((a, b) => a + b, 0),
+    availableStorage: providers.map((x) => x.availableStorage).reduce((a, b) => a + b, 0)
+  };
+
+  return {
+    ...stats,
+    totalCPU: stats.activeCPU + stats.pendingCPU + stats.availableCPU,
+    totalMemory: stats.activeMemory + stats.pendingMemory + stats.availableMemory,
+    totalStorage: stats.activeStorage + stats.pendingStorage + stats.availableStorage
   };
 }
