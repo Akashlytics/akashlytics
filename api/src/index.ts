@@ -15,6 +15,7 @@ import { rebuildStatsTables } from "./akash/statsProcessor";
 import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
+import { fetchProvidersInfoAtInterval, getNetworkCapacity } from "./providers/providerStatusProvider";
 
 require("dotenv").config();
 
@@ -73,11 +74,21 @@ apiRouter.get("/latestDeployToolVersion", cache(120), async (req, res) => {
   }
 });
 
+apiRouter.get("/getNetworkCapacity", async (req, res) => {
+  try {
+    const networkCapacity = await getNetworkCapacity();
+    res.send(networkCapacity);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 apiRouter.get("/getDashboardData", async (req, res) => {
   try {
-    const totalSpend = await getDashboardData();
+    const dashboardData = await getDashboardData();
     const marketData = marketDataProvider.getAktMarketData();
-    res.send({ ...totalSpend, marketData });
+    const networkCapacity = await getNetworkCapacity();
+    res.send({ ...dashboardData, marketData, networkCapacity });
   } catch (err) {
     console.error(err);
   }
@@ -182,6 +193,7 @@ async function initApp() {
       await marketDataProvider.syncAtInterval();
       await computeAtInterval();
       await syncPriceHistoryAtInterval();
+      await fetchProvidersInfoAtInterval();
       setInterval(async () => {
         await computeAtInterval();
         await updatePriceHistory();

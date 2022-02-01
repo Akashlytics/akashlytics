@@ -200,6 +200,69 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
           />
         </div>
       </div>
+
+      <div
+        className={clsx("row mt-5", {
+          "mb-4": !mediaQuery.smallScreen,
+          "mb-2 text-center": mediaQuery.smallScreen
+        })}
+      >
+        <div className="col-xs-12">
+          <Typography variant="h1" className={clsx(classes.title, { "text-center": mediaQuery.smallScreen })}>
+            Network Capacity
+          </Typography>
+        </div>
+      </div>
+      <div className="row">
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={<FormattedNumber value={dashboardData.networkCapacity.activeProviderCount} />}
+            text="Active providers"
+            tooltip={
+              <>
+                <div>This is number of leases currently active on the network. A deployment can be anything. </div>
+                <div>For example: a simple website to a blockchain node or a video game server.</div>
+              </>
+            }
+          />
+        </div>
+
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={
+              <>
+                <FormattedNumber value={dashboardData.networkCapacity.cpu / 1000} maximumFractionDigits={0} />
+                <small style={{ paddingLeft: "5-px", fontWeight: "bold", fontSize: 16 }}>vCPUs</small>
+              </>
+            }
+            text="Compute"
+          />
+        </div>
+
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={
+              <>
+                <FormattedNumber value={dashboardData.networkCapacity.memory / 1024 / 1024 / 1024} maximumFractionDigits={0} />
+                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+              </>
+            }
+            text="Memory"
+          />
+        </div>
+
+        <div className={clsx("col-xs-12 col-lg-3")}>
+          <StatsCard
+            number={
+              <>
+                <FormattedNumber value={dashboardData.networkCapacity.storage / 1024 / 1024 / 1024} maximumFractionDigits={0} />
+                <small style={{ paddingLeft: "5px", fontWeight: "bold", fontSize: 16 }}>Gi</small>
+              </>
+            }
+            text="Storage"
+          />
+        </div>
+      </div>
     </>
   );
 };

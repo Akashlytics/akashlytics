@@ -7,13 +7,29 @@ const {
   MsgCreateBid,
   MsgCloseBid,
   MsgDepositDeployment,
-  MsgWithdrawLease
+  MsgWithdrawLease,
+  MsgCreateProvider,
+  MsgUpdateProvider,
+  MsgDeleteProvider
 } = require("./ProtoAkashTypes");
 const uuid = require("uuid");
 const sha256 = require("js-sha256");
 const { performance } = require("perf_hooks");
 import { blocksDb, txsDb } from "@src/akash/dataStore";
-import { Deployment, Transaction, Message, Block, Bid, Lease, Op, DeploymentGroup, DeploymentGroupResource, sequelize } from "@src/db/schema";
+import {
+  Deployment,
+  Transaction,
+  Message,
+  Block,
+  Bid,
+  Lease,
+  Op,
+  DeploymentGroup,
+  DeploymentGroupResource,
+  sequelize,
+  Provider,
+  ProviderAttribute
+} from "@src/db/schema";
 import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
 export let processingStatus = null;
@@ -93,7 +109,7 @@ export async function rebuildStatsTables() {
 }
 
 let totalLeaseCount = 0;
-
+let activeProviderCount = 0;
 export async function processMessages() {
   processingStatus = "Processing messages";
   console.time("processMessages");
@@ -115,6 +131,7 @@ export async function processMessages() {
 
   const groupSize = 10_000;
   totalLeaseCount = await Lease.count();
+  activeProviderCount = await Provider.count();
 
   let previousProcessedBlock = await Block.findOne({
     where: {
@@ -212,6 +229,7 @@ export async function processMessages() {
         await block.update(
           {
             isProcessed: true,
+            activeProviderCount: activeProviderCount,
             activeLeaseCount: totalResources.count,
             totalLeaseCount: totalLeaseCount,
             activeCPU: totalResources.cpuSum,
@@ -283,22 +301,40 @@ let messageTimes = [];
 async function processMessage(msg, encodedMessage, height, time, blockGroupTransaction) {
   let a = performance.now();
 
-  if (msg.type === "/akash.deployment.v1beta1.MsgCreateDeployment") {
-    await handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
-  } else if (msg.type === "/akash.deployment.v1beta1.MsgCloseDeployment") {
-    await handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
-  } else if (msg.type === "/akash.market.v1beta1.MsgCreateLease") {
-    await handleCreateLease(encodedMessage, height, time, blockGroupTransaction, msg);
-  } else if (msg.type === "/akash.market.v1beta1.MsgCloseLease") {
-    await handleCloseLease(encodedMessage, height, time, blockGroupTransaction, msg);
-  } else if (msg.type === "/akash.market.v1beta1.MsgCreateBid") {
-    await handleCreateBid(encodedMessage, height, time, blockGroupTransaction, msg);
-  } else if (msg.type === "/akash.market.v1beta1.MsgCloseBid") {
-    await handleCloseBid(encodedMessage, height, time, blockGroupTransaction, msg);
-  } else if (msg.type === "/akash.deployment.v1beta1.MsgDepositDeployment") {
-    await handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
-  } else if (msg.type === "/akash.market.v1beta1.MsgWithdrawLease") {
-    await handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction, msg);
+  switch (msg.type) {
+    case "/akash.deployment.v1beta1.MsgCreateDeployment":
+      await handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.deployment.v1beta1.MsgCloseDeployment":
+      await handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.market.v1beta1.MsgCreateLease":
+      await handleCreateLease(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.market.v1beta1.MsgCloseLease":
+      await handleCloseLease(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.market.v1beta1.MsgCreateBid":
+      await handleCreateBid(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.market.v1beta1.MsgCloseBid":
+      await handleCloseBid(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.deployment.v1beta1.MsgDepositDeployment":
+      await handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.market.v1beta1.MsgWithdrawLease":
+      await handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction, msg);
+      break;
+    case "/akash.provider.v1beta1.MsgCreateProvider":
+      await handleCreateProvider(encodedMessage, height, blockGroupTransaction, msg);
+      break;
+    case "/akash.provider.v1beta1.MsgUpdateProvider":
+      await handleUpdateProvider(encodedMessage, height, blockGroupTransaction, msg);
+      break;
+    case "/akash.provider.v1beta1.MsgDeleteProvider":
+      await handleDeleteProvider(encodedMessage, height, blockGroupTransaction, msg);
+      break;
   }
 
   await msg.update(
@@ -635,4 +671,81 @@ async function handleWithdrawLease(encodedMessage, height, time, blockGroupTrans
   await lease.deployment.save({ transaction: blockGroupTransaction });
 
   msg.relatedDeploymentId = lease.deployment.id;
+}
+
+async function handleCreateProvider(encodedMessage, height, blockGroupTransaction, msg: Message) {
+  const decodedMessage = MsgCreateProvider.decode(encodedMessage);
+
+  await Provider.create(
+    {
+      owner: decodedMessage.owner,
+      hostUri: decodedMessage.host_uri,
+      createdHeight: height,
+      email: decodedMessage.info?.email,
+      website: decodedMessage.info?.website
+    },
+    { transaction: blockGroupTransaction }
+  );
+
+  await ProviderAttribute.bulkCreate(
+    decodedMessage.attributes.map((attribute) => ({
+      provider: decodedMessage.owner,
+      key: attribute.key,
+      value: attribute.value
+    })),
+    { transaction: blockGroupTransaction }
+  );
+
+  activeProviderCount++;
+}
+
+async function handleUpdateProvider(encodedMessage, height, blockGroupTransaction, msg: Message) {
+  const decodedMessage = MsgUpdateProvider.decode(encodedMessage);
+
+  await Provider.update(
+    {
+      hostUri: decodedMessage.host_uri,
+      createdHeight: height,
+      email: decodedMessage.info?.email,
+      website: decodedMessage.info?.website
+    },
+    {
+      where: {
+        owner: decodedMessage.owner
+      },
+      transaction: blockGroupTransaction
+    }
+  );
+
+  await ProviderAttribute.destroy({
+    where: {
+      provider: decodedMessage.owner
+    },
+    transaction: blockGroupTransaction
+  });
+  await ProviderAttribute.bulkCreate(
+    decodedMessage.attributes.map((attribute) => ({
+      provider: decodedMessage.owner,
+      key: attribute.key,
+      value: attribute.value
+    })),
+    { transaction: blockGroupTransaction }
+  );
+}
+
+async function handleDeleteProvider(encodedMessage, height, blockGroupTransaction, msg: Message) {
+  const decodedMessage = MsgDeleteProvider.decode(encodedMessage);
+
+  await Provider.destroy({
+    where: { owner: decodedMessage.owner },
+    transaction: blockGroupTransaction
+  });
+  await ProviderAttribute.destroy({
+    where: {
+      provider: decodedMessage.owner
+    },
+    transaction: blockGroupTransaction
+  });
+
+  activeProviderCount--;
 }

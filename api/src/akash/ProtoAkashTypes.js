@@ -130,6 +130,24 @@ export const MsgDepositDeployment = new Type("MsgDepositDeployment").add(new Fie
 
 export const MsgWithdrawLease = new Type("MsgWithdrawLease").add(new Field("lease_id", 1, "LeaseID")).add(LeaseID);
 
+const ProviderInfo = new Type("ProviderInfo").add(new Field("email", 1, "string")).add(new Field("website", 2, "string"));
+
+export const MsgCreateProvider = new Type("MsgCreateProvider")
+  .add(new Field("owner", 1, "string"))
+  .add(new Field("host_uri", 2, "string"))
+  .add(new Field("attributes", 3, "Attribute", "repeated"))
+  .add(Attribute)
+  .add(new Field("info", 4, "ProviderInfo"))
+  .add(ProviderInfo);
+
+export const MsgUpdateProvider = new Type("MsgUpdateProvider")
+  .add(new Field("owner", 1, "string"))
+  .add(new Field("host_uri", 2, "string"))
+  .add(new Field("attributes", 3, "Attribute", "repeated"))
+  .add(new Field("info", 4, "ProviderInfo"))
+
+export const MsgDeleteProvider = new Type("MsgDeleteProvider").add(new Field("owner", 1, "string"));
+
 root.add(MsgCreateLease);
 root.add(MsgCloseLease);
 root.add(MsgCloseDeployment);
@@ -139,3 +157,6 @@ root.add(MsgCreateBid);
 root.add(MsgCloseBid);
 root.add(MsgDepositDeployment);
 root.add(MsgWithdrawLease);
+root.add(MsgCreateProvider);
+root.add(MsgUpdateProvider);
+root.add(MsgDeleteProvider);

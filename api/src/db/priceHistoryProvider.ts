@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import { Day } from "./schema";
-import { isEqual, isSameDay } from "date-fns";
+import { isSameDay } from "date-fns";
 
 export let isSyncingPrices = false;
 

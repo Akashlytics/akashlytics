@@ -2,7 +2,21 @@ import { isProd, executionMode, ExecutionMode } from "@src/shared/constants";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 import fs from "fs";
 import https from "https";
-import { Bid, Block, Transaction, Deployment, DeploymentGroup, DeploymentGroupResource, Lease, Message, sequelize, sqliteDatabasePath, Day } from "./schema";
+import {
+  Bid,
+  Block,
+  Transaction,
+  Deployment,
+  DeploymentGroup,
+  DeploymentGroupResource,
+  Lease,
+  Message,
+  sequelize,
+  sqliteDatabasePath,
+  Day,
+  Provider,
+  ProviderAttribute
+} from "./schema";
 
 async function download(url, dest) {
   return new Promise<void>((res, rej) => {
@@ -51,6 +65,8 @@ export const initDatabase = async () => {
     await DeploymentGroupResource.drop();
     await DeploymentGroup.drop();
     await Deployment.drop();
+    await Provider.drop();
+    await ProviderAttribute.drop();
     await Message.drop();
     await Transaction.drop();
     await Block.drop();
@@ -67,6 +83,8 @@ export const initDatabase = async () => {
   await DeploymentGroupResource.sync({ force: false });
   await Lease.sync({ force: false });
   await Bid.sync({ force: false });
+  await Provider.sync({ force: false });
+  await ProviderAttribute.sync({ force: false });
 
   Deployment.hasMany(DeploymentGroup);
   DeploymentGroup.belongsTo(Deployment, { foreignKey: "deploymentId" });
