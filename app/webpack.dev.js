@@ -13,10 +13,6 @@ module.exports = merge(commonConfig, {
     port: 3000,
     watchContentBase: true,
     hot: true,
-    proxy: {
-      context: ["/api", "/web3-index"],
-      target: "http://localhost:3080"
-    },
     historyApiFallback: true
   },
   plugins: [
