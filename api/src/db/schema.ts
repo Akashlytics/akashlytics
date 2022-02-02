@@ -245,6 +245,7 @@ export class Bid extends Model {
   public oseq!: number;
   public provider!: number;
   public price!: number;
+  public createdHeight!: number;
 }
 
 Bid.init(
@@ -254,9 +255,8 @@ Bid.init(
     gseq: { type: DataTypes.INTEGER, allowNull: false },
     oseq: { type: DataTypes.INTEGER, allowNull: false },
     provider: { type: DataTypes.STRING, allowNull: false },
-    state: { type: DataTypes.STRING, allowNull: false },
     price: { type: DataTypes.INTEGER, allowNull: false },
-    datetime: { type: DataTypes.DATE, allowNull: false }
+    createdHeight: { type: DataTypes.INTEGER, allowNull: false }
   },
   {
     tableName: "bid",

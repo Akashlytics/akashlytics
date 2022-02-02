@@ -1,6 +1,6 @@
 import fs from "fs";
 import base64js from "base64-js";
-import { processMessages } from "./statsProcessor";
+import { messageHandlers, processMessages } from "./statsProcessor";
 import { blocksDb, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day } from "@src/db/schema";
@@ -33,20 +33,6 @@ function decodeTxRaw(tx) {
     signatures: txRaw.signatures
   };
 }
-
-const interestingTypes = [
-  "/akash.deployment.v1beta1.MsgCreateDeployment",
-  "/akash.deployment.v1beta1.MsgCloseDeployment",
-  "/akash.deployment.v1beta1.MsgDepositDeployment",
-  "/akash.provider.v1beta1.MsgCreateProvider",
-  "/akash.provider.v1beta1.MsgUpdateProvider",
-  "/akash.provider.v1beta1.MsgDeleteProvider",
-  "/akash.market.v1beta1.MsgCreateLease",
-  "/akash.market.v1beta1.MsgCloseLease",
-  "/akash.market.v1beta1.MsgCreateBid",
-  "/akash.market.v1beta1.MsgCloseBid",
-  "/akash.market.v1beta1.MsgWithdrawLease"
-];
 
 async function getCachedBlockByHeight(height) {
   try {
@@ -175,7 +161,7 @@ async function insertBlocks(startHeight, endHeight) {
 
       for (let msgIndex = 0; msgIndex < msgs.length; ++msgIndex) {
         const msg = msgs[msgIndex];
-        const isInterestingType = interestingTypes.includes(msg.typeUrl);
+        const isInterestingType = Object.keys(messageHandlers).includes(msg.typeUrl);
 
         msgsToAdd.push({
           id: uuid.v4(),

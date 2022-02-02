@@ -298,44 +298,28 @@ async function getTotalResources(blockGroupTransaction, height) {
 
 let messageTimes = [];
 
+export const messageHandlers: { [key: string]: (encodedMessage, height: number, blockGroupTransaction, msg: Message) => Promise<void> } = {
+  "/akash.deployment.v1beta1.MsgCreateDeployment": handleCreateDeployment,
+  "/akash.deployment.v1beta1.MsgCloseDeployment": handleCloseDeployment,
+  "/akash.market.v1beta1.MsgCreateLease": handleCreateLease,
+  "/akash.market.v1beta1.MsgCloseLease": handleCloseLease,
+  "/akash.market.v1beta1.MsgCreateBid": handleCreateBid,
+  "/akash.market.v1beta1.MsgCloseBid": handleCloseBid,
+  "/akash.deployment.v1beta1.MsgDepositDeployment": handleDepositDeployment,
+  "/akash.market.v1beta1.MsgWithdrawLease": handleWithdrawLease,
+  "/akash.provider.v1beta1.MsgCreateProvider": handleCreateProvider,
+  "/akash.provider.v1beta1.MsgUpdateProvider": handleUpdateProvider,
+  "/akash.provider.v1beta1.MsgDeleteProvider": handleDeleteProvider
+};
+
 async function processMessage(msg, encodedMessage, height, time, blockGroupTransaction) {
   let a = performance.now();
 
-  switch (msg.type) {
-    case "/akash.deployment.v1beta1.MsgCreateDeployment":
-      await handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.deployment.v1beta1.MsgCloseDeployment":
-      await handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.market.v1beta1.MsgCreateLease":
-      await handleCreateLease(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.market.v1beta1.MsgCloseLease":
-      await handleCloseLease(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.market.v1beta1.MsgCreateBid":
-      await handleCreateBid(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.market.v1beta1.MsgCloseBid":
-      await handleCloseBid(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.deployment.v1beta1.MsgDepositDeployment":
-      await handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.market.v1beta1.MsgWithdrawLease":
-      await handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction, msg);
-      break;
-    case "/akash.provider.v1beta1.MsgCreateProvider":
-      await handleCreateProvider(encodedMessage, height, blockGroupTransaction, msg);
-      break;
-    case "/akash.provider.v1beta1.MsgUpdateProvider":
-      await handleUpdateProvider(encodedMessage, height, blockGroupTransaction, msg);
-      break;
-    case "/akash.provider.v1beta1.MsgDeleteProvider":
-      await handleDeleteProvider(encodedMessage, height, blockGroupTransaction, msg);
-      break;
+  if (!Object.keys(messageHandlers).includes(msg.type)) {
+    throw Error("No handler for message of type: " + msg.type);
   }
+
+  await messageHandlers[msg.type](encodedMessage, height, blockGroupTransaction, msg);
 
   await msg.update(
     {
@@ -351,7 +335,7 @@ async function processMessage(msg, encodedMessage, height, time, blockGroupTrans
   messageTimes[msg.type].push(processingTime);
 }
 
-async function handleCreateDeployment(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleCreateDeployment(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCreateDeployment.decode(encodedMessage);
 
   const created = await Deployment.create(
@@ -361,9 +345,7 @@ async function handleCreateDeployment(encodedMessage, height, time, blockGroupTr
       dseq: decodedMessage.id.dseq.toNumber(),
       deposit: parseInt(decodedMessage.deposit.amount),
       balance: parseInt(decodedMessage.deposit.amount),
-      startDate: time,
       createdHeight: height,
-      datetime: time,
       state: "-",
       escrowAccountTransferredAmount: 0
     },
@@ -403,7 +385,7 @@ async function handleCreateDeployment(encodedMessage, height, time, blockGroupTr
   }
 }
 
-async function handleCloseDeployment(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleCloseDeployment(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCloseDeployment.decode(encodedMessage);
 
   const deployment = await Deployment.findOne({
@@ -438,7 +420,7 @@ async function handleCloseDeployment(encodedMessage, height, time, blockGroupTra
   }
 }
 
-async function handleCreateLease(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleCreateLease(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCreateLease.decode(encodedMessage);
   const bid = await Bid.findOne({
     where: {
@@ -481,7 +463,6 @@ async function handleCreateLease(encodedMessage, height, time, blockGroupTransac
       oseq: decodedMessage.bid_id.oseq,
       gseq: decodedMessage.bid_id.gseq,
       provider: decodedMessage.bid_id.provider,
-      startDate: time,
       createdHeight: height,
       predictedClosedHeight: predictedClosedHeight,
       price: bid.price,
@@ -499,7 +480,7 @@ async function handleCreateLease(encodedMessage, height, time, blockGroupTransac
   totalLeaseCount++;
 }
 
-async function handleCloseLease(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleCloseLease(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCloseLease.decode(encodedMessage);
 
   let lease = await Lease.findOne({
@@ -531,7 +512,7 @@ async function handleCloseLease(encodedMessage, height, time, blockGroupTransact
   await lease.deployment.save({ transaction: blockGroupTransaction });
 }
 
-async function handleCreateBid(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleCreateBid(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCreateBid.decode(encodedMessage);
 
   await Bid.create(
@@ -542,8 +523,7 @@ async function handleCreateBid(encodedMessage, height, time, blockGroupTransacti
       oseq: decodedMessage.order_id.oseq,
       provider: decodedMessage.provider,
       price: parseInt(decodedMessage.price.amount),
-      state: "-",
-      datetime: time
+      createdHeight: height
     },
     { transaction: blockGroupTransaction }
   );
@@ -551,7 +531,7 @@ async function handleCreateBid(encodedMessage, height, time, blockGroupTransacti
   msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
 }
 
-async function handleCloseBid(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleCloseBid(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCloseBid.decode(encodedMessage);
 
   const deployment = await Deployment.findOne({
@@ -598,7 +578,7 @@ async function handleCloseBid(encodedMessage, height, time, blockGroupTransactio
   });
 }
 
-async function handleDepositDeployment(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleDepositDeployment(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgDepositDeployment.decode(encodedMessage);
 
   const deployment = await Deployment.findOne({
@@ -625,7 +605,7 @@ async function handleDepositDeployment(encodedMessage, height, time, blockGroupT
   }
 }
 
-async function handleWithdrawLease(encodedMessage, height, time, blockGroupTransaction, msg: Message) {
+async function handleWithdrawLease(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgWithdrawLease.decode(encodedMessage);
 
   const owner = decodedMessage.lease_id.owner;
