@@ -15,7 +15,7 @@ import { rebuildStatsTables } from "./akash/statsProcessor";
 import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
-import { fetchProvidersInfoAtInterval, getNetworkCapacity } from "./providers/providerStatusProvider";
+import { fetchProvidersInfoAtInterval, getNetworkCapacity, getProviders } from "./providers/providerStatusProvider";
 
 require("dotenv").config();
 
@@ -80,6 +80,17 @@ apiRouter.get("/getNetworkCapacity", async (req, res) => {
     res.send(networkCapacity);
   } catch (err) {
     console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/getProviders", async (req, res) => {
+  try {
+    const providers = await getProviders();
+    res.send(providers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
   }
 });
 

@@ -136,3 +136,11 @@ export async function getNetworkCapacity() {
     totalStorage: stats.activeStorage + stats.pendingStorage + stats.availableStorage
   };
 }
+
+export async function getProviders() {
+  const providers = await Provider.findAll({
+    attributes: ["owner", "hostUri", "createdHeight", "isOnline", "lastCheckDate", "error"]
+  });
+
+  return providers.map((x) => x.toJSON());
+}
