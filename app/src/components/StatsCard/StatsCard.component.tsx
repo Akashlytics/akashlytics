@@ -48,13 +48,13 @@ export function StatsCard({
       <CardHeader
         classes={{ title: classes.number, root: classes.cardHeader, subheader: classes.subHeader }}
         title={number}
-        subheader={
+        subheader={diffNumber && (
           <>
             <DiffNumber value={diffNumber} />
             &nbsp;
             <DiffPercentageChip value={diffPercent} />
           </>
-        }
+        )}
       />
       <div className={classes.cardContent}>
         <p className={classes.title}>{text}</p>
