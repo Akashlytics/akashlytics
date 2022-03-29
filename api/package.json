@@ -20,6 +20,8 @@
   "homepage": "https://github.com/mbeauchamp7/akashlytics#readme",
   "dependencies": {
     "@cosmjs/math": "^0.28.4",
+    "@cosmjs/crypto": "^0.28.0",
+    "@cosmjs/encoding": "^0.28.0",
     "@octokit/rest": "^18.12.0",
     "@sentry/node": "^6.12.0",
     "@sentry/tracing": "^6.12.0",

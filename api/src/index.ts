@@ -16,6 +16,7 @@ import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
 import { fetchProvidersInfoAtInterval, getNetworkCapacity, getProviders } from "./providers/providerStatusProvider";
 import { getTemplateGallery } from "./providers/templateReposProvider";
+import { getBlock, getTransaction } from "./db/explorerProvider";
 
 require("dotenv").config();
 
@@ -74,7 +75,38 @@ apiRouter.get("/templates", cache(60 * 5), async (req, res) => {
   }
 });
 
-apiRouter.get("/latestDeployToolVersion", cache(60 * 2), async (req, res) => {
+apiRouter.get("/getBlock/:height", async (req, res) => {
+  try {
+    const heightInt = parseInt(req.params.height);
+    const blockInfo = await getBlock(heightInt);
+
+    if (blockInfo) {
+      res.send(blockInfo);
+    } else {
+      res.status(400).send("Block not found");
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/getTransaction/:hash", async (req, res) => {
+  try {
+    const txInfo = await getTransaction(req.params.hash);
+
+    if (txInfo) {
+      res.send(txInfo);
+    } else {
+      res.status(404).send("Tx not found");
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/latestDeployToolVersion", cache(120), async (req, res) => {
   try {
     const releaseData = await fetchGithubReleases();
     res.send(releaseData);

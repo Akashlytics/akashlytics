@@ -328,6 +328,8 @@ Day.init(
 export class Block extends Model {
   public height!: number;
   public readonly datetime!: Date;
+  public hash: string;
+  public proposer: string;
   public dayId!: string;
   // Stats
   public isProcessed!: boolean;
@@ -348,6 +350,8 @@ Block.init(
   {
     height: { type: DataTypes.INTEGER, primaryKey: true, allowNull: false },
     datetime: { type: DataTypes.DATE, allowNull: false },
+    hash: { type: DataTypes.STRING, allowNull: false },
+    proposer: { type: DataTypes.STRING, allowNull: false },
     dayId: { type: DataTypes.UUID, allowNull: false, references: { model: Day, key: "id" } },
 
     // Stats
@@ -377,11 +381,16 @@ export class Transaction extends Model {
   public hash!: string;
   public index!: number;
   public height!: number;
+  public gasUsed?: number;
+  public gasWanted?: number;
+  public fee: number;
+  public memo: string;
   public isProcessed!: boolean;
   public downloaded!: boolean;
   public hasInterestingType!: boolean;
   public hasDownloadError!: boolean;
   public hasProcessingError!: boolean;
+  public log?: string;
 
   public readonly block?: Block;
   public readonly messages?: Message[];
@@ -397,11 +406,16 @@ Transaction.init(
       allowNull: false,
       references: { model: Block, key: "height" }
     },
+    gasUsed: { type: DataTypes.INTEGER, allowNull: true },
+    gasWanted: { type: DataTypes.INTEGER, allowNull: true },
+    fee: { type: DataTypes.INTEGER, allowNull: false },
+    memo: { type: DataTypes.STRING, allowNull: false },
     isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     downloaded: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     hasInterestingTypes: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     hasDownloadError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    hasProcessingError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+    hasProcessingError: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    log: { type: DataTypes.STRING, allowNull: true }
   },
   {
     tableName: "transaction",
@@ -423,6 +437,8 @@ export class Message extends Model {
   public isProcessed!: boolean;
   public shouldProcess!: boolean;
   public relatedDeploymentId?: string;
+  public data: Uint8Array;
+
   public readonly transaction?: Transaction;
 
   public static associations: {
@@ -449,7 +465,8 @@ Message.init(
     isInterestingType: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     isProcessed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     shouldProcess: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    relatedDeploymentId: { type: DataTypes.STRING, allowNull: true }
+    relatedDeploymentId: { type: DataTypes.STRING, allowNull: true },
+    data: { type: DataTypes.BLOB, allowNull: false }
   },
   {
     tableName: "message",
