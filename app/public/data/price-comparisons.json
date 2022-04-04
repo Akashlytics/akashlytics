@@ -159,7 +159,7 @@
       "cells": [
         {
           "provider": "akash",
-          "amount": 11,
+          "amount": 15,
           "unit": "uakt",
           "cpu": 2,
           "ram": "8Gi",

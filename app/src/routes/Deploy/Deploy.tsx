@@ -8,7 +8,6 @@ import YouTubeIcon from "@material-ui/icons/YouTube";
 import TwitterIcon from "@material-ui/icons/Twitter";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import { DiscordIcon } from "@src/shared/components/icons";
-import Alert from "@material-ui/lab/Alert";
 import { Remarkable } from "remarkable";
 import { baseApiUrl } from "@src/shared/contants";
 
@@ -107,18 +106,17 @@ export const Deploy: React.FunctionComponent<IDeployProps> = ({}) => {
                 <Typography variant="caption">{releaseInfo.version}</Typography>
               </Box>
 
-              <Alert severity="info" className={classes.alert}>
-                We haven't set up code signing yet for the mvp, so you will get a warning when installing the app!
-                <br /> Will be done soon.
-              </Alert>
-
               <Typography variant="h6">Release Note ({releaseInfo.version})</Typography>
               <div className={classes.releaseNote} dangerouslySetInnerHTML={{ __html: releaseNote }}></div>
             </Box>
           )}
           {!isLoading && !releaseInfo && (
             <Box marginTop={2}>
-              You can find the latest version of the deploy tool on <a className={classes.link} target="_blank" rel="noopener noreferrer" href="https://github.com/Akashlytics/akashlytics-deploy/releases">Github</a>.
+              You can find the latest version of the deploy tool on{" "}
+              <a className={classes.link} target="_blank" rel="noopener noreferrer" href="https://github.com/Akashlytics/akashlytics-deploy/releases">
+                Github
+              </a>
+              .
             </Box>
           )}
           {isLoading && (

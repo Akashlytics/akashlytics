@@ -3,7 +3,7 @@ import { sleep } from "@src/shared/utils/delay";
 
 const fetch = require("node-fetch");
 
-const apiEndpoints = ["https://akash.c29r3.xyz:443/api", "https://api.akash.smartnodes.one"];
+const apiEndpoints = ["http://akash-node.akashlytics.com:1317"];
 
 export function createNodeAccessor() {
   let maxConcurrentQueries = isProd ? 5 : 10;
