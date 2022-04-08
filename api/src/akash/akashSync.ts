@@ -251,9 +251,11 @@ async function downloadBlocks(startHeight: number, endHeight: number) {
 }
 
 async function downloadTransactions() {
+  console.log("Downloading txs");
   syncingStatus = "Downloading transactions";
   const latestDownloadedTxHeight = await getLatestDownloadedTxHeight();
 
+  console.log("Latesdownloaded height: ", latestDownloadedTxHeight);
   if (latestDownloadedTxHeight > 0) {
     await Transaction.update(
       {
@@ -267,6 +269,7 @@ async function downloadTransactions() {
       }
     );
   }
+  console.log("updated downloaded status");
 
   const whereFilter = {
     downloaded: false,
