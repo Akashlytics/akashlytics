@@ -16,6 +16,7 @@ import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
 import { fetchProvidersInfoAtInterval, getNetworkCapacity, getProviders } from "./providers/providerStatusProvider";
+import { getTemplateGallery } from "./providers/awesomeAkashProvider";
 
 require("dotenv").config();
 
@@ -64,7 +65,17 @@ app.use(Sentry.Handlers.tracingHandler());
 const apiRouter = express.Router();
 const web3IndexRouter = express.Router();
 
-apiRouter.get("/latestDeployToolVersion", cache(120), async (req, res) => {
+apiRouter.get("/templates", cache(60 * 2), async (req, res) => {
+  try {
+    const templates = await getTemplateGallery();
+    res.send(templates);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/latestDeployToolVersion", cache(60 * 2), async (req, res) => {
   try {
     const releaseData = await fetchGithubReleases();
     res.send(releaseData);

@@ -22,35 +22,37 @@ export const Dashboard: React.FunctionComponent<IDashboardProps> = ({ dashboardD
 
   return (
     <>
-      <Paper className={classes.priceDataContainer} elevation={2}>
-        <div className={classes.priceData}>
-          AKT{" "}
-          <div className={classes.priceDataValue}>
-            <FormattedNumber style="currency" currency="USD" value={dashboardData.marketData.price} />
-            <Box display="flex" alignItems="center" fontSize=".8rem" fontWeight={300}>
-              <DiffPercentageChip value={dashboardData.marketData.priceChangePercentage24 / 100} />
-              <Box component="span" ml=".5rem">
-                (24h)
+      {dashboardData.marketData && (
+        <Paper className={classes.priceDataContainer} elevation={2}>
+          <div className={classes.priceData}>
+            AKT{" "}
+            <div className={classes.priceDataValue}>
+              <FormattedNumber style="currency" currency="USD" value={dashboardData.marketData.price} />
+              <Box display="flex" alignItems="center" fontSize=".8rem" fontWeight={300}>
+                <DiffPercentageChip value={dashboardData.marketData.priceChangePercentage24 / 100} />
+                <Box component="span" ml=".5rem">
+                  (24h)
+                </Box>
               </Box>
-            </Box>
+            </div>
           </div>
-        </div>
-        <div className={classes.priceData}>
-          <span>Market cap</span>{" "}
-          <span className={classes.priceDataValue}>
-            <FormattedNumber style="currency" currency="USD" value={dashboardData.marketData.marketCap} minimumFractionDigits={0} maximumFractionDigits={0} />
-          </span>
-        </div>
-        <div className={classes.priceData}>
-          <span>Volume (24h)</span>{" "}
-          <span className={classes.priceDataValue}>
-            <FormattedNumber style="currency" currency="USD" value={dashboardData.marketData.volume} minimumFractionDigits={0} maximumFractionDigits={0} />
-          </span>
-        </div>
-        <div className={classes.priceData}>
-          <span>Rank</span> <span className={classes.priceDataValue}>{dashboardData.marketData.marketCapRank}</span>
-        </div>
-      </Paper>
+          <div className={classes.priceData}>
+            <span>Market cap</span>{" "}
+            <span className={classes.priceDataValue}>
+              <FormattedNumber style="currency" currency="USD" value={dashboardData.marketData.marketCap} minimumFractionDigits={0} maximumFractionDigits={0} />
+            </span>
+          </div>
+          <div className={classes.priceData}>
+            <span>Volume (24h)</span>{" "}
+            <span className={classes.priceDataValue}>
+              <FormattedNumber style="currency" currency="USD" value={dashboardData.marketData.volume} minimumFractionDigits={0} maximumFractionDigits={0} />
+            </span>
+          </div>
+          <div className={classes.priceData}>
+            <span>Rank</span> <span className={classes.priceDataValue}>{dashboardData.marketData.marketCapRank}</span>
+          </div>
+        </Paper>
+      )}
 
       <div
         className={clsx("row", {

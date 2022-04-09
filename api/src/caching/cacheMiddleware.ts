@@ -8,9 +8,9 @@ interface CachedObject {
   body: string;
 }
 
-export default function cacheMiddleware(strDuration) {
+export default function cacheMiddleware(seconds: number) {
   return (req, res, next) => {
-    const duration = strDuration * 1000;
+    const duration = seconds * 1000;
 
     let key = "__cache__" + (req.originalUrl || req.url) + JSON.stringify(req.body);
     const cachedObject = cacheEngine.getFromCache(key) as CachedObject;

@@ -31,6 +31,7 @@
     "http-proxy-middelware": "0.0.1-security",
     "js-sha256": "^0.9.0",
     "level": "^7.0.0",
+    "markdown-to-text": "^0.1.1",
     "memory-cache": "^0.2.0",
     "node-fetch": "^2.6.1",
     "protobufjs": "^6.11.2",

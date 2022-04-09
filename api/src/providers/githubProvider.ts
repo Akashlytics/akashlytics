@@ -1,17 +1,21 @@
 import { Octokit } from "@octokit/rest";
 
-export const fetchGithubReleases = async () => {
+export function getOctokit() {
   const githubPAT = process.env.AkashlyticsGithubPAT;
 
   if (!githubPAT) {
     throw new Error("AkashlyticsGithubPAT is missing");
   }
 
-  const octokit = new Octokit({
+  return new Octokit({
     auth: githubPAT,
     userAgent: "Akashlytics API",
     baseUrl: "https://api.github.com"
   });
+}
+
+export const fetchGithubReleases = async () => {
+  const octokit = getOctokit();
 
   const response = await octokit.rest.repos.getLatestRelease({
     owner: "Akashlytics",
