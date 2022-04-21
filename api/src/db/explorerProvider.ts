@@ -3,6 +3,7 @@ import { decodeTxRaw, fromBase64 } from "@src/shared/utils/types";
 
 import { sha256 } from "@cosmjs/crypto";
 import { toHex } from "@cosmjs/encoding";
+import { msgToJSON } from "@src/shared/utils/protobuf";
 
 export async function getBlock(height: number) {
   const block = await Block.findOne({
@@ -52,7 +53,8 @@ export async function getTransaction(hash) {
   if (!tx) return null;
 
   const messages = tx.messages.map((msg) => ({
-    type: msg.type
+    type: msg.type,
+    data: msgToJSON(msg.type, msg.data)
   }));
 
   return {

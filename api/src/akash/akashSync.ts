@@ -121,6 +121,7 @@ async function insertBlocks(startHeight, endHeight) {
       for (let msgIndex = 0; msgIndex < msgs.length; ++msgIndex) {
         const msg = msgs[msgIndex];
         const isInterestingType = Object.keys(messageHandlers).includes(msg.typeUrl);
+
         msgsToAdd.push({
           id: uuid.v4(),
           txId: txId,
@@ -130,7 +131,7 @@ async function insertBlocks(startHeight, endHeight) {
           height: i,
           indexInBlock: msgIndexInBlock++,
           isInterestingType: isInterestingType,
-          data: msg.value
+          data: Buffer.from(msg.value)
         });
 
         if (isInterestingType) {
