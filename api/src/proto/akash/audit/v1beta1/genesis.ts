@@ -1,9 +1,9 @@
 /* eslint-disable */
 import Long from "long";
 import * as _m0 from "protobufjs/minimal";
-import { AuditedAttributes } from "../../../akash/audit/v1beta2/audit";
+import { AuditedAttributes } from "../../../akash/audit/v1beta1/audit";
 
-export const protobufPackage = "akash.audit.v1beta2";
+export const protobufPackage = "akash.audit.v1beta1";
 
 /** GenesisState defines the basic genesis state used by audit module */
 export interface GenesisState {

@@ -6,7 +6,6 @@ import { defaultRegistryTypes } from "@cosmjs/stargate";
 import { blocksDb, txsDb } from "../../akash/dataStore";
 //import { decodeTxRaw, fromBase64 } from "./types";
 
-import { MsgCreateCertificate } from "../../proto/akash/cert/v1beta2/cert";
 import { akashTypes } from "../../proto";
 
 export function msgToJSON(type: string, msg) {

@@ -1,21 +1,17 @@
 /* eslint-disable */
 import Long from "long";
 import * as _m0 from "protobufjs/minimal";
-import {
-  Account,
-  FractionalPayment,
-} from "../../../akash/escrow/v1beta2/types";
+import { Provider } from "../../../akash/provider/v1beta1/provider";
 
-export const protobufPackage = "akash.escrow.v1beta2";
+export const protobufPackage = "akash.provider.v1beta1";
 
-/** GenesisState defines the basic genesis state used by escrow module */
+/** GenesisState defines the basic genesis state used by provider module */
 export interface GenesisState {
-  accounts: Account[];
-  payments: FractionalPayment[];
+  providers: Provider[];
 }
 
 function createBaseGenesisState(): GenesisState {
-  return { accounts: [], payments: [] };
+  return { providers: [] };
 }
 
 export const GenesisState = {
@@ -23,11 +19,8 @@ export const GenesisState = {
     message: GenesisState,
     writer: _m0.Writer = _m0.Writer.create()
   ): _m0.Writer {
-    for (const v of message.accounts) {
-      Account.encode(v!, writer.uint32(10).fork()).ldelim();
-    }
-    for (const v of message.payments) {
-      FractionalPayment.encode(v!, writer.uint32(18).fork()).ldelim();
+    for (const v of message.providers) {
+      Provider.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
@@ -40,12 +33,7 @@ export const GenesisState = {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1:
-          message.accounts.push(Account.decode(reader, reader.uint32()));
-          break;
-        case 2:
-          message.payments.push(
-            FractionalPayment.decode(reader, reader.uint32())
-          );
+          message.providers.push(Provider.decode(reader, reader.uint32()));
           break;
         default:
           reader.skipType(tag & 7);
@@ -57,30 +45,20 @@ export const GenesisState = {
 
   fromJSON(object: any): GenesisState {
     return {
-      accounts: Array.isArray(object?.accounts)
-        ? object.accounts.map((e: any) => Account.fromJSON(e))
-        : [],
-      payments: Array.isArray(object?.payments)
-        ? object.payments.map((e: any) => FractionalPayment.fromJSON(e))
+      providers: Array.isArray(object?.providers)
+        ? object.providers.map((e: any) => Provider.fromJSON(e))
         : [],
     };
   },
 
   toJSON(message: GenesisState): unknown {
     const obj: any = {};
-    if (message.accounts) {
-      obj.accounts = message.accounts.map((e) =>
-        e ? Account.toJSON(e) : undefined
+    if (message.providers) {
+      obj.providers = message.providers.map((e) =>
+        e ? Provider.toJSON(e) : undefined
       );
     } else {
-      obj.accounts = [];
-    }
-    if (message.payments) {
-      obj.payments = message.payments.map((e) =>
-        e ? FractionalPayment.toJSON(e) : undefined
-      );
-    } else {
-      obj.payments = [];
+      obj.providers = [];
     }
     return obj;
   },
@@ -89,10 +67,8 @@ export const GenesisState = {
     object: I
   ): GenesisState {
     const message = createBaseGenesisState();
-    message.accounts =
-      object.accounts?.map((e) => Account.fromPartial(e)) || [];
-    message.payments =
-      object.payments?.map((e) => FractionalPayment.fromPartial(e)) || [];
+    message.providers =
+      object.providers?.map((e) => Provider.fromPartial(e)) || [];
     return message;
   },
 };
