@@ -1,4 +1,4 @@
-import { baseApiUrl } from "@src/shared/contants";
+import { baseApiUrl } from "@src/shared/constants";
 import { GraphResponse } from "@src/shared/models";
 import { UseQueryOptions, useQuery } from "react-query";
 import { queryKeys } from "./queryKeys";

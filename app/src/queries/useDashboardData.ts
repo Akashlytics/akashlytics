@@ -1,4 +1,4 @@
-import { baseApiUrl } from "@src/shared/contants";
+import { baseApiUrl } from "@src/shared/constants";
 import { DashboardData } from "@src/shared/models";
 import { UseQueryOptions, useQuery } from "react-query";
 import { queryKeys } from "./queryKeys";

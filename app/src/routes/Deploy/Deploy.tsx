@@ -9,7 +9,7 @@ import TwitterIcon from "@material-ui/icons/Twitter";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import { DiscordIcon } from "@src/shared/components/icons";
 import { Remarkable } from "remarkable";
-import { baseApiUrl } from "@src/shared/contants";
+import { baseApiUrl } from "@src/shared/constants";
 
 export interface IDeployProps {}
 

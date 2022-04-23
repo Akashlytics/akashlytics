@@ -15,7 +15,7 @@ import { useGraphSnapshot } from "@src/queries/useGrapsQuery";
 import { nFormatter, percIncrease, round, uaktToAKT } from "@src/shared/utils/mathHelpers";
 import { DiffPercentageChip } from "@src/shared/components/DiffPercentageChip";
 import { DiffNumber } from "@src/shared/components/DiffNumber";
-import { SelectedRange } from "@src/shared/contants";
+import { SelectedRange } from "@src/shared/constants";
 
 export interface IGraphProps {}
 

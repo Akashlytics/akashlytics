@@ -1,7 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import { useStyles } from "./Footer.styles";
-import { donationAddress } from "@src/shared/contants";
+import { donationAddress } from "@src/shared/constants";
 import { copyTextToClipboard } from "@src/shared/utils/copyClipboard";
 import { useSnackbar } from "notistack";
 import { Box, Chip, Grid, IconButton, Typography } from "@material-ui/core";
