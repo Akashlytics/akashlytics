@@ -374,7 +374,6 @@ async function handleCreateDeployment(encodedMessage, height, blockGroupTransact
       deposit: parseInt(decodedMessage.deposit.amount),
       balance: parseInt(decodedMessage.deposit.amount),
       createdHeight: height,
-      state: "-",
       escrowAccountTransferredAmount: 0
     },
     { transaction: blockGroupTransaction }
@@ -540,7 +539,7 @@ async function handleCreateLease(encodedMessage, height, blockGroupTransaction, 
       dseq: decodedMessage.bid_id.dseq.toNumber(),
       oseq: decodedMessage.bid_id.oseq,
       gseq: decodedMessage.bid_id.gseq,
-      provider: decodedMessage.bid_id.provider,
+      providerAddress: decodedMessage.bid_id.provider,
       createdHeight: height,
       predictedClosedHeight: predictedClosedHeight,
       price: bid.price,
@@ -566,7 +565,7 @@ async function handleCloseLease(encodedMessage, height, blockGroupTransaction, m
       deploymentId: getDeploymentIdFromCache(decodedMessage.lease_id.owner, decodedMessage.lease_id.dseq.toNumber()),
       oseq: decodedMessage.lease_id.oseq,
       gseq: decodedMessage.lease_id.gseq,
-      provider: decodedMessage.lease_id.provider,
+      providerAddress: decodedMessage.lease_id.provider,
       closedHeight: { [Op.is]: null }
     },
     include: {
@@ -623,7 +622,7 @@ async function handleCloseBid(encodedMessage, height, blockGroupTransaction, msg
         closedHeight: { [Op.is]: null },
         gseq: decodedMessage.bid_id.gseq,
         oseq: decodedMessage.bid_id.oseq,
-        provider: decodedMessage.bid_id.provider
+        providerAddress: decodedMessage.bid_id.provider
       }
     },
     transaction: blockGroupTransaction
@@ -794,20 +793,15 @@ async function handleUpdateProvider(encodedMessage, height, blockGroupTransactio
 async function handleDeleteProvider(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgDeleteProvider.decode(encodedMessage);
 
-  await Provider.destroy({
-    where: { owner: decodedMessage.owner },
-    transaction: blockGroupTransaction
-  });
-  await ProviderAttribute.destroy({
-    where: {
-      provider: decodedMessage.owner
+  await Provider.update(
+    {
+      deletedHeight: height
     },
-    transaction: blockGroupTransaction
-  });
-  await ProviderAttributeSignature.destroy({
-    where: { provider: decodedMessage.owner },
-    transaction: blockGroupTransaction
-  });
+    {
+      where: { owner: decodedMessage.owner },
+      transaction: blockGroupTransaction
+    }
+  );
 
   activeProviderCount--;
 }

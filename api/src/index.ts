@@ -16,7 +16,7 @@ import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
 import { fetchProvidersInfoAtInterval, getNetworkCapacity, getProviders } from "./providers/providerStatusProvider";
 import { getTemplateGallery } from "./providers/templateReposProvider";
-import { getBlock, getTransaction } from "./db/explorerProvider";
+import { getBlock, getDeployment, getTransaction } from "./db/explorerProvider";
 
 require("dotenv").config();
 
@@ -75,7 +75,7 @@ apiRouter.get("/templates", cache(60 * 5), async (req, res) => {
   }
 });
 
-apiRouter.get("/getBlock/:height", async (req, res) => {
+apiRouter.get("/block/:height", async (req, res) => {
   try {
     const heightInt = parseInt(req.params.height);
     const blockInfo = await getBlock(heightInt);
@@ -91,7 +91,7 @@ apiRouter.get("/getBlock/:height", async (req, res) => {
   }
 });
 
-apiRouter.get("/getTransaction/:hash", async (req, res) => {
+apiRouter.get("/transaction/:hash", async (req, res) => {
   try {
     const txInfo = await getTransaction(req.params.hash);
 
@@ -99,6 +99,21 @@ apiRouter.get("/getTransaction/:hash", async (req, res) => {
       res.send(txInfo);
     } else {
       res.status(404).send("Tx not found");
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/deployment/:owner/:dseq", async (req, res) => {
+  try {
+    const deployment = await getDeployment(req.params.owner, req.params.dseq);
+
+    if (deployment) {
+      res.send(deployment);
+    } else {
+      res.status(404).send("Deployment not found");
     }
   } catch (err) {
     console.error(err);
@@ -248,7 +263,10 @@ async function waitForInitMiddleware(req, res, next) {
  */
 async function initApp() {
   try {
-    if (executionMode === ExecutionMode.DoNotSync) return;
+    if (executionMode === ExecutionMode.DoNotSync) {
+      await marketDataProvider.syncAtInterval();
+      return;
+    }
 
     initDatabaseTask = initDatabase();
     await initDatabaseTask;

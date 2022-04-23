@@ -79,18 +79,6 @@ export const initDatabase = async () => {
   await Provider.sync({ force: false });
   await ProviderAttribute.sync({ force: false });
   await ProviderAttributeSignature.sync({ force: false });
-
-  Deployment.hasMany(DeploymentGroup);
-  DeploymentGroup.belongsTo(Deployment, { foreignKey: "deploymentId" });
-
-  DeploymentGroup.hasMany(DeploymentGroupResource);
-  DeploymentGroupResource.belongsTo(DeploymentGroup, { foreignKey: "deploymentGroupId" });
-
-  DeploymentGroup.hasMany(Lease, { foreignKey: "deploymentGroupId" });
-  Lease.belongsTo(DeploymentGroup);
-
-  Deployment.hasMany(Lease, { foreignKey: "deploymentId" });
-  Lease.belongsTo(Deployment);
 };
 
 export async function getDbSize() {
