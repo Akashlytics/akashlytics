@@ -330,6 +330,7 @@ async function downloadTransactions() {
               await updateTx(txJson.result);
             })
             .catch((err) => {
+              logFailedTx(hash);
               console.error(err);
               shouldStop = err;
             })
@@ -369,3 +370,16 @@ async function downloadTransactions() {
     }
   }
 }
+
+const logFailedTx = async (tx) => {
+  let failedTx = [];
+  if (fs.existsSync("./data/failedTx.json")) {
+    failedTx = JSON.parse(fs.readFileSync("./data/failedTx.json", "utf-8"));
+  }
+
+  if (!failedTx.includes(tx)) {
+    failedTx.push(tx);
+  }
+
+  fs.writeFileSync("./data/failedTx.json", JSON.stringify(failedTx));
+};

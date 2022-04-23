@@ -478,7 +478,7 @@ Message.init(
     modelName: "message",
     indexes: [
       { unique: false, fields: ["txId"] },
-      { unique: false, fields: ["relatedMessageId"] }
+      { unique: false, fields: ["relatedDeploymentId"] }
     ],
     sequelize
   }

@@ -1,10 +1,20 @@
 import { Block, Transaction, Message, Op, Deployment, Lease, Provider, ProviderAttribute } from "./schema";
 import { msgToJSON } from "@src/shared/utils/protobuf";
 import { getAktMarketData } from "@src/providers/marketDataProvider";
-import { averageBlockCountInAMonth } from "@src/shared/constants";
+import { averageBlockCountInAMonth, averageBlockTime } from "@src/shared/constants";
 import { round } from "@src/shared/utils/math";
+import { getTodayUTC } from "@src/shared/utils/date";
+import { add } from "date-fns";
 
 export async function getBlock(height: number) {
+  const latestBlock = await Block.findOne({
+    order: [["height", "DESC"]]
+  });
+
+  if (height > latestBlock.height) {
+    return getFutureBlockEstimate(height, latestBlock);
+  }
+
   const block = await Block.findOne({
     where: {
       height: height
@@ -30,6 +40,13 @@ export async function getBlock(height: number) {
       error: tx.hasProcessingError ? tx.log : null,
       fee: tx.fee
     }))
+  };
+}
+
+async function getFutureBlockEstimate(height: number, latestBlock: Block) {
+  return {
+    height: height,
+    expectedDate: add(latestBlock.datetime, { seconds: (height - latestBlock.height) * averageBlockTime })
   };
 }
 
