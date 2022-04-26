@@ -1,9 +1,8 @@
-import { Block, Transaction, Message, Op, Deployment, Lease, Provider, ProviderAttribute } from "./schema";
+import { Block, Transaction, Message, Deployment, Lease, Provider, ProviderAttribute } from "./schema";
 import { msgToJSON } from "@src/shared/utils/protobuf";
 import { getAktMarketData } from "@src/providers/marketDataProvider";
 import { averageBlockCountInAMonth, averageBlockTime } from "@src/shared/constants";
 import { round } from "@src/shared/utils/math";
-import { getTodayUTC } from "@src/shared/utils/date";
 import { add } from "date-fns";
 
 export async function getBlock(height: number) {
