@@ -95,7 +95,7 @@ apiRouter.get("/getNetworkCapacity", async (req, res) => {
   }
 });
 
-apiRouter.get("/getProviders", async (req, res) => {
+apiRouter.get("/providers", async (req, res) => {
   try {
     const providers = await getProviders();
     res.send(providers);
