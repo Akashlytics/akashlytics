@@ -88,12 +88,26 @@ export async function fetchProvidersInfo() {
   console.log("Finished refreshing provider infos");
 }
 
+function getStorageFromResource(resource) {
+  return Object.keys(resource).includes("storage_ephemeral") ? resource.storage_ephemeral : resource.storage;
+}
+
+function getCpuValue(cpu) {
+  return typeof cpu === "number" ? cpu : Number(cpu.units.val);
+}
+
+function getByteValue(val) {
+  return typeof val === "number" ? val : Number(val.size.val);
+}
+
 function sumResources(resources) {
-  return (resources || [])
+  const resourcesArr = resources?.nodes || resources || [];
+  if(resourcesArr.some(r => Object.keys(r).length > 3)) console.warn(resourcesArr);
+  return resourcesArr
     .map((x) => ({
-      cpu: parseInt(x.cpu.units.val),
-      memory: parseInt(x.memory.size.val),
-      storage: parseInt(x.storage.size.val)
+      cpu: getCpuValue(x.cpu),
+      memory: getByteValue(x.memory),
+      storage: getByteValue(getStorageFromResource(x))
     }))
     .reduce(
       (prev, next) => ({
