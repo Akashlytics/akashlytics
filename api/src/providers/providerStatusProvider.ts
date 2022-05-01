@@ -93,11 +93,11 @@ function getStorageFromResource(resource) {
 }
 
 function getCpuValue(cpu) {
-  return typeof cpu === "number" ? cpu : Number(cpu.units.val);
+  return typeof cpu === "number" ? cpu : parseInt(cpu.units.val);
 }
 
 function getByteValue(val) {
-  return typeof val === "number" ? val : Number(val.size.val);
+  return typeof val === "number" ? val : parseInt(val.size.val);
 }
 
 function sumResources(resources) {
