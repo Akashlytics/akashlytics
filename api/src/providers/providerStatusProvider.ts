@@ -102,7 +102,7 @@ function getByteValue(val) {
 
 function sumResources(resources) {
   const resourcesArr = resources?.nodes || resources || [];
-  if(resourcesArr.some(r => Object.keys(r).length > 3)) console.warn(resourcesArr);
+
   return resourcesArr
     .map((x) => ({
       cpu: getCpuValue(x.cpu),
