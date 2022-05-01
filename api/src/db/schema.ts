@@ -35,6 +35,8 @@ export class Provider extends Model {
   public availableCPU?: number;
   public availableMemory?: number;
   public availableStorage?: number;
+
+  public readonly providerAttributes?: ProviderAttribute[];
 }
 
 Provider.init(
@@ -449,3 +451,5 @@ Block.belongsTo(Day, { foreignKey: "dayId" });
 Day.belongsTo(Block, { as: "firstBlock", foreignKey: "firstBlockHeight", constraints: false });
 Day.belongsTo(Block, { as: "lastBlock", foreignKey: "lastBlockHeight", constraints: false });
 Day.belongsTo(Block, { as: "lastBlockYet", foreignKey: "lastBlockHeightYet", constraints: false });
+
+Provider.hasMany(ProviderAttribute, { foreignKey: "provider" });

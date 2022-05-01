@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { Provider } from "@src/db/schema";
+import { Provider, ProviderAttribute } from "@src/db/schema";
 
 const https = require("https");
 
@@ -153,8 +153,43 @@ export async function getNetworkCapacity() {
 
 export async function getProviders() {
   const providers = await Provider.findAll({
-    attributes: ["owner", "hostUri", "createdHeight", "isOnline", "lastCheckDate", "error"]
+    where: {
+      isOnline: true
+    },
+    include: [
+      {
+        model: ProviderAttribute
+      }
+    ]
   });
 
-  return providers.map((x) => x.toJSON());
+  return providers.map((x) => ({
+    owner: x.owner,
+    hostUri: x.hostUri,
+    createdHeight: x.createdHeight,
+    email: x.email,
+    website: x.website,
+    lastCheckDate: x.lastCheckDate,
+    deploymentCount: x.deploymentCount,
+    leaseCount: x.leaseCount,
+    attributes: x.providerAttributes.map((attr) => ({
+      key: attr.key,
+      value: attr.value
+    })),
+    activeStats: {
+      cpu: x.activeCPU,
+      memory: x.activeMemory,
+      storage: x.activeStorage
+    },
+    pendingStats: {
+      cpu: x.pendingCPU,
+      memory: x.pendingMemory,
+      storage: x.pendingStorage
+    },
+    availableStats: {
+      cpu: x.availableCPU,
+      memory: x.availableMemory,
+      storage: x.availableStorage
+    }
+  }));
 }
