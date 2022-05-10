@@ -37,6 +37,7 @@ export class Provider extends Model {
   public availableStorage?: number;
 
   public readonly providerAttributes?: ProviderAttribute[];
+  public readonly providerAttributeSignatures?: ProviderAttributeSignature[];
 }
 
 Provider.init(
@@ -86,6 +87,28 @@ ProviderAttribute.init(
   {
     tableName: "providerAttribute",
     modelName: "providerAttribute",
+    indexes: [{ unique: false, fields: ["provider"] }],
+    sequelize
+  }
+);
+
+export class ProviderAttributeSignature extends Model {
+  public owner: string;
+  public auditor: string;
+  public key: string;
+  public value: string;
+}
+
+ProviderAttributeSignature.init(
+  {
+    provider: { type: DataTypes.STRING, allowNull: false },
+    auditor: { type: DataTypes.STRING, allowNull: false },
+    key: { type: DataTypes.STRING, allowNull: false },
+    value: { type: DataTypes.STRING, allowNull: false }
+  },
+  {
+    tableName: "providerAttributeSignature",
+    modelName: "providerAttributeSignature",
     indexes: [{ unique: false, fields: ["provider"] }],
     sequelize
   }
@@ -453,3 +476,4 @@ Day.belongsTo(Block, { as: "lastBlock", foreignKey: "lastBlockHeight", constrain
 Day.belongsTo(Block, { as: "lastBlockYet", foreignKey: "lastBlockHeightYet", constraints: false });
 
 Provider.hasMany(ProviderAttribute, { foreignKey: "provider" });
+Provider.hasMany(ProviderAttributeSignature, { foreignKey: "provider" });

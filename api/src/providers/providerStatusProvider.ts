@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { Provider, ProviderAttribute } from "@src/db/schema";
+import { Provider, ProviderAttribute, ProviderAttributeSignature } from "@src/db/schema";
 
 const https = require("https");
 
@@ -159,6 +159,9 @@ export async function getProviders() {
     include: [
       {
         model: ProviderAttribute
+      },
+      {
+        model: ProviderAttributeSignature
       }
     ]
   });
@@ -174,7 +177,8 @@ export async function getProviders() {
     leaseCount: x.leaseCount,
     attributes: x.providerAttributes.map((attr) => ({
       key: attr.key,
-      value: attr.value
+      value: attr.value,
+      auditedBy: x.providerAttributeSignatures.filter((pas) => pas.key === attr.key && pas.value === attr.value).map((pas) => pas.auditor)
     })),
     activeStats: {
       cpu: x.activeCPU,

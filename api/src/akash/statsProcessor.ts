@@ -10,7 +10,9 @@ const {
   MsgWithdrawLease,
   MsgCreateProvider,
   MsgUpdateProvider,
-  MsgDeleteProvider
+  MsgDeleteProvider,
+  MsgDeleteProviderAttributes,
+  MsgSignProviderAttributes
 } = require("./ProtoAkashTypes");
 import * as v1beta2 from "./ProtoAkashTypes_v1beta2";
 const uuid = require("uuid");
@@ -29,7 +31,8 @@ import {
   DeploymentGroupResource,
   sequelize,
   Provider,
-  ProviderAttribute
+  ProviderAttribute,
+  ProviderAttributeSignature
 } from "@src/db/schema";
 import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 
@@ -79,12 +82,18 @@ function getDeploymentGroupIdFromCache(owner, dseq, gseq) {
 export async function rebuildStatsTables() {
   await Bid.drop();
   await Lease.drop();
+  await Provider.drop();
+  await ProviderAttribute.drop();
+  await ProviderAttributeSignature.drop();
   await DeploymentGroupResource.drop();
   await DeploymentGroup.drop();
   await Deployment.drop();
   await Deployment.sync({ force: true });
   await DeploymentGroup.sync({ force: true });
   await DeploymentGroupResource.sync({ force: true });
+  await ProviderAttributeSignature.sync({ force: true });
+  await ProviderAttribute.sync({ force: true });
+  await Provider.sync({ force: true });
   await Lease.sync({ force: true });
   await Bid.sync({ force: true });
 
@@ -161,7 +170,7 @@ export async function processMessages() {
     console.log(`Loading blocks ${firstBlockToProcess} to ${lastBlockToProcess}`);
 
     const blocks = await Block.findAll({
-      attributes: ["height", "datetime"],
+      attributes: ["height"],
       where: {
         isProcessed: false,
         height: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
@@ -210,7 +219,7 @@ export async function processMessages() {
             const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
             let encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
 
-            await processMessage(msg, encodedMessage, block.height, block.datetime, blockGroupTransaction);
+            await processMessage(msg, encodedMessage, block.height, blockGroupTransaction);
 
             if (msg.relatedDeploymentId) {
               await msg.save({ transaction: blockGroupTransaction });
@@ -313,6 +322,8 @@ export const messageHandlers: { [key: string]: (encodedMessage, height: number, 
   "/akash.provider.v1beta1.MsgCreateProvider": handleCreateProvider,
   "/akash.provider.v1beta1.MsgUpdateProvider": handleUpdateProvider,
   "/akash.provider.v1beta1.MsgDeleteProvider": handleDeleteProvider,
+  "/akash.audit.v1beta1.MsgSignProviderAttributes": handleSignProviderAttributes,
+  "/akash.audit.v1beta1.MsgDeleteProviderAttributes": handleDeleteSignProviderAttributes,
   // v1beta2 types
   "/akash.deployment.v1beta2.MsgCreateDeployment": handleCreateDeploymentV2,
   "/akash.deployment.v1beta2.MsgCloseDeployment": handleCloseDeployment,
@@ -324,10 +335,12 @@ export const messageHandlers: { [key: string]: (encodedMessage, height: number, 
   "/akash.market.v1beta2.MsgWithdrawLease": handleWithdrawLease,
   "/akash.provider.v1beta2.MsgCreateProvider": handleCreateProvider,
   "/akash.provider.v1beta2.MsgUpdateProvider": handleUpdateProvider,
-  "/akash.provider.v1beta2.MsgDeleteProvider": handleDeleteProvider
+  "/akash.provider.v1beta2.MsgDeleteProvider": handleDeleteProvider,
+  "/akash.audit.v1beta2.MsgSignProviderAttributes": handleSignProviderAttributes,
+  "/akash.audit.v1beta2.MsgDeleteProviderAttributes": handleDeleteSignProviderAttributes
 };
 
-async function processMessage(msg, encodedMessage, height, time, blockGroupTransaction) {
+async function processMessage(msg, encodedMessage, height, blockGroupTransaction) {
   let a = performance.now();
 
   if (!Object.keys(messageHandlers).includes(msg.type)) {
@@ -791,6 +804,64 @@ async function handleDeleteProvider(encodedMessage, height, blockGroupTransactio
     },
     transaction: blockGroupTransaction
   });
+  await ProviderAttributeSignature.destroy({
+    where: { provider: decodedMessage.owner },
+    transaction: blockGroupTransaction
+  });
 
   activeProviderCount--;
+}
+
+async function handleSignProviderAttributes(encodedMessage, height, blockGroupTransaction, msg: Message) {
+  const decodedMessage = MsgSignProviderAttributes.decode(encodedMessage);
+
+  const provider = await Provider.findOne({ where: { owner: decodedMessage.owner }, transaction: blockGroupTransaction });
+
+  if (!provider) {
+    console.warn(`Provider ${decodedMessage.provider} not found`);
+    return;
+  }
+
+  for (const attribute of decodedMessage.attributes) {
+    const existingAttributeSignature = await ProviderAttributeSignature.findOne({
+      where: {
+        provider: decodedMessage.owner,
+        auditor: decodedMessage.auditor,
+        key: attribute.key
+      },
+      transaction: blockGroupTransaction
+    });
+
+    if (existingAttributeSignature) {
+      await existingAttributeSignature.update(
+        {
+          value: attribute.value
+        },
+        { transaction: blockGroupTransaction }
+      );
+    } else {
+      await ProviderAttributeSignature.create(
+        {
+          provider: decodedMessage.owner,
+          auditor: decodedMessage.auditor,
+          key: attribute.key,
+          value: attribute.value
+        },
+        { transaction: blockGroupTransaction }
+      );
+    }
+  }
+}
+
+async function handleDeleteSignProviderAttributes(encodedMessage, height, blockGroupTransaction, msg: Message) {
+  const decodedMessage = MsgDeleteProviderAttributes.decode(encodedMessage);
+
+  await ProviderAttributeSignature.destroy({
+    where: {
+      provider: decodedMessage.owner,
+      auditor: decodedMessage.auditor,
+      key: { [Op.in]: decodedMessage.keys }
+    },
+    transaction: blockGroupTransaction
+  });
 }

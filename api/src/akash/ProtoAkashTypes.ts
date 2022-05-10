@@ -144,9 +144,19 @@ export const MsgUpdateProvider = new Type("MsgUpdateProvider")
   .add(new Field("owner", 1, "string"))
   .add(new Field("host_uri", 2, "string"))
   .add(new Field("attributes", 3, "Attribute", "repeated"))
-  .add(new Field("info", 4, "ProviderInfo"))
+  .add(new Field("info", 4, "ProviderInfo"));
 
 export const MsgDeleteProvider = new Type("MsgDeleteProvider").add(new Field("owner", 1, "string"));
+
+export const MsgSignProviderAttributes = new Type("MsgSignProviderAttributes")
+  .add(new Field("owner", 1, "string"))
+  .add(new Field("auditor", 2, "string"))
+  .add(new Field("attributes", 3, "Attribute", "repeated"));
+
+export const MsgDeleteProviderAttributes = new Type("MsgDeleteProviderAttributes")
+  .add(new Field("owner", 1, "string"))
+  .add(new Field("auditor", 2, "string"))
+  .add(new Field("keys", 3, "string", "repeated"));
 
 root.add(MsgCreateLease);
 root.add(MsgCloseLease);
@@ -160,3 +170,5 @@ root.add(MsgWithdrawLease);
 root.add(MsgCreateProvider);
 root.add(MsgUpdateProvider);
 root.add(MsgDeleteProvider);
+root.add(MsgSignProviderAttributes);
+root.add(MsgDeleteProviderAttributes);

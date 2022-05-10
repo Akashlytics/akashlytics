@@ -15,7 +15,8 @@ import {
   sqliteDatabasePath,
   Day,
   Provider,
-  ProviderAttribute
+  ProviderAttribute,
+  ProviderAttributeSignature
 } from "./schema";
 
 async function download(url, dest) {
@@ -67,6 +68,7 @@ export const initDatabase = async () => {
     await Deployment.drop();
     await Provider.drop();
     await ProviderAttribute.drop();
+    await ProviderAttributeSignature.drop();
     await Message.drop();
     await Transaction.drop();
     await Block.drop();
@@ -85,6 +87,7 @@ export const initDatabase = async () => {
   await Bid.sync({ force: false });
   await Provider.sync({ force: false });
   await ProviderAttribute.sync({ force: false });
+  await ProviderAttributeSignature.sync({ force: false });
 
   Deployment.hasMany(DeploymentGroup);
   DeploymentGroup.belongsTo(Deployment, { foreignKey: "deploymentId" });
