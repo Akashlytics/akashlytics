@@ -3,11 +3,11 @@ import { sleep } from "@src/shared/utils/delay";
 
 const fetch = require("node-fetch");
 
-const apiEndpoints = ["http://akash-node.akashlytics.com:1317"];
+const rpcEndpoints = ["http://akash-node.akashlytics.com:26657"];
 
 export function createNodeAccessor() {
   let maxConcurrentQueries = isProd ? 5 : 10;
-  let nodeClients = apiEndpoints.map((x) => createEndpointAccessor(x, maxConcurrentQueries));
+  let nodeClients = rpcEndpoints.map((x) => createEndpointAccessor(x, maxConcurrentQueries));
 
   return {
     waitForAllFinished: async () => {
@@ -20,7 +20,7 @@ export function createNodeAccessor() {
         await sleep(5);
       }
     },
-    fetch: async (url, callback?) => {
+    fetch: async (url: string, callback?) => {
       const node = nodeClients.find((x) => x.isAvailable());
       return node.fetch(url, callback);
     },
@@ -30,7 +30,7 @@ export function createNodeAccessor() {
           endpoint: x.endpoint,
           fetching: x
             .pendingQueries()
-            .map((x) => (x.startsWith("/blocks") ? x.replace("/blocks/", "") : x.substring(60)))
+            .map((x) => (x.startsWith("/block") ? x.replace("/block?height=", "") : x.substring(63)))
             .join(","),
           fetched: x.count(),
           errors: x.errorCount()

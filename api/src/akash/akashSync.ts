@@ -87,8 +87,8 @@ export async function syncBlocks() {
     isSyncing = true;
     syncingStatus = "Fetching latest block";
 
-    const latestAvailableBlock = await nodeAccessor.fetch("/blocks/latest");
-    const latestAvailableHeight = parseInt(latestAvailableBlock.block.header.height);
+    const status = await nodeAccessor.fetch("/status");
+    const latestAvailableHeight = parseInt(status.result.sync_info.latest_block_height);
     const latestBlockToDownload = Math.min(lastBlockToSync, latestAvailableHeight);
 
     let latestDownloadedHeight = await getLatestDownloadedHeight();
@@ -258,8 +258,8 @@ async function downloadBlocks(startHeight, endHeight) {
 
     if (!cachedBlock) {
       nodeAccessor
-        .fetch("/blocks/" + height, async (blockJson) => {
-          await blocksDb.put(height, JSON.stringify(blockJson));
+        .fetch("/block?height=" + height, async (blockJson) => {
+          await blocksDb.put(height, JSON.stringify(blockJson.result));
         })
         .catch((err) => {
           console.error(err);
@@ -305,74 +305,87 @@ async function downloadTransactions() {
     );
   }
 
-  const missingTransactions = await Transaction.findAll({
-    attributes: ["id", "hash", "height"],
-    where: {
-      downloaded: false,
-      hasInterestingTypes: true,
-      height: { [Op.gt]: latestDownloadedTxHeight || 0 }
-    },
-    order: [["height", "ASC"]]
-  });
+  const whereFilter = {
+    downloaded: false,
+    hasInterestingTypes: true,
+    height: { [Op.gt]: latestDownloadedTxHeight || 0 }
+  };
 
-  let shouldStop = false;
-  let highestHeight = 0;
+  const missingTxCount = await Transaction.count({ where: whereFilter });
+  const txGroupSize = 100_000;
+  const txGroupCount = Math.ceil(missingTxCount / txGroupSize);
 
-  for (let i = 0; i < missingTransactions.length; ++i) {
-    syncingStatus = `Downloading transaction ${i} / ${missingTransactions.length}`;
-    const hash = missingTransactions[i].hash;
-    highestHeight = missingTransactions[i].height;
+  for (let groupIndex = 0; groupIndex < txGroupCount; groupIndex++) {
+    syncingStatus = `Fetching missing txs ${groupIndex * txGroupSize}-${Math.min(missingTxCount, (groupIndex + 1) * txGroupSize)} from db`;
+    console.log(syncingStatus);
 
-    await nodeAccessor.waitForAvailableNode();
+    const missingTransactions = await Transaction.findAll({
+      attributes: ["id", "hash", "height"],
+      where: whereFilter,
+      order: [["height", "ASC"]],
+      limit: txGroupSize
+    });
 
-    const cachedTx = await getCachedTxByHash(hash);
+    let shouldStop = false;
+    let highestHeight = 0;
 
-    if (!cachedTx) {
-      nodeAccessor
-        .fetch("/txs/" + hash, async (txJson) => {
-          await txsDb.put(hash, JSON.stringify(txJson));
-          await missingTransactions[i].update({
-            downloaded: true,
-            hasDownloadError: !txJson.tx,
-            hasProcessingError: !!txJson.code
-          });
-        })
-        .catch((err) => {
-          console.error(err);
-          shouldStop = err;
+    for (let i = 0; i < missingTransactions.length; ++i) {
+      const txIndex = groupIndex * txGroupSize + i;
+      syncingStatus = `Downloading transaction ${i} / ${missingTransactions.length}`;
+      const hash = missingTransactions[i].hash;
+      highestHeight = missingTransactions[i].height;
+
+      await nodeAccessor.waitForAvailableNode();
+
+      const cachedTx = await getCachedTxByHash(hash);
+
+      const updateTx = async (txJson) => {
+        await missingTransactions[i].update({
+          downloaded: true,
+          hasDownloadError: !txJson.tx,
+          hasProcessingError: !!txJson.tx_result.code
         });
-    } else {
-      await missingTransactions[i].update({
-        downloaded: true,
-        hasDownloadError: !cachedTx.tx,
-        hasProcessingError: !!cachedTx.code
-      });
-    }
+      };
 
-    if (!cachedTx || i % 100 === 0) {
-      console.clear();
-      console.log("Current tx: " + i + " / " + missingTransactions.length);
-      console.log("Progress: " + ((i * 100) / missingTransactions.length).toFixed(2) + "%");
+      if (!cachedTx) {
+        nodeAccessor
+          .fetch("/tx?hash=0x" + hash, async (txJson) => {
+            await txsDb.put(hash, JSON.stringify(txJson.result));
+            await updateTx(txJson.result);
+          })
+          .catch((err) => {
+            console.error(err);
+            shouldStop = err;
+          });
+      } else {
+        await updateTx(cachedTx);
+      }
 
-      if (!isProd) {
-        nodeAccessor.displayTable();
+      if (!cachedTx || i % 100 === 0) {
+        console.clear();
+        console.log(`Current tx: ${txIndex} / ${missingTxCount} (Group ${groupIndex + 1} of ${txGroupCount})`);
+        console.log("Progress: " + ((txIndex * 100) / missingTxCount).toFixed(2) + "%");
+
+        if (!isProd) {
+          nodeAccessor.displayTable();
+        }
       }
     }
-  }
 
-  console.clear();
-  console.log("Current tx: " + missingTransactions.length + " / " + missingTransactions.length);
-  console.log("Progress: 100%");
+    console.clear();
+    console.log("Current tx: " + missingTxCount + " / " + missingTxCount);
+    console.log("Progress: 100%");
 
-  nodeAccessor.displayTable();
+    nodeAccessor.displayTable();
 
-  if (shouldStop) throw shouldStop;
+    if (shouldStop) throw shouldStop;
 
-  await nodeAccessor.waitForAllFinished();
+    await nodeAccessor.waitForAllFinished();
 
-  syncingStatus = "Saving latest downloaded tx height";
+    syncingStatus = "Saving latest downloaded tx height";
 
-  if (highestHeight > 0) {
-    await saveLatestDownloadedTxHeight(highestHeight);
+    if (highestHeight > 0) {
+      await saveLatestDownloadedTxHeight(highestHeight);
+    }
   }
 }
