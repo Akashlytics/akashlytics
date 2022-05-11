@@ -1,4 +1,5 @@
 import { isProd, executionMode, ExecutionMode } from "@src/shared/constants";
+import { download } from "@src/shared/utils/download";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 import fs from "fs";
 import https from "https";
@@ -19,18 +20,6 @@ import {
   ProviderAttributeSignature
 } from "./schema";
 
-async function download(url, dest) {
-  return new Promise<void>((res, rej) => {
-    var file = fs.createWriteStream(dest);
-    https.get(url, function (response) {
-      response.pipe(file);
-      file.on("finish", function () {
-        file.close();
-        res();
-      });
-    });
-  });
-}
 
 /**
  * Initiate database schema
@@ -40,16 +29,20 @@ export const initDatabase = async () => {
   const databaseFileExists = fs.existsSync(sqliteDatabasePath);
   if (databaseFileExists && (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.RebuildAll)) {
     console.log("Deleting existing database files.");
-    await fs.promises.rm(sqliteDatabasePath, { force: true });
-    await fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true });
-    await fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true });
+    await Promise.all([
+      fs.promises.rm(sqliteDatabasePath, { force: true }),
+      fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true }),
+      fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true })
+    ]);
   }
 
   if (executionMode === ExecutionMode.DownloadAndSync) {
     console.log("Downloading database files...");
-    await download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath);
-    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt");
-    await download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt");
+    await Promise.all([
+      download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath),
+      download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt"),
+      download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt")
+    ]);
     console.log("Database downloaded");
   }
 

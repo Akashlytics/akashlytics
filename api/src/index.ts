@@ -85,7 +85,7 @@ apiRouter.get("/latestDeployToolVersion", cache(60 * 2), async (req, res) => {
   }
 });
 
-apiRouter.get("/getNetworkCapacity", async (req, res) => {
+apiRouter.get("/getNetworkCapacity", waitForInitMiddleware, async (req, res) => {
   try {
     const networkCapacity = await getNetworkCapacity();
     res.send(networkCapacity);
@@ -95,7 +95,7 @@ apiRouter.get("/getNetworkCapacity", async (req, res) => {
   }
 });
 
-apiRouter.get("/providers", async (req, res) => {
+apiRouter.get("/providers", waitForInitMiddleware, async (req, res) => {
   try {
     const providers = await getProviders();
     res.send(providers);
@@ -105,7 +105,7 @@ apiRouter.get("/providers", async (req, res) => {
   }
 });
 
-apiRouter.get("/getDashboardData", async (req, res) => {
+apiRouter.get("/getDashboardData", waitForInitMiddleware, async (req, res) => {
   try {
     const dashboardData = await getDashboardData();
     const marketData = marketDataProvider.getAktMarketData();
@@ -116,7 +116,7 @@ apiRouter.get("/getDashboardData", async (req, res) => {
   }
 });
 
-apiRouter.get("/getGraphData/:dataName", async (req, res) => {
+apiRouter.get("/getGraphData/:dataName", waitForInitMiddleware, async (req, res) => {
   try {
     const dataName = req.params.dataName;
     const authorizedDataNames = [
@@ -144,7 +144,7 @@ apiRouter.get("/getGraphData/:dataName", async (req, res) => {
   }
 });
 
-web3IndexRouter.get("/status", async (req, res) => {
+web3IndexRouter.get("/status", waitForInitMiddleware, async (req, res) => {
   console.log("getting debug infos");
 
   try {
@@ -167,7 +167,7 @@ web3IndexRouter.get("/status", async (req, res) => {
   }
 });
 
-web3IndexRouter.get("/revenue", async (req, res) => {
+web3IndexRouter.get("/revenue", waitForInitMiddleware, async (req, res) => {
   try {
     console.log("calculating revenue");
 
@@ -195,6 +195,20 @@ app.listen(PORT, () => {
   console.log("server started at http://localhost:" + PORT);
 });
 
+let initDatabaseTask = null;
+async function waitForInitMiddleware(req, res, next) {
+  try {
+    if (initDatabaseTask) {
+      console.log(`Call to ${req.originalUrl} is blocked while downloading database`);
+      await initDatabaseTask;
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 /**
  * Intizialize database schema
  * Populate db
@@ -205,7 +219,8 @@ async function initApp() {
   try {
     if (executionMode === ExecutionMode.DoNotSync) return;
 
-    await initDatabase();
+    initDatabaseTask = initDatabase();
+    await initDatabaseTask;
 
     if (executionMode === ExecutionMode.RebuildStats) {
       await rebuildStatsTables();
