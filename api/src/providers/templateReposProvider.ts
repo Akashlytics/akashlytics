@@ -7,24 +7,31 @@ import * as fs from "fs";
 import { Octokit } from "@octokit/rest";
 import { getLogoFromPath } from "./templateReposLogos";
 
-let generatingTask = null;
+let generatingTasks = {};
 let lastServedData = null;
 
 async function getTemplatesFromRepo(octokit: Octokit, repoOwner: string, repoName: string, fetcher: (ocktokit, version) => Promise<any>) {
   const repoVersion = await fetchRepoVersion(octokit, repoOwner, repoName);
   const cacheFilePath = `data/templates/${repoOwner}-${repoName}-${repoVersion}.json`;
-  let categories = null;
 
   if (fs.existsSync(cacheFilePath)) {
+    console.log("Serving cached templates from", cacheFilePath);
     const fileContent = fs.readFileSync(cacheFilePath, "utf8");
-    categories = JSON.parse(fileContent);
+    return JSON.parse(fileContent);
+  } else if (generatingTasks[cacheFilePath]) {
+    console.log("Waiting on existing task for", repoOwner, repoName);
+    return await generatingTasks[cacheFilePath];
   } else {
-    categories = await fetcher(octokit, repoVersion);
+    console.log("No cache found for", repoOwner, repoName, "generating...");
+    generatingTasks[cacheFilePath] = fetcher(octokit, repoVersion);
+    const categories = await generatingTasks[cacheFilePath];
+    generatingTasks[cacheFilePath] = null;
+
     await fs.promises.mkdir(path.dirname(cacheFilePath), { recursive: true });
     await fs.promises.writeFile(cacheFilePath, JSON.stringify(categories, null, 2));
-  }
 
-  return categories;
+    return categories;
+  }
 }
 
 function mergeTemplateCategories(...categories: any[]) {
