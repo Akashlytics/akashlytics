@@ -4,6 +4,11 @@ export function getLogoFromPath(path: string) {
 
 const logoBaseUrl = "https://storage.googleapis.com/akashlytics-deploy-public/template_logos/";
 const logos = {
+  "speedtest-cli": "speedtest-by-ookla.jpg",
+  fast: "fast.svg",
+  geekbench: "geekbench.png",
+  librespeed: "librespeed.png",
+  openspeedtest: "openspeedtest.jpg",
   agoric: "agoric.png",
   wordpress: "wordpress.png",
   drupal: "drupal.png",
