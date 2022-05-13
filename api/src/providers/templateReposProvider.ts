@@ -296,7 +296,7 @@ function getTemplateSummary(readme) {
   if (!readme) return null;
 
   const markdown = readme
-    .replace(/!\[.+\]\(.+\)\n+/g, "") // Remove images
+    .replace(/!\[.*\]\(.+\)\n*/g, "") // Remove images
     .replace(/^#+ .*\n+/g, ""); // Remove first header
   const readmeTxt = removeMarkdown(markdown).trim();
   const maxLength = 200;
