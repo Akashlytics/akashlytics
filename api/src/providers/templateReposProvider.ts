@@ -9,6 +9,7 @@ import { getLogoFromPath } from "./templateReposLogos";
 
 let generatingTasks = {};
 let lastServedData = null;
+let githubRequestsRemaining = null;
 
 async function getTemplatesFromRepo(octokit: Octokit, repoOwner: string, repoName: string, fetcher: (ocktokit, version) => Promise<any>) {
   const repoVersion = await fetchRepoVersion(octokit, repoOwner, repoName);
@@ -59,6 +60,8 @@ export const getTemplateGallery = async () => {
 
     lastServedData = templateGallery;
 
+    console.log(`${githubRequestsRemaining} requests remaining`);
+
     return templateGallery;
   } catch (err) {
     if (lastServedData) {
@@ -79,8 +82,7 @@ export const fetchRepoVersion = async (octokit: Octokit, owner: string, repo: st
     branch: "master"
   });
 
-  const reqRemaining = response.headers["x-ratelimit-remaining"];
-  console.log(`${reqRemaining} requests remaining`);
+  githubRequestsRemaining = response.headers["x-ratelimit-remaining"];
 
   if (response.status !== 200) {
     throw new Error(`Failed to fetch latest version of ${owner}/${repo} from github`);
@@ -100,6 +102,8 @@ async function fetchOmnibusTemplates(octokit: Octokit, repoVersion: string) {
       format: "raw"
     }
   });
+
+  githubRequestsRemaining = response.headers["x-ratelimit-remaining"];
 
   if (!(response.data instanceof Array)) throw "Counld not fetch list of files from ovrclk/cosmos-omnibus";
 
@@ -161,9 +165,10 @@ async function fetchAwesomeAkashTemplates(octokit: Octokit, repoVersion: string)
     }
   });
 
+  githubRequestsRemaining = response.headers["x-ratelimit-remaining"];
+
   if (response.status !== 200) throw Error("Invalid response code: " + response.status);
 
-  let reqRemaining = response.headers["x-ratelimit-remaining"];
   const data = String(response.data);
 
   const categoryRegex = /### (.+)\n*([\w ]+)?\n*((?:- \[(?:.+)]\((?:.+)\)\n?)*)/gm;
@@ -227,7 +232,8 @@ export async function fetchTemplatesInfo(octokit: Octokit, categories) {
             format: "raw"
           }
         });
-        //reqRemaining = response.headers["x-ratelimit-remaining"];
+
+        githubRequestsRemaining = response.headers["x-ratelimit-remaining"];
 
         const readme = await findFileContentAsync("README.md", response.data);
         const deploy = await findFileContentAsync(["deploy.yaml", "deploy.yml"], response.data);
