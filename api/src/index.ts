@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import path from "path";
 import cache from "./caching/cacheMiddleware";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
@@ -16,7 +15,7 @@ import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
 import { fetchProvidersInfoAtInterval, getNetworkCapacity, getProviders } from "./providers/providerStatusProvider";
-import { getTemplateGallery } from "./providers/awesomeAkashProvider";
+import { getTemplateGallery } from "./providers/templateReposProvider";
 
 require("dotenv").config();
 
@@ -65,13 +64,13 @@ app.use(Sentry.Handlers.tracingHandler());
 const apiRouter = express.Router();
 const web3IndexRouter = express.Router();
 
-apiRouter.get("/templates", cache(60 * 2), async (req, res) => {
+apiRouter.get("/templates", cache(60 * 5), async (req, res) => {
   try {
     const templates = await getTemplateGallery();
     res.send(templates);
   } catch (err) {
     console.error(err);
-    res.status(500).send(err?.message || err);
+    res.status(500).send("Failed to fetch templates");
   }
 });
 
