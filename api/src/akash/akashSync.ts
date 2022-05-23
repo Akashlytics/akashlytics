@@ -4,6 +4,7 @@ import { messageHandlers, processMessages } from "./statsProcessor";
 import { blocksDb, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day } from "@src/db/schema";
+const { performance } = require("perf_hooks");
 
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
@@ -92,6 +93,7 @@ export async function syncBlocks() {
     const latestBlockToDownload = Math.min(lastBlockToSync, latestAvailableHeight);
 
     let latestDownloadedHeight = await getLatestDownloadedHeight();
+    let times = {};
 
     if (latestDownloadedHeight >= latestBlockToDownload) {
       console.log("Already downloaded all blocks");
@@ -101,17 +103,26 @@ export async function syncBlocks() {
       console.log("Will end download at block #" + latestBlockToDownload);
       console.log(latestBlockToDownload - startHeight + " blocks to download");
 
+      const a = performance.now();
       await downloadBlocks(startHeight, latestBlockToDownload);
+      const b = performance.now();
+      times["downloadBlocks"] = (b - a) / 1000;
     }
 
     let latestInsertedHeight: number = (await Block.max("height")) || 0;
 
+    const c = performance.now();
     await insertBlocks(latestInsertedHeight + 1, latestBlockToDownload);
+    const d = performance.now();
+    times["insertBlocks"] = (d - c) / 1000;
     await downloadTransactions();
+    const e = performance.now();
+    times["downloadTransactions"] = (e - d) / 1000;
 
     syncingStatus = "Processing messages";
 
-    await processMessages();
+    //await processMessages();
+    console.table(times);
   } catch (err) {
     console.error("Error while syncing", err);
     throw err;
@@ -328,6 +339,8 @@ async function downloadTransactions() {
 
     let shouldStop = false;
     let highestHeight = 0;
+
+    //const cachedTxs = await txsDb.getMany(missingTransactions.map((x) => x.hash));
 
     for (let i = 0; i < missingTransactions.length; ++i) {
       const txIndex = groupIndex * txGroupSize + i;

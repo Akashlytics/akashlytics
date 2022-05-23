@@ -1,4 +1,4 @@
-import level from "level";
+import { Level } from "level";
 import fs from "fs";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 
@@ -8,8 +8,8 @@ if (!fs.existsSync("./data/")) {
   fs.mkdirSync("./data/");
 }
 
-export const blocksDb = level("data/blocks.db");
-export const txsDb = level("data/txs.db");
+export const blocksDb = new Level("data/blocks.db");
+export const txsDb = new Level("data/txs.db");
 
 export const getCacheSize = async function () {
   console.time("size");

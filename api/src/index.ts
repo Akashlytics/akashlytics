@@ -225,7 +225,9 @@ async function initApp() {
     if (executionMode === ExecutionMode.RebuildStats) {
       await rebuildStatsTables();
     } else if (executionMode === ExecutionMode.RebuildAll) {
+      console.time("Rebuilding all");
       await computeAtInterval();
+      console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
       await marketDataProvider.syncAtInterval();
       await computeAtInterval();
