@@ -3,7 +3,7 @@ import base64js from "base64-js";
 import { messageHandlers, processMessages } from "./statsProcessor";
 import { blocksDb, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
-import { Block, Transaction, Message, Op, Day } from "@src/db/schema";
+import { Block, Transaction, Message, Op, Day, sequelize } from "@src/db/schema";
 const { performance } = require("perf_hooks");
 
 import * as uuid from "uuid";
@@ -341,6 +341,7 @@ async function downloadTransactions() {
     let highestHeight = 0;
 
     //const cachedTxs = await txsDb.getMany(missingTransactions.map((x) => x.hash));
+    const groupTransaction = await sequelize.transaction();
 
     for (let i = 0; i < missingTransactions.length; ++i) {
       const txIndex = groupIndex * txGroupSize + i;
@@ -357,7 +358,7 @@ async function downloadTransactions() {
           downloaded: true,
           hasDownloadError: !txJson.tx,
           hasProcessingError: !!txJson.tx_result.code
-        });
+        }, { transaction: groupTransaction });
       };
 
       if (!cachedTx) {
@@ -384,6 +385,8 @@ async function downloadTransactions() {
         }
       }
     }
+
+    await groupTransaction.commit();
 
     console.clear();
     console.log("Current tx: " + missingTxCount + " / " + missingTxCount);
