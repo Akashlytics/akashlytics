@@ -8,6 +8,8 @@ if (!fs.existsSync("./data/")) {
   fs.mkdirSync("./data/");
 }
 
+export const blockHeightToKey = (height: number) => height.toString().padStart(10, "0");
+
 export const blocksDb = new Level("data/blocks.db");
 export const txsDb = new Level("data/txs.db");
 

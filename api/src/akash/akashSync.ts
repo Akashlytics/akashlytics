@@ -1,7 +1,7 @@
 import fs from "fs";
 import base64js from "base64-js";
 import { messageHandlers, processMessages } from "./statsProcessor";
-import { blocksDb, txsDb } from "./dataStore";
+import { blockHeightToKey, blocksDb, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day, sequelize } from "@src/db/schema";
 const { performance } = require("perf_hooks");
@@ -35,12 +35,12 @@ function decodeTxRaw(tx) {
   };
 }
 
-async function getCachedBlockByHeight(height) {
+async function getCachedBlockByHeight(height: number) {
   try {
-    const content = await blocksDb.get(height);
+    const content = await blocksDb.get(blockHeightToKey(height));
     return JSON.parse(content);
   } catch (err) {
-    if (!err.notFound) throw err;
+    if (err.code !== "LEVEL_NOT_FOUND") throw err;
 
     return null;
   }
@@ -51,7 +51,7 @@ async function getCachedTxByHash(hash) {
     const content = await txsDb.get(hash);
     return JSON.parse(content);
   } catch (err) {
-    if (!err.notFound) throw err;
+    if (err.code !== "LEVEL_NOT_FOUND") throw err;
 
     return null;
   }
@@ -83,6 +83,7 @@ async function saveLatestDownloadedTxHeight(height) {
   await fs.promises.writeFile("./data/latestDownloadedTxHeight.txt", height.toString(), { encoding: "utf-8" });
 }
 
+let times = {};
 export async function syncBlocks() {
   try {
     isSyncing = true;
@@ -93,7 +94,6 @@ export async function syncBlocks() {
     const latestBlockToDownload = Math.min(lastBlockToSync, latestAvailableHeight);
 
     let latestDownloadedHeight = await getLatestDownloadedHeight();
-    let times = {};
 
     if (latestDownloadedHeight >= latestBlockToDownload) {
       console.log("Already downloaded all blocks");
@@ -153,7 +153,11 @@ async function insertBlocks(startHeight, endHeight) {
 
   for (let i = startHeight; i <= endHeight; ++i) {
     syncingStatus = `Inserting block #${i} / ${endHeight}`;
+
+    const a = performance.now();
     const blockData = await getCachedBlockByHeight(i);
+    const b = performance.now();
+    times["getCachedBlockByHeight"] = (times["getCachedBlockByHeight"] || 0) + (b - a) / 1000;
 
     if (!blockData) throw "Block # " + i + " was not in cache";
 
@@ -232,9 +236,12 @@ async function insertBlocks(startHeight, endHeight) {
     blocksToAdd.push(blockEntry);
 
     if (blocksToAdd.length >= 1_000 || i === endHeight) {
+      const a = performance.now();
       await Block.bulkCreate(blocksToAdd);
       await Transaction.bulkCreate(txsToAdd);
       await Message.bulkCreate(msgsToAdd);
+      const b = performance.now();
+      times["bulkCreateBlocks"] = (times["bulkCreateBlocks"] || 0) + (b - a) / 1000;
 
       blocksToAdd = [];
       txsToAdd = [];
@@ -256,7 +263,7 @@ async function insertBlocks(startHeight, endHeight) {
   console.table([{ totalBlockCount, totalTxCount, totalMsgCount }]);
 }
 
-async function downloadBlocks(startHeight, endHeight) {
+async function downloadBlocks(startHeight: number, endHeight: number) {
   syncingStatus = "Downloading blocks";
   const missingBlockCount = endHeight - startHeight;
   let shouldStop = false;
@@ -270,7 +277,7 @@ async function downloadBlocks(startHeight, endHeight) {
     if (!cachedBlock) {
       nodeAccessor
         .fetch("/block?height=" + height, async (blockJson) => {
-          await blocksDb.put(height, JSON.stringify(blockJson.result));
+          await blocksDb.put(blockHeightToKey(height), JSON.stringify(blockJson.result));
         })
         .catch((err) => {
           console.error(err);
@@ -354,11 +361,14 @@ async function downloadTransactions() {
       const cachedTx = await getCachedTxByHash(hash);
 
       const updateTx = async (txJson) => {
-        await missingTransactions[i].update({
-          downloaded: true,
-          hasDownloadError: !txJson.tx,
-          hasProcessingError: !!txJson.tx_result.code
-        }, { transaction: groupTransaction });
+        await missingTransactions[i].update(
+          {
+            downloaded: true,
+            hasDownloadError: !txJson.tx,
+            hasProcessingError: !!txJson.tx_result.code
+          },
+          { transaction: groupTransaction }
+        );
       };
 
       if (!cachedTx) {
