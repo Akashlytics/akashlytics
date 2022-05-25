@@ -1,8 +1,7 @@
-import { isProd, executionMode, ExecutionMode } from "@src/shared/constants";
+import { executionMode, ExecutionMode } from "@src/shared/constants";
 import { download } from "@src/shared/utils/download";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 import fs from "fs";
-import https from "https";
 import {
   Bid,
   Block,
@@ -19,7 +18,6 @@ import {
   ProviderAttribute,
   ProviderAttributeSignature
 } from "./schema";
-
 
 /**
  * Initiate database schema

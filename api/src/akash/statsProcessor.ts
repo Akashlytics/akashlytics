@@ -18,7 +18,7 @@ import * as v1beta2 from "./ProtoAkashTypes_v1beta2";
 const uuid = require("uuid");
 const sha256 = require("js-sha256");
 const { performance } = require("perf_hooks");
-import { blocksDb, txsDb } from "@src/akash/dataStore";
+import { blockHeightToKey, blocksDb, txsDb } from "@src/akash/dataStore";
 import {
   Deployment,
   Transaction,
@@ -207,7 +207,7 @@ export async function processMessages() {
     const blockGroupTransaction = await sequelize.transaction();
     try {
       for (const block of blocks) {
-        const blockData = await getBlockByHeight(block.height);
+        const blockData = await getBlockByHeight(blockHeightToKey(block.height));
         console.log(`Processing block ${block.height} / ${lastUnprocessedHeight}`);
 
         for (const transaction of block.transactions) {
