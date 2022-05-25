@@ -83,7 +83,6 @@ async function saveLatestDownloadedTxHeight(height) {
   await fs.promises.writeFile("./data/latestDownloadedTxHeight.txt", height.toString(), { encoding: "utf-8" });
 }
 
-let times = {};
 export async function syncBlocks() {
   try {
     isSyncing = true;
@@ -114,7 +113,6 @@ export async function syncBlocks() {
     syncingStatus = "Processing messages";
 
     await processMessages();
-    console.table(times);
   } catch (err) {
     console.error("Error while syncing", err);
     throw err;
@@ -333,7 +331,6 @@ async function downloadTransactions() {
     let shouldStop = false;
     let highestHeight = 0;
 
-    //const cachedTxs = await txsDb.getMany(missingTransactions.map((x) => x.hash));
     const groupTransaction = await sequelize.transaction();
 
     let promises = [];
