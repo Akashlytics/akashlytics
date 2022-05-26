@@ -4,6 +4,8 @@ import { bytesToHumanReadableSize } from "@src/shared/utils/files";
 
 const path = require("path");
 
+const LevelNotFoundCode = "LEVEL_NOT_FOUND";
+
 if (!fs.existsSync("./data/")) {
   fs.mkdirSync("./data/");
 }
@@ -27,6 +29,28 @@ export const deleteCache = async function () {
   await txsDb.clear();
   console.log("Deleted");
 };
+
+export async function getCachedBlockByHeight(height: number) {
+  try {
+    const content = await blocksDb.get(blockHeightToKey(height));
+    return JSON.parse(content);
+  } catch (err) {
+    if (err.code !== LevelNotFoundCode) throw err;
+
+    return null;
+  }
+}
+
+export async function getCachedTxByHash(hash: string) {
+  try {
+    const content = await txsDb.get(hash);
+    return JSON.parse(content);
+  } catch (err) {
+    if (err.code !== LevelNotFoundCode) throw err;
+
+    return null;
+  }
+}
 
 const getAllFiles = function (dirPath, arrayOfFiles?) {
   const files = fs.readdirSync(dirPath);

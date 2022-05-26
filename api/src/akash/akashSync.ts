@@ -1,10 +1,9 @@
 import fs from "fs";
 import base64js from "base64-js";
 import { messageHandlers, processMessages } from "./statsProcessor";
-import { blockHeightToKey, blocksDb, txsDb } from "./dataStore";
+import { blockHeightToKey, blocksDb, getCachedBlockByHeight, getCachedTxByHash, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day, sequelize } from "@src/db/schema";
-const { performance } = require("perf_hooks");
 
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
@@ -33,28 +32,6 @@ function decodeTxRaw(tx) {
     body: TxBody.decode(txRaw.bodyBytes),
     signatures: txRaw.signatures
   };
-}
-
-async function getCachedBlockByHeight(height: number) {
-  try {
-    const content = await blocksDb.get(blockHeightToKey(height));
-    return JSON.parse(content);
-  } catch (err) {
-    if (err.code !== "LEVEL_NOT_FOUND") throw err;
-
-    return null;
-  }
-}
-
-async function getCachedTxByHash(hash) {
-  try {
-    const content = await txsDb.get(hash);
-    return JSON.parse(content);
-  } catch (err) {
-    if (err.code !== "LEVEL_NOT_FOUND") throw err;
-
-    return null;
-  }
 }
 
 async function getLatestDownloadedHeight() {
