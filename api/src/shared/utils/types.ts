@@ -7,6 +7,7 @@ export function fromBase64(base64String) {
   }
   return base64js.toByteArray(base64String);
 }
+
 /**
  * Takes a serialized TxRaw (the bytes stored in Tendermint) and decodes it into something usable.
  */

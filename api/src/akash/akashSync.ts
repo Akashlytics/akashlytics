@@ -252,11 +252,10 @@ async function downloadBlocks(startHeight: number, endHeight: number) {
 }
 
 async function downloadTransactions() {
-  console.log("Downloading txs");
   syncingStatus = "Downloading transactions";
+  console.log(syncingStatus);
   const latestDownloadedTxHeight = await getLatestDownloadedTxHeight();
 
-  console.log("Latesdownloaded height: ", latestDownloadedTxHeight);
   if (latestDownloadedTxHeight > 0) {
     await Transaction.update(
       {
@@ -270,7 +269,6 @@ async function downloadTransactions() {
       }
     );
   }
-  console.log("updated downloaded status");
 
   const whereFilter = {
     downloaded: false,
@@ -278,7 +276,7 @@ async function downloadTransactions() {
   };
 
   const missingTxCount = await Transaction.count({ where: whereFilter });
-  const txGroupSize = 100_000;
+  const txGroupSize = 50_000;
   const txGroupCount = Math.ceil(missingTxCount / txGroupSize);
 
   for (let groupIndex = 0; groupIndex < txGroupCount; groupIndex++) {

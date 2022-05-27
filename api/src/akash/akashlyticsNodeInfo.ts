@@ -1,3 +1,4 @@
+// List of transactions missing from the node. Can happen because of issues like this: https://github.com/tendermint/tendermint/issues/5851
 export const missingTxs = [
     "9B856CA2F17B85899250911743278269043FDEDDEFAE6395599D42A1464A4EFB",
     "7D5C19564D1F55ACA9A79A60385E558E808D09F534FBB8A666ABDBA0AD51B972",
