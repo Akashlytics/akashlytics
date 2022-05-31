@@ -48,7 +48,7 @@
       "cells": [
         {
           "provider": "akash",
-          "amount": 3,
+          "amount": 15,
           "unit": "uakt",
           "cpu": 1,
           "ram": "1Gi",
@@ -85,7 +85,7 @@
       "cells": [
         {
           "provider": "akash",
-          "amount": 4,
+          "amount": 28,
           "unit": "uakt",
           "cpu": 1,
           "ram": "2Gi",
@@ -122,7 +122,7 @@
       "cells": [
         {
           "provider": "akash",
-          "amount": 8,
+          "amount": 41,
           "unit": "uakt",
           "cpu": 2,
           "ram": "4Gi",
@@ -159,7 +159,7 @@
       "cells": [
         {
           "provider": "akash",
-          "amount": 15,
+          "amount": 75,
           "unit": "uakt",
           "cpu": 2,
           "ram": "8Gi",
@@ -196,7 +196,7 @@
       "cells": [
         {
           "provider": "akash",
-          "amount": 22,
+          "amount": 148,
           "unit": "uakt",
           "cpu": 4,
           "ram": "16Gi",
