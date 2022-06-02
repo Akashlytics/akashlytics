@@ -280,7 +280,7 @@ Bid.init(
     gseq: { type: DataTypes.INTEGER, allowNull: false },
     oseq: { type: DataTypes.INTEGER, allowNull: false },
     provider: { type: DataTypes.STRING, allowNull: false },
-    price: { type: DataTypes.INTEGER, allowNull: false },
+    price: { type: DataTypes.DECIMAL, allowNull: false },
     createdHeight: { type: DataTypes.INTEGER, allowNull: false }
   },
   {

@@ -125,7 +125,7 @@ export const MsgCreateBid = new Type("MsgCreateBid")
   .add(new Field("order_id", 1, "OrderID"))
   .add(OrderID)
   .add(new Field("provider", 2, "string"))
-  .add(new Field("price", 3, "Coin"))
+  .add(new Field("price", 3, "DecCoin"))
   .add(new Field("deposit", 4, "Coin"));
 export const MsgCloseBid = new Type("MsgCloseBid").add(new Field("bid_id", 1, "BidID")).add(BidID);
 

@@ -256,9 +256,9 @@ export async function processMessages() {
         messageTimes["stats"].push(performance.now() - statsA);
       }
 
-      blockGroupTransaction.commit();
+      await blockGroupTransaction.commit();
     } catch (err) {
-      blockGroupTransaction.rollback();
+      await blockGroupTransaction.rollback();
       throw err;
     }
 
@@ -329,7 +329,7 @@ export const messageHandlers: { [key: string]: (encodedMessage, height: number, 
   "/akash.deployment.v1beta2.MsgCloseDeployment": handleCloseDeployment,
   "/akash.market.v1beta2.MsgCreateLease": handleCreateLease,
   "/akash.market.v1beta2.MsgCloseLease": handleCloseLease,
-  "/akash.market.v1beta2.MsgCreateBid": handleCreateBid,
+  "/akash.market.v1beta2.MsgCreateBid": handleCreateBidV2,
   "/akash.market.v1beta2.MsgCloseBid": handleCloseBid,
   "/akash.deployment.v1beta2.MsgDepositDeployment": handleDepositDeployment,
   "/akash.market.v1beta2.MsgWithdrawLease": handleWithdrawLease,
@@ -609,6 +609,25 @@ async function handleCreateBid(encodedMessage, height, blockGroupTransaction, ms
   msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
 }
 
+async function handleCreateBidV2(encodedMessage, height, blockGroupTransaction, msg: Message) {
+  const decodedMessage = v1beta2.MsgCreateBid.decode(encodedMessage);
+
+  await Bid.create(
+    {
+      owner: decodedMessage.order_id.owner,
+      dseq: decodedMessage.order_id.dseq.toNumber(),
+      gseq: decodedMessage.order_id.gseq,
+      oseq: decodedMessage.order_id.oseq,
+      provider: decodedMessage.provider,
+      price: parseFloat(decodedMessage.price.amount),
+      createdHeight: height
+    },
+    { transaction: blockGroupTransaction }
+  );
+
+  msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
+}
+
 async function handleCloseBid(encodedMessage, height, blockGroupTransaction, msg: Message) {
   const decodedMessage = MsgCloseBid.decode(encodedMessage);
 
@@ -712,7 +731,7 @@ async function handleWithdrawLease(encodedMessage, height, blockGroupTransaction
   lease.deployment.balance -= amount;
   await lease.save({ transaction: blockGroupTransaction });
 
-  if (lease.deployment.balance == 0) {
+  if (lease.deployment.balance <= 0) {
     await Lease.update(
       {
         closedHeight: height
