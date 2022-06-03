@@ -417,9 +417,7 @@ class StatsProcessor {
         dseq: decodedMessage.id.dseq.toNumber(),
         deposit: parseInt(decodedMessage.deposit.amount),
         balance: parseInt(decodedMessage.deposit.amount),
-        createdHeight: height,
-        state: "-",
-        escrowAccountTransferredAmount: 0
+        createdHeight: height
       },
       { transaction: blockGroupTransaction }
     );
@@ -467,9 +465,7 @@ class StatsProcessor {
         dseq: decodedMessage.id.dseq.toNumber(),
         deposit: parseInt(decodedMessage.deposit.amount),
         balance: parseInt(decodedMessage.deposit.amount),
-        createdHeight: height,
-        state: "-",
-        escrowAccountTransferredAmount: 0
+        createdHeight: height
       },
       { transaction: blockGroupTransaction }
     );

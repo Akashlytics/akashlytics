@@ -176,8 +176,6 @@ export class Deployment extends Model {
   public id!: string;
   public owner!: string;
   public dseq!: number;
-  public state?: string;
-  public escrowAccountTransferredAmount?: number;
   public createdHeight!: number;
   public balance!: number;
   public deposit!: number;
@@ -189,10 +187,8 @@ Deployment.init(
     id: { type: DataTypes.UUID, defaultValue: UUIDV4, primaryKey: true, allowNull: false },
     owner: { type: DataTypes.STRING, allowNull: false },
     dseq: { type: DataTypes.INTEGER, allowNull: false },
-    state: { type: DataTypes.STRING, allowNull: false },
-    escrowAccountTransferredAmount: { type: DataTypes.INTEGER, allowNull: false },
     createdHeight: { type: DataTypes.INTEGER, allowNull: false },
-    balance: { type: DataTypes.INTEGER, allowNull: false },
+    balance: { type: DataTypes.DECIMAL, allowNull: false },
     deposit: { type: DataTypes.INTEGER, allowNull: false }
   },
   {
