@@ -35,6 +35,8 @@ import {
 } from "@src/db/schema";
 import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import * as benchmark from "../shared/utils/benchmark";
+import { accountSettle } from "@src/shared/utils/akashPaymentSettle";
+import { lastBlockToSync } from "@src/shared/constants";
 
 export let processingStatus = null;
 
@@ -162,8 +164,8 @@ class StatsProcessor {
     });
 
     let firstBlockToProcess = firstUnprocessedHeight;
-    let lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize);
-    while (firstBlockToProcess <= lastUnprocessedHeight) {
+    let lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize, lastBlockToSync);
+    while (firstBlockToProcess <= Math.min(lastUnprocessedHeight, lastBlockToSync)) {
       console.log(`Loading blocks ${firstBlockToProcess} to ${lastBlockToProcess}`);
 
       const getBlocksTimer = benchmark.startTimer("getBlocks");
@@ -303,7 +305,7 @@ class StatsProcessor {
       }
 
       firstBlockToProcess += groupSize;
-      lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize);
+      lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize, lastBlockToSync);
     }
 
     processingStatus = null;
@@ -397,7 +399,7 @@ class StatsProcessor {
     "/akash.audit.v1beta2.MsgDeleteProviderAttributes": this.handleDeleteSignProviderAttributes
   };
 
-  private async processMessage(msg, encodedMessage, height: number,blockGroupTransaction) {
+  private async processMessage(msg, encodedMessage, height: number, blockGroupTransaction) {
     if (!Object.keys(this.messageHandlers).includes(msg.type)) {
       throw Error("No handler for message of type: " + msg.type);
     }
@@ -407,7 +409,7 @@ class StatsProcessor {
     });
   }
 
-  private async handleCreateDeployment(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCreateDeployment(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgCreateDeployment.decode(encodedMessage);
 
     const created = await Deployment.create(
@@ -417,7 +419,9 @@ class StatsProcessor {
         dseq: decodedMessage.id.dseq.toNumber(),
         deposit: parseInt(decodedMessage.deposit.amount),
         balance: parseInt(decodedMessage.deposit.amount),
-        createdHeight: height
+        withdrawnAmount: 0,
+        createdHeight: height,
+        closedHeight: null
       },
       { transaction: blockGroupTransaction }
     );
@@ -455,7 +459,7 @@ class StatsProcessor {
     }
   }
 
-  private async handleCreateDeploymentV2(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCreateDeploymentV2(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = v1beta2.MsgCreateDeployment.decode(encodedMessage);
 
     const created = await Deployment.create(
@@ -465,7 +469,9 @@ class StatsProcessor {
         dseq: decodedMessage.id.dseq.toNumber(),
         deposit: parseInt(decodedMessage.deposit.amount),
         balance: parseInt(decodedMessage.deposit.amount),
-        createdHeight: height
+        withdrawnAmount: 0,
+        createdHeight: height,
+        closedHeight: null
       },
       { transaction: blockGroupTransaction }
     );
@@ -503,42 +509,33 @@ class StatsProcessor {
     }
   }
 
-  private async handleCloseDeployment(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCloseDeployment(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgCloseDeployment.decode(encodedMessage);
 
     const deployment = await Deployment.findOne({
       where: {
         id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
       },
-      include: [
-        {
-          model: Lease,
-          required: false,
-          where: {
-            closedHeight: { [Op.is]: null }
-          }
-        }
-      ],
+      include: [{ model: Lease }],
       transaction: blockGroupTransaction
     });
 
     msg.relatedDeploymentId = deployment.id;
 
-    for (let lease of deployment.leases) {
-      const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
-      const blockCount = height - startBlock;
-      const amount = Math.min(lease.price * blockCount, deployment.balance); // TODO : Handle proportional distribution
+    await accountSettle(deployment, height, blockGroupTransaction);
 
-      lease.withdrawnAmount += amount;
-      lease.lastWithdrawHeight = height;
-      deployment.balance -= amount;
-
-      lease.closedHeight = height;
-      await lease.save({ transaction: blockGroupTransaction });
+    for (const lease of deployment.leases) {
+      if (!lease.closedHeight) {
+        lease.closedHeight = height;
+        await lease.save({ transaction: blockGroupTransaction });
+      }
     }
+
+    deployment.closedHeight = height;
+    await deployment.save({ transaction: blockGroupTransaction });
   }
 
-  private async handleCreateLease(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCreateLease(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgCreateLease.decode(encodedMessage);
     const bid = await Bid.findOne({
       where: {
@@ -563,13 +560,16 @@ class StatsProcessor {
     const deploymentId = getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber());
 
     const deployment = await Deployment.findOne({
-      attributes: ["balance"],
       where: {
         id: deploymentId
       },
+      include: [{ model: Lease }],
       transaction: blockGroupTransaction
     });
-    const predictedClosedHeight = Math.ceil(height + deployment.balance / bid.price);
+
+    const { blockRate } = await accountSettle(deployment, height, blockGroupTransaction);
+
+    const predictedClosedHeight = Math.ceil(height + deployment.balance / (blockRate + bid.price));
 
     await Lease.create(
       {
@@ -593,44 +593,47 @@ class StatsProcessor {
       { transaction: blockGroupTransaction }
     );
 
+    await Lease.update({ predictedClosedHeight: predictedClosedHeight }, { where: { deploymentId: deploymentId }, transaction: blockGroupTransaction });
+
     msg.relatedDeploymentId = deploymentId;
 
     this.totalLeaseCount++;
   }
 
-  private async handleCloseLease(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCloseLease(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgCloseLease.decode(encodedMessage);
 
-    let lease = await Lease.findOne({
+    const deployment = await Deployment.findOne({
       where: {
-        deploymentId: getDeploymentIdFromCache(decodedMessage.lease_id.owner, decodedMessage.lease_id.dseq.toNumber()),
-        oseq: decodedMessage.lease_id.oseq,
-        gseq: decodedMessage.lease_id.gseq,
-        provider: decodedMessage.lease_id.provider,
-        closedHeight: { [Op.is]: null }
+        id: getDeploymentIdFromCache(decodedMessage.lease_id.owner, decodedMessage.lease_id.dseq.toNumber())
       },
-      include: {
-        model: Deployment
-      },
+      include: [{ model: Lease }],
       transaction: blockGroupTransaction
     });
 
-    msg.relatedDeploymentId = lease.deployment.id;
+    const lease = deployment.leases.find(
+      (x) => x.oseq === decodedMessage.lease_id.oseq && x.gseq === decodedMessage.lease_id.gseq && x.provider === decodedMessage.lease_id.provider
+    );
 
-    const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
-    const blockCount = height - startBlock;
-    const amount = Math.min(lease.price * blockCount, lease.deployment.balance); // TODO : Handle proportional distribution
+    if (!lease) throw new Error("Lease not found");
 
-    lease.withdrawnAmount += amount;
-    lease.lastWithdrawHeight = height;
-    lease.deployment.balance -= amount;
+    msg.relatedDeploymentId = deployment.id;
+
+    const { blockRate } = await accountSettle(deployment, height, blockGroupTransaction);
 
     lease.closedHeight = height;
     await lease.save({ transaction: blockGroupTransaction });
-    await lease.deployment.save({ transaction: blockGroupTransaction });
+
+    if (!deployment.leases.some((x) => !x.closedHeight)) {
+      deployment.closedHeight = height;
+      await deployment.save({ transaction: blockGroupTransaction });
+    } else {
+      const predictedClosedHeight = deployment.balance / (blockRate - lease.price);
+      await Lease.update({ predictedClosedHeight: predictedClosedHeight }, { where: { deploymentId: deployment.id }, transaction: blockGroupTransaction });
+    }
   }
 
-  private async handleCreateBid(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCreateBid(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgCreateBid.decode(encodedMessage);
 
     await Bid.create(
@@ -649,7 +652,7 @@ class StatsProcessor {
     msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
   }
 
-  private async handleCreateBidV2(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCreateBidV2(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = v1beta2.MsgCreateBid.decode(encodedMessage);
 
     await Bid.create(
@@ -668,39 +671,36 @@ class StatsProcessor {
     msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
   }
 
-  private async handleCloseBid(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCloseBid(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgCloseBid.decode(encodedMessage);
 
     const deployment = await Deployment.findOne({
       where: {
         id: getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber())
       },
-      include: {
-        model: Lease,
-        required: false,
-        where: {
-          closedHeight: { [Op.is]: null },
-          gseq: decodedMessage.bid_id.gseq,
-          oseq: decodedMessage.bid_id.oseq,
-          provider: decodedMessage.bid_id.provider
-        }
-      },
+      include: [{ model: Lease }],
       transaction: blockGroupTransaction
     });
 
     msg.relatedDeploymentId = deployment.id;
 
-    for (let lease of deployment.leases) {
-      const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
-      const blockCount = height - startBlock;
-      const amount = Math.min(lease.price * blockCount, deployment.balance); // TODO : Handle proportional distribution
+    const lease = deployment.leases.find(
+      (x) => x.oseq === decodedMessage.bid_id.oseq && x.gseq === decodedMessage.bid_id.gseq && x.provider === decodedMessage.bid_id.provider
+    );
 
-      lease.withdrawnAmount += amount;
-      lease.lastWithdrawHeight = height;
-      deployment.balance -= amount;
+    if (lease) {
+      const { blockRate } = await accountSettle(deployment, height, blockGroupTransaction);
 
       lease.closedHeight = height;
       await lease.save({ transaction: blockGroupTransaction });
+
+      if (!deployment.leases.some((x) => !x.closedHeight)) {
+        deployment.closedHeight = height;
+        await deployment.save({ transaction: blockGroupTransaction });
+      } else {
+        const predictedClosedHeight = deployment.balance / (blockRate - lease.price);
+        await Lease.update({ predictedClosedHeight: predictedClosedHeight }, { where: { deploymentId: deployment.id }, transaction: blockGroupTransaction });
+      }
     }
 
     await Bid.destroy({
@@ -715,7 +715,7 @@ class StatsProcessor {
     });
   }
 
-  private async handleDepositDeployment(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleDepositDeployment(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgDepositDeployment.decode(encodedMessage);
 
     const deployment = await Deployment.findOne({
@@ -736,61 +736,47 @@ class StatsProcessor {
     deployment.balance += parseFloat(decodedMessage.amount.amount);
     await deployment.save({ transaction: blockGroupTransaction });
 
+    const blockRate = deployment.leases
+      .filter((x) => !x.closedHeight)
+      .map((x) => x.price)
+      .reduce((a, b) => a + b, 0);
+
     for (const lease of deployment.leases) {
-      lease.predictedClosedHeight = Math.ceil((lease.lastWithdrawHeight || lease.createdHeight) + deployment.balance / lease.price);
+      lease.predictedClosedHeight = Math.ceil((deployment.lastWithdrawHeight || lease.createdHeight) + deployment.balance / blockRate);
       await lease.save({ transaction: blockGroupTransaction });
     }
   }
 
-  private async handleWithdrawLease(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleWithdrawLease(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgWithdrawLease.decode(encodedMessage);
 
     const owner = decodedMessage.lease_id.owner;
     const dseq = decodedMessage.lease_id.dseq.toNumber();
+    const gseq = decodedMessage.lease_id.gseq;
+    const oseq = decodedMessage.lease_id.oseq;
+    const provider = decodedMessage.lease_id.provider;
 
-    let lease = await Lease.findOne({
-      attributes: ["id", "price", "lastWithdrawHeight", "createdHeight", "withdrawnAmount"],
+    const deployment = await Deployment.findOne({
       where: {
         owner: owner,
-        dseq: dseq,
-        gseq: decodedMessage.lease_id.gseq,
-        oseq: decodedMessage.lease_id.oseq
+        dseq: dseq
       },
-      include: {
-        model: Deployment,
-        attributes: ["id", "balance"]
-      },
+      include: [{ model: Lease }],
       transaction: blockGroupTransaction
     });
-
-    const startBlock = lease.lastWithdrawHeight || lease.createdHeight;
-    const blockCount = height - startBlock;
-    const amount = Math.min(lease.price * blockCount, lease.deployment.balance);
-    lease.withdrawnAmount += amount;
-    lease.lastWithdrawHeight = height;
-    lease.deployment.balance -= amount;
-    await lease.save({ transaction: blockGroupTransaction });
-
-    if (lease.deployment.balance <= 0) {
-      await Lease.update(
-        {
-          closedHeight: height
-        },
-        {
-          where: {
-            deploymentId: getDeploymentIdFromCache(owner, dseq)
-          },
-          transaction: blockGroupTransaction
-        }
-      );
-    }
-
-    await lease.deployment.save({ transaction: blockGroupTransaction });
-
-    msg.relatedDeploymentId = lease.deployment.id;
+  
+    if (!deployment) throw new Error(`Deployment not found for owner: ${owner} and dseq: ${dseq}`);
+  
+    const lease = deployment.leases.find((x) => x.gseq === gseq && x.oseq === oseq && x.provider === provider);
+  
+    if (!lease) throw new Error(`Lease not found for gseq: ${gseq}, oseq: ${oseq} and provider: ${provider}`);
+  
+    await accountSettle(deployment, height, blockGroupTransaction);
+  
+    msg.relatedDeploymentId = deployment.id;
   }
 
-  private async handleCreateProvider(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleCreateProvider(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgCreateProvider.decode(encodedMessage);
 
     await Provider.create(
@@ -816,7 +802,7 @@ class StatsProcessor {
     this.activeProviderCount++;
   }
 
-  private async handleUpdateProvider(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleUpdateProvider(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgUpdateProvider.decode(encodedMessage);
 
     await Provider.update(
@@ -850,7 +836,7 @@ class StatsProcessor {
     );
   }
 
-  private async handleDeleteProvider(encodedMessage, height: number,blockGroupTransaction, msg: Message) {
+  private async handleDeleteProvider(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
     const decodedMessage = MsgDeleteProvider.decode(encodedMessage);
 
     await Provider.destroy({

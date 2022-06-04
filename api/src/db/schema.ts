@@ -130,7 +130,6 @@ export class Lease extends Model {
   public predictedClosedHeight!: number;
   public price!: number;
   public withdrawnAmount!: number;
-  public lastWithdrawHeight?: number;
 
   // Stats
   cpuUnits: number;
@@ -153,7 +152,6 @@ Lease.init(
     predictedClosedHeight: { type: DataTypes.INTEGER, allowNull: false },
     price: { type: DataTypes.INTEGER, allowNull: false },
     withdrawnAmount: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
-    lastWithdrawHeight: { type: DataTypes.INTEGER, allowNull: true },
     // Stats
     cpuUnits: { type: DataTypes.INTEGER, allowNull: false },
     memoryQuantity: { type: DataTypes.BIGINT, allowNull: false },
@@ -179,6 +177,10 @@ export class Deployment extends Model {
   public createdHeight!: number;
   public balance!: number;
   public deposit!: number;
+  public lastWithdrawHeight?: number;
+  public withdrawnAmount!: number;
+  public closedHeight?: number;
+
   public readonly leases?: Lease[];
 }
 
@@ -189,7 +191,10 @@ Deployment.init(
     dseq: { type: DataTypes.INTEGER, allowNull: false },
     createdHeight: { type: DataTypes.INTEGER, allowNull: false },
     balance: { type: DataTypes.DECIMAL, allowNull: false },
-    deposit: { type: DataTypes.INTEGER, allowNull: false }
+    deposit: { type: DataTypes.INTEGER, allowNull: false },
+    lastWithdrawHeight: { type: DataTypes.INTEGER, allowNull: true },
+    withdrawnAmount: { type: DataTypes.DECIMAL, allowNull: false },
+    closedHeight: { type: DataTypes.INTEGER, allowNull: true }
   },
   {
     tableName: "deployment",
