@@ -35,6 +35,7 @@ import {
   ProviderAttributeSignature
 } from "@src/db/schema";
 import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
+import * as benchmark from "../shared/utils/benchmark";
 
 export let processingStatus = null;
 
@@ -169,6 +170,7 @@ export async function processMessages() {
   while (firstBlockToProcess <= lastUnprocessedHeight) {
     console.log(`Loading blocks ${firstBlockToProcess} to ${lastBlockToProcess}`);
 
+    const getBlocksTimer = benchmark.startTimer("getBlocks");
     const blocks = await Block.findAll({
       attributes: ["height"],
       where: {
@@ -201,13 +203,17 @@ export async function processMessages() {
         [Transaction, Message, "index", "ASC"]
       ]
     });
+    getBlocksTimer.end();
 
     let processedMessageCount = 0;
 
     const blockGroupTransaction = await sequelize.transaction();
     try {
       for (const block of blocks) {
+        const getBlockByHeightTimer = benchmark.startTimer("getBlockByHeight");
         const blockData = await getBlockByHeight(blockHeightToKey(block.height));
+        getBlockByHeightTimer.end();
+
         console.log(`Processing block ${block.height} / ${lastUnprocessedHeight}`);
 
         for (const transaction of block.transactions) {
@@ -216,47 +222,62 @@ export async function processMessages() {
 
             console.log(`Processing message ${msg.type} - Block #${block.height}`);
 
+            const decodeTimer = benchmark.startTimer("decodeTx");
             const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
             let encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
+            decodeTimer.end();
 
+            const processTimer = benchmark.startTimer("processMessage");
             await processMessage(msg, encodedMessage, block.height, blockGroupTransaction);
+            processTimer.end();
 
             if (msg.relatedDeploymentId) {
-              await msg.save({ transaction: blockGroupTransaction });
+              await benchmark.measure("saveRelatedDeploymentId", async () => {
+                await msg.save({ transaction: blockGroupTransaction });
+              });
             }
 
             processedMessageCount++;
           }
 
-          await transaction.update(
-            {
-              isProcessed: true
-            },
-            { transaction: blockGroupTransaction }
-          );
+          await benchmark.measure("transactionUpdate", async () => {
+            await transaction.update(
+              {
+                isProcessed: true
+              },
+              { transaction: blockGroupTransaction }
+            );
+          });
         }
 
         const statsA = performance.now();
+        const resourceTimer = benchmark.startTimer("getTotalResources");
         const totalResources = await getTotalResources(blockGroupTransaction, block.height);
-        await block.update(
-          {
-            isProcessed: true,
-            activeProviderCount: activeProviderCount,
-            activeLeaseCount: totalResources.count,
-            totalLeaseCount: totalLeaseCount,
-            activeCPU: totalResources.cpuSum,
-            activeMemory: totalResources.memorySum,
-            activeStorage: totalResources.storageSum,
-            totalUAktSpent: (previousProcessedBlock?.totalUAktSpent || 0) + totalResources.priceSum
-          },
-          { transaction: blockGroupTransaction }
-        );
+        resourceTimer.end();
+
+        await benchmark.measure("blockUpdate", async () => {
+          await block.update(
+            {
+              isProcessed: true,
+              activeProviderCount: activeProviderCount,
+              activeLeaseCount: totalResources.count,
+              totalLeaseCount: totalLeaseCount,
+              activeCPU: totalResources.cpuSum,
+              activeMemory: totalResources.memorySum,
+              activeStorage: totalResources.storageSum,
+              totalUAktSpent: (previousProcessedBlock?.totalUAktSpent || 0) + totalResources.priceSum
+            },
+            { transaction: blockGroupTransaction }
+          );
+        });
         previousProcessedBlock = block;
 
         messageTimes["stats"].push(performance.now() - statsA);
       }
 
-      await blockGroupTransaction.commit();
+      await benchmark.measure("blockGroupTransactionCommit", async () => {
+        await blockGroupTransaction.commit();
+      });
     } catch (err) {
       await blockGroupTransaction.rollback();
       throw err;
@@ -290,6 +311,7 @@ export async function processMessages() {
 }
 
 async function getTotalResources(blockGroupTransaction, height) {
+  const findAllTimer = benchmark.startTimer("leaseFindAll");
   const totalResources = await Lease.findAll({
     attributes: ["cpuUnits", "memoryQuantity", "storageQuantity", "price"],
     where: {
@@ -299,13 +321,26 @@ async function getTotalResources(blockGroupTransaction, height) {
     transaction: blockGroupTransaction
   });
 
-  return {
+  findAllTimer.end();
+
+  // await benchmark.measure("test", async () => {
+  //   await Lease.findAll({
+  //     where: { predictedClosedHeight: height },
+  //     transaction: blockGroupTransaction
+  //   });
+  // });
+
+  const addUpTimer = benchmark.startTimer("addUp");
+  const result = {
     count: totalResources.length,
     cpuSum: totalResources.map((x) => x.cpuUnits).reduce((a, b) => a + b, 0),
     memorySum: totalResources.map((x) => x.memoryQuantity).reduce((a, b) => a + b, 0),
     storageSum: totalResources.map((x) => x.storageQuantity).reduce((a, b) => a + b, 0),
     priceSum: totalResources.map((x) => x.price).reduce((a, b) => a + b, 0)
   };
+  addUpTimer.end();
+
+  return result;
 }
 
 let messageTimes = [];

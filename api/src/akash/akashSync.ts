@@ -4,6 +4,7 @@ import { messageHandlers, processMessages } from "./statsProcessor";
 import { blockHeightToKey, blocksDb, getCachedBlockByHeight, getCachedTxByHash, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day, sequelize } from "@src/db/schema";
+import * as benchmark from "../shared/utils/benchmark";
 
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
@@ -79,17 +80,28 @@ export async function syncBlocks() {
       console.log("Will end download at block #" + latestBlockToDownload);
       console.log(latestBlockToDownload - startHeight + " blocks to download");
 
+      const downloadBenchmark = benchmark.startTimer("downloadBlocks");
       await downloadBlocks(startHeight, latestBlockToDownload);
+      downloadBenchmark.end();
     }
 
     let latestInsertedHeight: number = (await Block.max("height")) || 0;
 
+    const insertBlocksBenchmark = benchmark.startTimer("insertBlocks");
     await insertBlocks(latestInsertedHeight + 1, latestBlockToDownload);
+    insertBlocksBenchmark.end();
+
+    const downloadTransactionsBenchmark = benchmark.startTimer("downloadTransactions");
     await downloadTransactions();
+    downloadTransactionsBenchmark.end();
 
     syncingStatus = "Processing messages";
 
+    const processBenchmark = benchmark.startTimer("processMessages");
     await processMessages();
+    processBenchmark.end();
+
+    benchmark.displayTimes();
   } catch (err) {
     console.error("Error while syncing", err);
     throw err;

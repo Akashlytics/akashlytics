@@ -164,6 +164,7 @@ Lease.init(
     modelName: "lease",
     indexes: [
       { unique: false, fields: ["closedHeight"] },
+      //{ unique: false, fields: ["closedHeight", "predictedClosedHeight"] },
       { unique: false, fields: ["deploymentId"] },
       { unique: false, fields: ["owner", "dseq", "gseq", "oseq"] }
     ],
