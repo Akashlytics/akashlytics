@@ -128,14 +128,22 @@ async function fetchOmnibusTemplates(octokit: Octokit, repoVersion: string) {
       const assetList = await assetListResponse.json();
       if (assetList.assets.length === 0) {
         throw "No asset found";
-      } else if (assetList.assets.length > 1) {
-        throw "More than one asset found";
       }
 
-      const asset = assetList.assets[0];
-      template.name = asset.name;
-      template.summary = asset.description;
-      template.logoUrl = Object.values(asset.logo_URIs)[0];
+      if (assetList.assets.length > 1) {
+        const asset = assetList.assets.find((a) => a.name.toLowerCase() === template.name.toLocaleLowerCase());
+        if (!asset) {
+          throw "More than one asset found";
+        }
+
+        template.name = asset.name;
+        template.logoUrl = Object.values(asset.logo_URIs)[0];
+      } else {
+        const asset = assetList.assets[0];
+        template.name = asset.name;
+        template.summary = asset.description;
+        template.logoUrl = Object.values(asset.logo_URIs)[0];
+      }
     } catch (err) {
       console.log("Could not fetch assetlist for", template.path);
       console.error(err);
