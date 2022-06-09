@@ -208,6 +208,21 @@ export async function processMessages() {
     let processedMessageCount = 0;
 
     const blockGroupTransaction = await sequelize.transaction();
+
+    const resourceTimer = benchmark.startTimer("getTotalResources");
+    let totalResources = await getTotalResources(blockGroupTransaction, firstBlockToProcess);
+    resourceTimer.end();
+
+    const predictedTimer = benchmark.startTimer("getPredictedHeights");
+    let predictedClosedHeights = await Lease.findAll({
+      attributes: ["id", "predictedClosedHeight"],
+      where: {
+        predictedClosedHeight: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
+      }
+    });
+    let shouldRefreshPredictedHeights = false;
+    predictedTimer.end();
+
     try {
       for (const block of blocks) {
         const getBlockByHeightTimer = benchmark.startTimer("getBlockByHeight");
@@ -221,6 +236,25 @@ export async function processMessages() {
             processingStatus = `Processing message ${msg.indexInBlock} of block #${block.height}`;
 
             console.log(`Processing message ${msg.type} - Block #${block.height}`);
+
+            if (
+              [
+                "/akash.deployment.v1beta1.MsgCreateDeployment",
+                "/akash.deployment.v1beta1.MsgCloseDeployment",
+                "/akash.market.v1beta1.MsgCreateLease",
+                "/akash.market.v1beta1.MsgCloseLease",
+                "/akash.market.v1beta1.MsgCloseBid",
+                "/akash.deployment.v1beta1.MsgDepositDeployment",
+                "/akash.deployment.v1beta2.MsgCreateDeployment",
+                "/akash.deployment.v1beta2.MsgCloseDeployment",
+                "/akash.market.v1beta2.MsgCreateLease",
+                "/akash.market.v1beta2.MsgCloseLease",
+                "/akash.market.v1beta2.MsgCloseBid",
+                "/akash.deployment.v1beta2.MsgDepositDeployment"
+              ].includes(msg.type)
+            ) {
+              shouldRefreshPredictedHeights = true;
+            }
 
             const decodeTimer = benchmark.startTimer("decodeTx");
             const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
@@ -251,9 +285,25 @@ export async function processMessages() {
         }
 
         const statsA = performance.now();
-        const resourceTimer = benchmark.startTimer("getTotalResources");
-        const totalResources = await getTotalResources(blockGroupTransaction, block.height);
-        resourceTimer.end();
+
+        if (shouldRefreshPredictedHeights) {
+          const predictedTimer = benchmark.startTimer("getPredictedHeights");
+          predictedClosedHeights = await Lease.findAll({
+            attributes: ["id", "predictedClosedHeight"],
+            where: {
+              predictedClosedHeight: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
+            },
+            transaction: blockGroupTransaction
+          });
+          shouldRefreshPredictedHeights = false;
+          predictedTimer.end();
+        }
+
+        if (predictedClosedHeights.find((x) => x.predictedClosedHeight === block.height)) {
+          const resourceTimer = benchmark.startTimer("getTotalResources");
+          totalResources = await getTotalResources(blockGroupTransaction, firstBlockToProcess);
+          resourceTimer.end();
+        }
 
         await benchmark.measure("blockUpdate", async () => {
           await block.update(
