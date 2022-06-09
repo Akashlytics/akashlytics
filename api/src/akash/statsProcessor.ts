@@ -223,8 +223,6 @@ export async function processMessages() {
         const blockData = await getBlockByHeight(blockHeightToKey(block.height));
         getBlockByHeightTimer.end();
 
-        console.log(`Processing block ${block.height} / ${lastUnprocessedHeight}`);
-
         for (const transaction of block.transactions) {
           for (let msg of transaction.messages) {
             processingStatus = `Processing message ${msg.indexInBlock} of block #${block.height}`;
