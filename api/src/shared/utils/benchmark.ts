@@ -125,9 +125,13 @@ export function displayTimesForGroup(group: string) {
 }
 
 function getPrettyTime(time: number): string {
-  if (time < 1000) {
-    return `${round(time)}ms`;
+  if (time < 10) {
+    return `${round(time, 2)}ms`;
+  } else if (time < 1_000) {
+    return `${round(time, 0)}ms`;
+  } else if (time < 60 * 1_000) {
+    return `${round(time / 1_000, 2)}s`;
   } else {
-    return `${round(time / 1000, 2)}s`;
+    return `${Math.floor(time / 1_000 / 60)}m ${Math.round((time / 1000) % 60)}s`;
   }
 }
