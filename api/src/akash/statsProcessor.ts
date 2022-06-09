@@ -163,8 +163,6 @@ export async function processMessages() {
     }
   });
 
-  messageTimes["stats"] = [];
-
   let firstBlockToProcess = firstUnprocessedHeight;
   let lastBlockToProcess = Math.min(lastUnprocessedHeight, firstBlockToProcess + groupSize);
   while (firstBlockToProcess <= lastUnprocessedHeight) {
@@ -284,8 +282,6 @@ export async function processMessages() {
           });
         }
 
-        const statsA = performance.now();
-
         if (shouldRefreshPredictedHeights) {
           const predictedTimer = benchmark.startTimer("getPredictedHeights");
           predictedClosedHeights = await Lease.findAll({
@@ -300,9 +296,9 @@ export async function processMessages() {
         }
 
         if (predictedClosedHeights.find((x) => x.predictedClosedHeight === block.height)) {
-          const resourceTimer = benchmark.startTimer("getTotalResources");
-          totalResources = await getTotalResources(blockGroupTransaction, firstBlockToProcess);
-          resourceTimer.end();
+          await benchmark.measure("getTotalResources", async () => {
+            totalResources = await getTotalResources(blockGroupTransaction, firstBlockToProcess);
+          });
         }
 
         await benchmark.measure("blockUpdate", async () => {
@@ -321,8 +317,6 @@ export async function processMessages() {
           );
         });
         previousProcessedBlock = block;
-
-        messageTimes["stats"].push(performance.now() - statsA);
       }
 
       await benchmark.measure("blockGroupTransactionCommit", async () => {
@@ -339,25 +333,6 @@ export async function processMessages() {
 
   processingStatus = null;
   console.timeEnd("processMessages");
-
-  const all = Object.values(messageTimes)
-    .map((x) => x.reduce((a, b) => a + b, 0))
-    .reduce((a, b) => a + b, 0);
-
-  console.table(
-    Object.keys(messageTimes)
-      .map((key) => {
-        const total = Math.round(messageTimes[key].reduce((a, b) => a + b, 0));
-        return {
-          type: key,
-          count: messageTimes[key].length,
-          total: total + "ms",
-          percentage: Math.round((total / all) * 100),
-          average: Math.round((total / messageTimes[key].length) * 100) / 100 + "ms"
-        };
-      })
-      .sort((a, b) => b.percentage - a.percentage)
-  );
 }
 
 async function getTotalResources(blockGroupTransaction, height) {
@@ -373,13 +348,6 @@ async function getTotalResources(blockGroupTransaction, height) {
 
   findAllTimer.end();
 
-  // await benchmark.measure("test", async () => {
-  //   await Lease.findAll({
-  //     where: { predictedClosedHeight: height },
-  //     transaction: blockGroupTransaction
-  //   });
-  // });
-
   const addUpTimer = benchmark.startTimer("addUp");
   const result = {
     count: totalResources.length,
@@ -392,8 +360,6 @@ async function getTotalResources(blockGroupTransaction, height) {
 
   return result;
 }
-
-let messageTimes = [];
 
 export const messageHandlers: { [key: string]: (encodedMessage, height: number, blockGroupTransaction, msg: Message) => Promise<void> } = {
   "/akash.deployment.v1beta1.MsgCreateDeployment": handleCreateDeployment,
@@ -426,26 +392,22 @@ export const messageHandlers: { [key: string]: (encodedMessage, height: number, 
 };
 
 async function processMessage(msg, encodedMessage, height, blockGroupTransaction) {
-  let a = performance.now();
-
   if (!Object.keys(messageHandlers).includes(msg.type)) {
     throw Error("No handler for message of type: " + msg.type);
   }
 
-  await messageHandlers[msg.type](encodedMessage, height, blockGroupTransaction, msg);
+  await benchmark.measure(msg.type, async () => {
+    await messageHandlers[msg.type](encodedMessage, height, blockGroupTransaction, msg);
+  });
 
-  await msg.update(
-    {
-      isProcessed: true
-    },
-    { transaction: blockGroupTransaction }
-  );
-
-  let processingTime = performance.now() - a;
-  if (!messageTimes[msg.type]) {
-    messageTimes[msg.type] = [];
-  }
-  messageTimes[msg.type].push(processingTime);
+  await benchmark.measure("MsgUpdate", async () => {
+    await msg.update(
+      {
+        isProcessed: true
+      },
+      { transaction: blockGroupTransaction }
+    );
+  });
 }
 
 async function handleCreateDeployment(encodedMessage, height, blockGroupTransaction, msg: Message) {
