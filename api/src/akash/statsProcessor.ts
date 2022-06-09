@@ -265,15 +265,6 @@ export async function processMessages() {
               });
             }
           }
-
-          await benchmark.measure("transactionUpdate", async () => {
-            await transaction.update(
-              {
-                isProcessed: true
-              },
-              { transaction: blockGroupTransaction }
-            );
-          });
         }
 
         if (shouldRefreshPredictedHeights) {
@@ -314,6 +305,34 @@ export async function processMessages() {
         });
         previousProcessedBlock = block;
       }
+
+      await benchmark.measure("transactionUpdate", async () => {
+        await Transaction.update(
+          {
+            isProcessed: true
+          },
+          {
+            where: {
+              height: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
+            },
+            transaction: blockGroupTransaction
+          }
+        );
+      });
+
+      await benchmark.measure("MsgUpdate", async () => {
+        await Message.update(
+          {
+            isProcessed: true
+          },
+          {
+            where: {
+              height: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
+            },
+            transaction: blockGroupTransaction
+          }
+        );
+      });
 
       await benchmark.measure("blockGroupTransactionCommit", async () => {
         await blockGroupTransaction.commit();
@@ -393,15 +412,6 @@ async function processMessage(msg, encodedMessage, height, blockGroupTransaction
 
   await benchmark.measure(msg.type, async () => {
     await messageHandlers[msg.type](encodedMessage, height, blockGroupTransaction, msg);
-  });
-
-  await benchmark.measure("MsgUpdate", async () => {
-    await msg.update(
-      {
-        isProcessed: true
-      },
-      { transaction: blockGroupTransaction }
-    );
   });
 }
 

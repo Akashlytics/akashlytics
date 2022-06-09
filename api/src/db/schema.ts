@@ -455,7 +455,10 @@ Message.init(
   {
     tableName: "message",
     modelName: "message",
-    indexes: [{ unique: false, fields: ["txId"] }],
+    indexes: [
+      { unique: false, fields: ["txId"] },
+      { unique: false, fields: ["height"] }
+    ],
     sequelize
   }
 );
