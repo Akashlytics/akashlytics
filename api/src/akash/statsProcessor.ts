@@ -17,7 +17,6 @@ const {
 import * as v1beta2 from "./ProtoAkashTypes_v1beta2";
 const uuid = require("uuid");
 const sha256 = require("js-sha256");
-const { performance } = require("perf_hooks");
 import { blockHeightToKey, blocksDb, txsDb } from "@src/akash/dataStore";
 import {
   Deployment,
@@ -125,7 +124,6 @@ let totalLeaseCount = 0;
 let activeProviderCount = 0;
 export async function processMessages() {
   processingStatus = "Processing messages";
-  console.time("processMessages");
 
   console.log("Fetching deployment id cache...");
 
@@ -203,8 +201,6 @@ export async function processMessages() {
     });
     getBlocksTimer.end();
 
-    let processedMessageCount = 0;
-
     const blockGroupTransaction = await sequelize.transaction();
 
     const resourceTimer = benchmark.startTimer("getTotalResources");
@@ -235,24 +231,24 @@ export async function processMessages() {
 
             console.log(`Processing message ${msg.type} - Block #${block.height}`);
 
-            if (
-              [
-                "/akash.deployment.v1beta1.MsgCreateDeployment",
-                "/akash.deployment.v1beta1.MsgCloseDeployment",
-                "/akash.market.v1beta1.MsgCreateLease",
-                "/akash.market.v1beta1.MsgCloseLease",
-                "/akash.market.v1beta1.MsgCloseBid",
-                "/akash.deployment.v1beta1.MsgDepositDeployment",
-                "/akash.deployment.v1beta2.MsgCreateDeployment",
-                "/akash.deployment.v1beta2.MsgCloseDeployment",
-                "/akash.market.v1beta2.MsgCreateLease",
-                "/akash.market.v1beta2.MsgCloseLease",
-                "/akash.market.v1beta2.MsgCloseBid",
-                "/akash.deployment.v1beta2.MsgDepositDeployment"
-              ].includes(msg.type)
-            ) {
-              shouldRefreshPredictedHeights = true;
-            }
+            await benchmark.measure("checkShouldRefreshPredicted", async () => {
+              shouldRefreshPredictedHeights =
+                shouldRefreshPredictedHeights ||
+                [
+                  "/akash.deployment.v1beta1.MsgCreateDeployment",
+                  "/akash.deployment.v1beta1.MsgCloseDeployment",
+                  "/akash.market.v1beta1.MsgCreateLease",
+                  "/akash.market.v1beta1.MsgCloseLease",
+                  "/akash.market.v1beta1.MsgCloseBid",
+                  "/akash.deployment.v1beta1.MsgDepositDeployment",
+                  "/akash.deployment.v1beta2.MsgCreateDeployment",
+                  "/akash.deployment.v1beta2.MsgCloseDeployment",
+                  "/akash.market.v1beta2.MsgCreateLease",
+                  "/akash.market.v1beta2.MsgCloseLease",
+                  "/akash.market.v1beta2.MsgCloseBid",
+                  "/akash.deployment.v1beta2.MsgDepositDeployment"
+                ].includes(msg.type);
+            });
 
             const decodeTimer = benchmark.startTimer("decodeTx");
             const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
@@ -268,8 +264,6 @@ export async function processMessages() {
                 await msg.save({ transaction: blockGroupTransaction });
               });
             }
-
-            processedMessageCount++;
           }
 
           await benchmark.measure("transactionUpdate", async () => {
@@ -295,11 +289,13 @@ export async function processMessages() {
           predictedTimer.end();
         }
 
+        const checkShouldRefreshTotalResourcesTimer = benchmark.startTimer("checkShouldRefreshTotalResources");
         if (predictedClosedHeights.find((x) => x.predictedClosedHeight === block.height)) {
           await benchmark.measure("getTotalResources", async () => {
             totalResources = await getTotalResources(blockGroupTransaction, firstBlockToProcess);
           });
         }
+        checkShouldRefreshTotalResourcesTimer.end();
 
         await benchmark.measure("blockUpdate", async () => {
           await block.update(
@@ -332,7 +328,6 @@ export async function processMessages() {
   }
 
   processingStatus = null;
-  console.timeEnd("processMessages");
 }
 
 async function getTotalResources(blockGroupTransaction, height) {
