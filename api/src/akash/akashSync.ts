@@ -87,19 +87,19 @@ export async function syncBlocks() {
 
     let latestInsertedHeight: number = (await Block.max("height")) || 0;
 
-    const insertBlocksBenchmark = benchmark.startTimer("insertBlocks");
-    await insertBlocks(latestInsertedHeight + 1, latestBlockToDownload);
-    insertBlocksBenchmark.end();
+    await benchmark.measureAsync("insertBlocks", async () => {
+      await insertBlocks(latestInsertedHeight + 1, latestBlockToDownload);
+    });
 
-    const downloadTransactionsBenchmark = benchmark.startTimer("downloadTransactions");
-    await downloadTransactions();
-    downloadTransactionsBenchmark.end();
+    await benchmark.measureAsync("downloadTransactions", async () => {
+      await downloadTransactions();
+    });
 
     syncingStatus = "Processing messages";
 
-    const processBenchmark = benchmark.startTimer("processMessages");
-    await statsProcessor.processMessages();
-    processBenchmark.end();
+    await benchmark.measureAsync("processMessages", async () => {
+      await statsProcessor.processMessages();
+    });
 
     benchmark.displayTimes();
   } catch (err) {
