@@ -80,9 +80,9 @@ export async function syncBlocks() {
       console.log("Will end download at block #" + latestBlockToDownload);
       console.log(latestBlockToDownload - startHeight + " blocks to download");
 
-      const downloadBenchmark = benchmark.startTimer("downloadBlocks");
-      await downloadBlocks(startHeight, latestBlockToDownload);
-      downloadBenchmark.end();
+      await benchmark.measureAsync("downloadBlocks", async () => {
+        await downloadBlocks(startHeight, latestBlockToDownload);
+      });
     }
 
     let latestInsertedHeight: number = (await Block.max("height")) || 0;

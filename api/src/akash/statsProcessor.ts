@@ -227,7 +227,7 @@ class StatsProcessor {
               const encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
               decodeTimer.end();
 
-              await benchmark.measure("processMessage", async () => {
+              await benchmark.measureAsync("processMessage", async () => {
                 await this.processMessage(msg, encodedMessage, block.height, blockGroupTransaction);
               });
 
@@ -322,7 +322,6 @@ class StatsProcessor {
     return leases.map((x) => x.predictedClosedHeight);
   }
 
-  @benchmark.measureMethod
   private checkShouldRefreshPredictedCloseHeight(msg: Message): boolean {
     return [
       "/akash.deployment.v1beta1.MsgCreateDeployment",
