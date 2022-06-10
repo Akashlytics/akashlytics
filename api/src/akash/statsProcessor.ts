@@ -1,5 +1,5 @@
-const base64js = require("base64-js");
-const {
+import base64js from "base64-js";
+import {
   MsgCreateDeployment,
   MsgCloseDeployment,
   MsgCreateLease,
@@ -13,10 +13,10 @@ const {
   MsgDeleteProvider,
   MsgDeleteProviderAttributes,
   MsgSignProviderAttributes
-} = require("./ProtoAkashTypes");
+} from "./ProtoAkashTypes";
 import * as v1beta2 from "./ProtoAkashTypes_v1beta2";
-const uuid = require("uuid");
-const sha256 = require("js-sha256");
+import * as uuid from "uuid";
+import { sha256 } from "js-sha256";
 import { blockHeightToKey, blocksDb, txsDb } from "@src/akash/dataStore";
 import {
   Deployment,
@@ -37,8 +37,6 @@ import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import * as benchmark from "../shared/utils/benchmark";
 
 export let processingStatus = null;
-
-const v3Height = 5629650;
 
 function fromBase64(base64String) {
   if (!base64String.match(/^[a-zA-Z0-9+/]*={0,2}$/)) {
