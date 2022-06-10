@@ -10,7 +10,7 @@ import { executionMode, ExecutionMode, isProd } from "./shared/constants";
 import { bytesToHumanReadableSize } from "./shared/utils/files";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
-import { rebuildStatsTables } from "./akash/statsProcessor";
+import { statsProcessor } from "./akash/statsProcessor";
 import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
@@ -223,7 +223,7 @@ async function initApp() {
     initDatabaseTask = null;
 
     if (executionMode === ExecutionMode.RebuildStats) {
-      await rebuildStatsTables();
+      await statsProcessor.rebuildStatsTables();
     } else if (executionMode === ExecutionMode.RebuildAll) {
       console.time("Rebuilding all");
       await computeAtInterval();

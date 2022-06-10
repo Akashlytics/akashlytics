@@ -1,6 +1,6 @@
 import fs from "fs";
 import base64js from "base64-js";
-import { messageHandlers, processMessages } from "./statsProcessor";
+import { statsProcessor } from "./statsProcessor";
 import { blockHeightToKey, blocksDb, getCachedBlockByHeight, getCachedTxByHash, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day, sequelize } from "@src/db/schema";
@@ -98,7 +98,7 @@ export async function syncBlocks() {
     syncingStatus = "Processing messages";
 
     const processBenchmark = benchmark.startTimer("processMessages");
-    await processMessages();
+    await statsProcessor.processMessages();
     processBenchmark.end();
 
     benchmark.displayTimes();
@@ -152,7 +152,7 @@ async function insertBlocks(startHeight, endHeight) {
 
       for (let msgIndex = 0; msgIndex < msgs.length; ++msgIndex) {
         const msg = msgs[msgIndex];
-        const isInterestingType = Object.keys(messageHandlers).includes(msg.typeUrl);
+        const isInterestingType = statsProcessor.hasMessageHandlerFor(msg.typeUrl);
 
         msgsToAdd.push({
           id: uuid.v4(),
