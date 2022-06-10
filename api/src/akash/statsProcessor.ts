@@ -229,7 +229,7 @@ export async function processMessages() {
 
             console.log(`Processing message ${msg.type} - Block #${block.height}`);
 
-            await benchmark.measure("checkShouldRefreshPredicted", async () => {
+            benchmark.measure("checkShouldRefreshPredicted", () => {
               shouldRefreshPredictedHeights =
                 shouldRefreshPredictedHeights ||
                 [
@@ -258,7 +258,7 @@ export async function processMessages() {
             processTimer.end();
 
             if (msg.relatedDeploymentId) {
-              await benchmark.measure("saveRelatedDeploymentId", async () => {
+              await benchmark.measureAsync("saveRelatedDeploymentId", async () => {
                 await msg.save({ transaction: blockGroupTransaction });
               });
             }
@@ -266,27 +266,25 @@ export async function processMessages() {
         }
 
         if (shouldRefreshPredictedHeights) {
-          const predictedTimer = benchmark.startTimer("getPredictedHeights");
-          predictedClosedHeights = await Lease.findAll({
-            attributes: ["id", "predictedClosedHeight"],
-            where: {
-              predictedClosedHeight: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
-            },
-            transaction: blockGroupTransaction
+          await benchmark.measureAsync("getPredictedHeights", async () => {
+            predictedClosedHeights = await Lease.findAll({
+              attributes: ["id", "predictedClosedHeight"],
+              where: {
+                predictedClosedHeight: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
+              },
+              transaction: blockGroupTransaction
+            });
+            shouldRefreshPredictedHeights = false;
           });
-          shouldRefreshPredictedHeights = false;
-          predictedTimer.end();
         }
 
-        const checkShouldRefreshTotalResourcesTimer = benchmark.startTimer("checkShouldRefreshTotalResources");
         if (predictedClosedHeights.find((x) => x.predictedClosedHeight === block.height)) {
-          await benchmark.measure("getTotalResources", async () => {
+          await benchmark.measureAsync("getTotalResources", async () => {
             totalResources = await getTotalResources(blockGroupTransaction, firstBlockToProcess);
           });
         }
-        checkShouldRefreshTotalResourcesTimer.end();
 
-        await benchmark.measure("blockUpdate", async () => {
+        await benchmark.measureAsync("blockUpdate", async () => {
           await block.update(
             {
               isProcessed: true,
@@ -304,7 +302,7 @@ export async function processMessages() {
         previousProcessedBlock = block;
       }
 
-      await benchmark.measure("transactionUpdate", async () => {
+      await benchmark.measureAsync("transactionUpdate", async () => {
         await Transaction.update(
           {
             isProcessed: true
@@ -318,7 +316,7 @@ export async function processMessages() {
         );
       });
 
-      await benchmark.measure("MsgUpdate", async () => {
+      await benchmark.measureAsync("MsgUpdate", async () => {
         await Message.update(
           {
             isProcessed: true
@@ -332,7 +330,7 @@ export async function processMessages() {
         );
       });
 
-      await benchmark.measure("blockGroupTransactionCommit", async () => {
+      await benchmark.measureAsync("blockGroupTransactionCommit", async () => {
         await blockGroupTransaction.commit();
       });
     } catch (err) {
@@ -408,7 +406,7 @@ async function processMessage(msg, encodedMessage, height, blockGroupTransaction
     throw Error("No handler for message of type: " + msg.type);
   }
 
-  await benchmark.measure(msg.type, async () => {
+  await benchmark.measureAsync(msg.type, async () => {
     await messageHandlers[msg.type](encodedMessage, height, blockGroupTransaction, msg);
   });
 }

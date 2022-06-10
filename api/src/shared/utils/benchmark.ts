@@ -15,7 +15,15 @@ let firstTime = null;
 let lastTime = null;
 let activeTimer = null;
 
-export async function measure(name: string, fn: () => Promise<void>): Promise<void> {
+export function measure<T>(name: string, fn: () => T): T {
+  const timer = startTimer(name);
+  const result = fn();
+  timer.end();
+
+  return result;
+}
+
+export async function measureAsync<T>(name: string, fn: () => Promise<T>): Promise<T> {
   const timer = startTimer(name);
   const result = await fn();
   timer.end();
@@ -131,7 +139,9 @@ function getPrettyTime(time: number): string {
     return `${round(time, 0)}ms`;
   } else if (time < 60 * 1_000) {
     return `${round(time / 1_000, 2)}s`;
-  } else {
+  } else if (time < 60 * 60 * 1_000) {
     return `${Math.floor(time / 1_000 / 60)}m ${Math.round((time / 1000) % 60)}s`;
+  } else {
+    return `${Math.floor(time / 1_000 / 60 / 60)}h ${Math.floor(time / 1_000 / 60) % 60}m`;
   }
 }
