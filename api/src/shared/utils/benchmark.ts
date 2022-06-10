@@ -15,6 +15,30 @@ let firstTime = null;
 let lastTime = null;
 let activeTimer = null;
 
+export function measureMethod(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+
+  descriptor.value = function (...args: any[]) {
+    const timer = startTimer(`${target.constructor.name}.${propertyKey}`);
+    const result = originalMethod.apply(this, args);
+    timer.end();
+
+    return result;
+  };
+}
+
+export function measureMethodAsync(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+
+  descriptor.value = async function (...args: any[]) {
+    const timer = startTimer(`${target.constructor.name}.${propertyKey}`);
+    const result = await originalMethod.apply(this, args);
+    timer.end();
+
+    return result;
+  };
+}
+
 export function measure<T>(name: string, fn: () => T): T {
   const timer = startTimer(name);
   const result = fn();

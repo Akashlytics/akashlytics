@@ -205,19 +205,10 @@ class StatsProcessor {
 
       const blockGroupTransaction = await sequelize.transaction();
 
-      const resourceTimer = benchmark.startTimer("getTotalResources");
       let totalResources = await this.getTotalResources(blockGroupTransaction, firstBlockToProcess);
-      resourceTimer.end();
 
-      const predictedTimer = benchmark.startTimer("getPredictedHeights");
-      let predictedClosedHeights = await Lease.findAll({
-        attributes: ["id", "predictedClosedHeight"],
-        where: {
-          predictedClosedHeight: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
-        }
-      });
+      let predictedClosedHeights = await this.getFuturePredictedCloseHeights(firstBlockToProcess, lastBlockToProcess, blockGroupTransaction);
       let shouldRefreshPredictedHeights = false;
-      predictedTimer.end();
 
       try {
         for (const block of blocks) {
@@ -235,12 +226,12 @@ class StatsProcessor {
 
               const decodeTimer = benchmark.startTimer("decodeTx");
               const tx = blockData.block.data.txs.find((t) => sha256(Buffer.from(t, "base64")).toUpperCase() === transaction.hash);
-              let encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
+              const encodedMessage = decodeTxRaw(fromBase64(tx)).body.messages[msg.index].value;
               decodeTimer.end();
 
-              const processTimer = benchmark.startTimer("processMessage");
-              await this.processMessage(msg, encodedMessage, block.height, blockGroupTransaction);
-              processTimer.end();
+              await benchmark.measure("processMessage", async () => {
+                await this.processMessage(msg, encodedMessage, block.height, blockGroupTransaction);
+              });
 
               if (msg.relatedDeploymentId) {
                 await benchmark.measureAsync("saveRelatedDeploymentId", async () => {
@@ -251,22 +242,12 @@ class StatsProcessor {
           }
 
           if (shouldRefreshPredictedHeights) {
-            await benchmark.measureAsync("getPredictedHeights", async () => {
-              predictedClosedHeights = await Lease.findAll({
-                attributes: ["id", "predictedClosedHeight"],
-                where: {
-                  predictedClosedHeight: { [Op.gte]: firstBlockToProcess, [Op.lte]: lastBlockToProcess }
-                },
-                transaction: blockGroupTransaction
-              });
-              shouldRefreshPredictedHeights = false;
-            });
+            predictedClosedHeights = await this.getFuturePredictedCloseHeights(firstBlockToProcess, lastBlockToProcess, blockGroupTransaction);
+            shouldRefreshPredictedHeights = false;
           }
 
-          if (predictedClosedHeights.find((x) => x.predictedClosedHeight === block.height)) {
-            const resourceTimer = benchmark.startTimer("getTotalResources");
+          if (predictedClosedHeights.includes(block.height)) {
             totalResources = await this.getTotalResources(blockGroupTransaction, firstBlockToProcess);
-            resourceTimer.end();
           }
 
           await benchmark.measureAsync("blockUpdate", async () => {
@@ -330,7 +311,20 @@ class StatsProcessor {
     processingStatus = null;
   }
 
-  //@benchmark.measureFunction
+  @benchmark.measureMethodAsync
+  private async getFuturePredictedCloseHeights(firstBlock: number, lastBlock: number, blockGroupTransaction) {
+    const leases = await Lease.findAll({
+      attributes: ["predictedClosedHeight"],
+      where: {
+        predictedClosedHeight: { [Op.gte]: firstBlock, [Op.lte]: lastBlock }
+      },
+      transaction: blockGroupTransaction
+    });
+
+    return leases.map((x) => x.predictedClosedHeight);
+  }
+
+  @benchmark.measureMethod
   private checkShouldRefreshPredictedCloseHeight(msg: Message): boolean {
     return [
       "/akash.deployment.v1beta1.MsgCreateDeployment",
@@ -348,8 +342,8 @@ class StatsProcessor {
     ].includes(msg.type);
   }
 
+  @benchmark.measureMethodAsync
   private async getTotalResources(blockGroupTransaction, height) {
-    const findAllTimer = benchmark.startTimer("leaseFindAll");
     const totalResources = await Lease.findAll({
       attributes: ["cpuUnits", "memoryQuantity", "storageQuantity", "price"],
       where: {
@@ -359,19 +353,13 @@ class StatsProcessor {
       transaction: blockGroupTransaction
     });
 
-    findAllTimer.end();
-
-    const addUpTimer = benchmark.startTimer("addUp");
-    const result = {
+    return {
       count: totalResources.length,
       cpuSum: totalResources.map((x) => x.cpuUnits).reduce((a, b) => a + b, 0),
       memorySum: totalResources.map((x) => x.memoryQuantity).reduce((a, b) => a + b, 0),
       storageSum: totalResources.map((x) => x.storageQuantity).reduce((a, b) => a + b, 0),
       priceSum: totalResources.map((x) => x.price).reduce((a, b) => a + b, 0)
     };
-    addUpTimer.end();
-
-    return result;
   }
 
   public hasMessageHandlerFor(messageType: string): boolean {
