@@ -399,7 +399,7 @@ class StatsProcessor {
     }
 
     await benchmark.measureAsync(msg.type, async () => {
-      await this.messageHandlers[msg.type](encodedMessage, height, blockGroupTransaction, msg);
+      await this.messageHandlers[msg.type].bind(this)(encodedMessage, height, blockGroupTransaction, msg);
     });
   }
 
