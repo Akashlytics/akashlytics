@@ -206,7 +206,6 @@ class StatsProcessor {
       let totalResources = await this.getTotalResources(blockGroupTransaction, firstBlockToProcess);
 
       let predictedClosedHeights = await this.getFuturePredictedCloseHeights(firstBlockToProcess, lastBlockToProcess, blockGroupTransaction);
-      let shouldRefreshPredictedHeights = false;
 
       try {
         for (const block of blocks) {
@@ -214,8 +213,10 @@ class StatsProcessor {
           const blockData = await getBlockByHeight(blockHeightToKey(block.height));
           getBlockByHeightTimer.end();
 
+          let shouldRefreshPredictedHeights = false;
+
           for (const transaction of block.transactions) {
-            for (let msg of transaction.messages) {
+            for (const msg of transaction.messages) {
               processingStatus = `Processing message ${msg.indexInBlock} of block #${block.height}`;
 
               console.log(`Processing message ${msg.type} - Block #${block.height}`);
@@ -241,10 +242,9 @@ class StatsProcessor {
 
           if (shouldRefreshPredictedHeights) {
             predictedClosedHeights = await this.getFuturePredictedCloseHeights(firstBlockToProcess, lastBlockToProcess, blockGroupTransaction);
-            shouldRefreshPredictedHeights = false;
           }
 
-          if (predictedClosedHeights.includes(block.height)) {
+          if (shouldRefreshPredictedHeights || predictedClosedHeights.includes(block.height)) {
             totalResources = await this.getTotalResources(blockGroupTransaction, firstBlockToProcess);
           }
 
