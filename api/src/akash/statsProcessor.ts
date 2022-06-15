@@ -245,7 +245,7 @@ class StatsProcessor {
           }
 
           if (shouldRefreshPredictedHeights || predictedClosedHeights.includes(block.height)) {
-            totalResources = await this.getTotalResources(blockGroupTransaction, firstBlockToProcess);
+            totalResources = await this.getTotalResources(blockGroupTransaction, block.height);
           }
 
           await benchmark.measureAsync("blockUpdate", async () => {
@@ -324,18 +324,22 @@ class StatsProcessor {
 
   private checkShouldRefreshPredictedCloseHeight(msg: Message): boolean {
     return [
+      // v1beta1
       "/akash.deployment.v1beta1.MsgCreateDeployment",
       "/akash.deployment.v1beta1.MsgCloseDeployment",
       "/akash.market.v1beta1.MsgCreateLease",
       "/akash.market.v1beta1.MsgCloseLease",
       "/akash.market.v1beta1.MsgCloseBid",
       "/akash.deployment.v1beta1.MsgDepositDeployment",
+      "/akash.market.v1beta1.MsgWithdrawLease",
+      // v1beta2
       "/akash.deployment.v1beta2.MsgCreateDeployment",
       "/akash.deployment.v1beta2.MsgCloseDeployment",
       "/akash.market.v1beta2.MsgCreateLease",
       "/akash.market.v1beta2.MsgCloseLease",
       "/akash.market.v1beta2.MsgCloseBid",
-      "/akash.deployment.v1beta2.MsgDepositDeployment"
+      "/akash.deployment.v1beta2.MsgDepositDeployment",
+      "/akash.market.v1beta2.MsgWithdrawLease"
     ].includes(msg.type);
   }
 
