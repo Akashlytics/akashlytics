@@ -764,15 +764,15 @@ class StatsProcessor {
       include: [{ model: Lease }],
       transaction: blockGroupTransaction
     });
-  
+
     if (!deployment) throw new Error(`Deployment not found for owner: ${owner} and dseq: ${dseq}`);
-  
+
     const lease = deployment.leases.find((x) => x.gseq === gseq && x.oseq === oseq && x.provider === provider);
-  
+
     if (!lease) throw new Error(`Lease not found for gseq: ${gseq}, oseq: ${oseq} and provider: ${provider}`);
-  
+
     await accountSettle(deployment, height, blockGroupTransaction);
-  
+
     msg.relatedDeploymentId = deployment.id;
   }
 
