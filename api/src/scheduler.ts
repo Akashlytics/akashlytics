@@ -44,7 +44,7 @@ export class Scheduler {
   public start(): void {
     for (const task of this.tasks.values()) {
       if (task.runAtStart) {
-        task.function();
+        this.runTask(task);
       }
 
       setInterval(() => {
@@ -55,28 +55,37 @@ export class Scheduler {
         }
 
         console.log(`Starting task "${task.name}"`);
-        runningTask.runningPromise = runningTask
-          .function()
-          .then(() => {
-            console.log("Task finished successfully");
-            runningTask.successfulRunCount++;
-          })
-          .catch((err) => {
-            console.log("Task failed");
-            runningTask.failedRunCount++;
-            runningTask.latestError = err;
-          })
-          .finally(() => {
-            console.log(`Task "${task.name}" finished`);
-            runningTask.runningPromise = null;
-          });
+        this.runTask(runningTask);
       }, task.interval);
-
-      //setInterval(() => this.displayTaskStatus(), 5000);
     }
+
+    setInterval(() => this.displayTaskStatus(), 5000);
   }
 
-  // public displayTaskStatus(): void {
-  //   console.table(Array.from(this.tasks.values()));
-  // }
+  private runTask(runningTask: TaskDef): void {
+    runningTask.runningPromise = runningTask
+      .function()
+      .then(() => {
+        console.log(`Task "${runningTask.name}" completed successfully`);
+        runningTask.successfulRunCount++;
+      })
+      .catch((err) => {
+        console.error(`Task "${runningTask.name}" failed: ${err}`);
+        runningTask.failedRunCount++;
+        runningTask.latestError = err;
+      })
+      .finally(() => {
+        runningTask.runningPromise = null;
+      });
+  }
+
+  public displayTaskStatus(): void {
+    console.table(
+      Array.from(this.tasks.values()).map((task) => ({
+        ...task,
+        runCount: task.runCount,
+        latestError: task.latestError && (typeof task.latestError === "string" ? task.latestError : task.latestError.message)
+      }))
+    );
+  }
 }

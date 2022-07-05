@@ -1,7 +1,5 @@
 import fetch from "node-fetch";
 
-const reftreshInterval = 5 * 60 * 1000; // 5min
-
 let aktMarketData = null;
 
 export async function fetchLatestData() {

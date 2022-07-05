@@ -6,9 +6,7 @@ import { round, uaktToAKT } from "@src/shared/utils/math";
 import { isSyncing, syncingStatus } from "@src/akash/akashSync";
 import { processingStatus } from "@src/akash/statsProcessor";
 import { sleep } from "@src/shared/utils/delay";
-import { isSyncingPrices } from "./priceHistoryProvider";
 
-let isCalculatingRevenue = false;
 let latestCalculateDate = null;
 
 let cachedRevenue = null;
@@ -71,7 +69,6 @@ export const getStatus = async () => {
     latestBlockInDb,
     latestTx: latestTx.hash,
     latestCalculateDate,
-    isCalculatingRevenue,
     isSyncing,
     syncingStatus,
     processingStatus
@@ -83,12 +80,8 @@ export const getWeb3IndexRevenue = async (debug: boolean) => {
     return cachedRevenue;
   }
 
-  while (isCalculatingRevenue || isSyncingPrices) {
-    await sleep(5000);
-  }
-
   const dailyNetworkRevenues = await getDailyRevenue();
-  // console.log(dailyNetworkRevenues[0]);
+
   let days = dailyNetworkRevenues.map((r) => ({
     date: r.date.getTime() / 1000,
     revenue: round(r.usd, 2),
@@ -209,6 +202,9 @@ async function getDailyRevenue() {
         required: true
       }
     ],
+    where: {
+      aktPrice: { [Op.not]: null }
+    },
     order: [["date", "ASC"]]
   });
 

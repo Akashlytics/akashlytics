@@ -1,18 +1,8 @@
 import fetch from "node-fetch";
+import https from "https";
 import { Provider, ProviderAttribute, ProviderAttributeSignature } from "@src/db/schema";
 
-const https = require("https");
-
-const reftreshInterval = 60 * 60 * 1_000; // 60min
-
-export const fetchProvidersInfoAtInterval = async () => {
-  await fetchProvidersInfo();
-  setInterval(async () => {
-    await fetchProvidersInfo();
-  }, reftreshInterval);
-};
-
-export async function fetchProvidersInfo() {
+export async function syncProvidersInfo() {
   let providers = await Provider.findAll();
 
   const httpsAgent = new https.Agent({

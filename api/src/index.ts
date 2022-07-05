@@ -3,7 +3,7 @@ import cors from "cors";
 import cache from "./caching/cacheMiddleware";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
-import { syncPriceHistoryAtInterval, updatePriceHistory } from "./db/priceHistoryProvider";
+import { syncPriceHistory } from "./db/priceHistoryProvider";
 import { syncBlocks, isSyncing } from "./akash/akashSync";
 import { deleteCache, getCacheSize } from "./akash/dataStore";
 import { executionMode, ExecutionMode, isProd } from "./shared/constants";
@@ -14,7 +14,7 @@ import { statsProcessor } from "./akash/statsProcessor";
 import { getGraphData, getDashboardData } from "./db/statsProvider";
 import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
-import { fetchProvidersInfoAtInterval, getNetworkCapacity, getProviders } from "./providers/providerStatusProvider";
+import { getNetworkCapacity, getProviders, syncProvidersInfo } from "./providers/providerStatusProvider";
 import { getTemplateGallery } from "./providers/templateReposProvider";
 import { Scheduler } from "./scheduler";
 
@@ -230,17 +230,11 @@ async function initApp() {
       await computeAtInterval();
       console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
-      // await marketDataProvider.syncAtInterval();
-      // await computeAtInterval();
-      // await syncPriceHistoryAtInterval();
-      // await fetchProvidersInfoAtInterval();
-      // setInterval(async () => {
-      //   await computeAtInterval();
-      //   await updatePriceHistory();
-      // }, 15 * 60 * 1000); // 15min
-
       const scheduler = new Scheduler();
-      scheduler.registerTask("Market date", marketDataProvider.fetchLatestData, "30 seconds");
+      scheduler.registerTask("Sync Blocks", computeAtInterval, "15 minutes");
+      scheduler.registerTask("Sync AKT Market Data", marketDataProvider.fetchLatestData, "5 minutes");
+      scheduler.registerTask("Sync AKT Price History", syncPriceHistory, "1 hour", false);
+      scheduler.registerTask("Sync Providers Info", syncProvidersInfo, "15 minutes");
       scheduler.start();
     } else {
       throw "Invalid execution mode";
