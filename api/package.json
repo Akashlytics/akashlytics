@@ -30,6 +30,7 @@
     "dotenv": "^12.0.4",
     "express": "^4.17.1",
     "http-proxy-middelware": "0.0.1-security",
+    "human-interval": "^2.0.1",
     "js-sha256": "^0.9.0",
     "level": "^8.0.0",
     "markdown-to-text": "^0.1.1",

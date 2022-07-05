@@ -4,14 +4,7 @@ const reftreshInterval = 5 * 60 * 1000; // 5min
 
 let aktMarketData = null;
 
-export const syncAtInterval = async () => {
-  await fetchLatestData();
-  setInterval(async () => {
-    await fetchLatestData();
-  }, reftreshInterval);
-};
-
-async function fetchLatestData() {
+export async function fetchLatestData() {
   const endpointUrl = "https://api.coingecko.com/api/v3/coins/akash-network";
 
   console.log("Fetching latest market data from " + endpointUrl);

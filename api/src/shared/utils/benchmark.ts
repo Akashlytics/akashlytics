@@ -1,4 +1,5 @@
 import { performance } from "perf_hooks";
+import { getPrettyTime } from "./date";
 import { round } from "./math";
 
 type BenchmarkDetails = {
@@ -154,18 +155,4 @@ export function displayTimesForGroup(group: string) {
   });
 
   console.table(results);
-}
-
-function getPrettyTime(time: number): string {
-  if (time < 10) {
-    return `${round(time, 2)}ms`;
-  } else if (time < 1_000) {
-    return `${round(time, 0)}ms`;
-  } else if (time < 60 * 1_000) {
-    return `${round(time / 1_000, 2)}s`;
-  } else if (time < 60 * 60 * 1_000) {
-    return `${Math.floor(time / 1_000 / 60)}m ${Math.round((time / 1000) % 60)}s`;
-  } else {
-    return `${Math.floor(time / 1_000 / 60 / 60)}h ${Math.floor(time / 1_000 / 60) % 60}m`;
-  }
 }

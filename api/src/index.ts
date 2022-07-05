@@ -16,6 +16,7 @@ import * as marketDataProvider from "./providers/marketDataProvider";
 import { fetchGithubReleases } from "./providers/githubProvider";
 import { fetchProvidersInfoAtInterval, getNetworkCapacity, getProviders } from "./providers/providerStatusProvider";
 import { getTemplateGallery } from "./providers/templateReposProvider";
+import { Scheduler } from "./scheduler";
 
 require("dotenv").config();
 
@@ -229,14 +230,18 @@ async function initApp() {
       await computeAtInterval();
       console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
-      await marketDataProvider.syncAtInterval();
-      await computeAtInterval();
-      await syncPriceHistoryAtInterval();
-      await fetchProvidersInfoAtInterval();
-      setInterval(async () => {
-        await computeAtInterval();
-        await updatePriceHistory();
-      }, 15 * 60 * 1000); // 15min
+      // await marketDataProvider.syncAtInterval();
+      // await computeAtInterval();
+      // await syncPriceHistoryAtInterval();
+      // await fetchProvidersInfoAtInterval();
+      // setInterval(async () => {
+      //   await computeAtInterval();
+      //   await updatePriceHistory();
+      // }, 15 * 60 * 1000); // 15min
+
+      const scheduler = new Scheduler();
+      scheduler.registerTask("Market date", marketDataProvider.fetchLatestData, "30 seconds");
+      scheduler.start();
     } else {
       throw "Invalid execution mode";
     }
