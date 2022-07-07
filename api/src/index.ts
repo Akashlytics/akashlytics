@@ -227,11 +227,11 @@ async function initApp() {
       await statsProcessor.rebuildStatsTables();
     } else if (executionMode === ExecutionMode.RebuildAll) {
       console.time("Rebuilding all");
-      await computeAtInterval();
+      await syncLatestBlocks();
       console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
       const scheduler = new Scheduler();
-      scheduler.registerTask("Sync Blocks", computeAtInterval, "15 minutes");
+      scheduler.registerTask("Sync Blocks", syncLatestBlocks, "15 minutes");
       scheduler.registerTask("Sync AKT Market Data", marketDataProvider.fetchLatestData, "5 minutes");
       scheduler.registerTask("Sync AKT Price History", syncPriceHistory, "1 hour", false);
       scheduler.registerTask("Sync Providers Info", syncProvidersInfo, "15 minutes");
@@ -248,7 +248,7 @@ async function initApp() {
   }
 }
 
-async function computeAtInterval() {
+async function syncLatestBlocks() {
   try {
     if (isSyncing) return;
 

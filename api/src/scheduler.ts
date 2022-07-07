@@ -83,6 +83,7 @@ export class Scheduler {
     console.table(
       Array.from(this.tasks.values()).map((task) => ({
         ...task,
+        interval: getPrettyTime(task.interval),
         runCount: task.runCount,
         latestError: task.latestError && (typeof task.latestError === "string" ? task.latestError : task.latestError.message)
       }))
