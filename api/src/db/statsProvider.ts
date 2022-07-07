@@ -2,16 +2,13 @@ import { Block, Day, Op } from "./schema";
 import { subHours } from "date-fns";
 
 export const getDashboardData = async () => {
-  console.time("latestBlock");
   const latestBlockStats = await Block.findOne({
     where: {
       isProcessed: true
     },
     order: [["height", "DESC"]]
   });
-  console.timeEnd("latestBlock");
-
-  console.time("compareBlock");
+  
   const compareDate = subHours(latestBlockStats.datetime, 24);
   const compareBlockStats = await Block.findOne({
     order: [["datetime", "ASC"]],
@@ -19,9 +16,7 @@ export const getDashboardData = async () => {
       datetime: { [Op.gte]: compareDate }
     }
   });
-  console.timeEnd("compareBlock");
-
-  console.time("secondCompareBlock");
+  
   const secondCompareDate = subHours(latestBlockStats.datetime, 48);
   const secondCompareBlockStats = await Block.findOne({
     order: [["datetime", "ASC"]],
@@ -29,7 +24,6 @@ export const getDashboardData = async () => {
       datetime: { [Op.gte]: secondCompareDate }
     }
   });
-  console.timeEnd("secondCompareBlock");
 
   return {
     now: {
