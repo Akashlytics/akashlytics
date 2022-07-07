@@ -29,7 +29,6 @@ export const initDatabase = async () => {
     console.log("Deleting existing database files.");
     await Promise.all([
       fs.promises.rm(sqliteDatabasePath, { force: true }),
-      fs.promises.rm("./data/latestDownloadedHeight.txt", { force: true }),
       fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true })
     ]);
   }
@@ -38,7 +37,6 @@ export const initDatabase = async () => {
     console.log("Downloading database files...");
     await Promise.all([
       download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath),
-      download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedHeight.txt", "./data/latestDownloadedHeight.txt"),
       download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt")
     ]);
     console.log("Database downloaded");

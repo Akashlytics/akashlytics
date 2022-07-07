@@ -36,16 +36,13 @@ function decodeTxRaw(tx) {
 }
 
 async function getLatestDownloadedHeight() {
-  if (fs.existsSync("./data/latestDownloadedHeight.txt")) {
-    const fileContent = await fs.promises.readFile("./data/latestDownloadedHeight.txt", { encoding: "utf-8" });
-    return parseInt(fileContent);
+  const keyStr = await blocksDb.keys({ reverse: true }).next();
+
+  if (keyStr) {
+    return parseInt(keyStr);
   } else {
     return 0;
   }
-}
-
-async function saveLatestDownloadedHeight(height) {
-  await fs.promises.writeFile("./data/latestDownloadedHeight.txt", height.toString(), { encoding: "utf-8" });
 }
 
 async function getLatestDownloadedTxHeight() {
@@ -274,8 +271,6 @@ async function downloadBlocks(startHeight: number, endHeight: number) {
   syncingStatus = "Saving latest downloaded height";
 
   if (shouldStop) throw shouldStop;
-
-  saveLatestDownloadedHeight(endHeight);
 }
 
 async function downloadTransactions() {
