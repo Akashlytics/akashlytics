@@ -225,15 +225,25 @@ async function initApp() {
       console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
       const scheduler = new Scheduler({
+        healthchecksEnabled: process.env.HealthchecksEnabled === "true",
         errorHandler: (task, error) => {
           console.error(`Task "${task.name}" failed: ${error}`);
           Sentry.captureException(error);
         }
       });
-      scheduler.registerTask("Sync Blocks", syncBlocks, "7 seconds");
-      scheduler.registerTask("Sync AKT Market Data", marketDataProvider.fetchLatestData, "5 minutes");
-      scheduler.registerTask("Sync AKT Price History", syncPriceHistory, "1 hour", false);
-      scheduler.registerTask("Sync Providers Info", syncProvidersInfo, "15 minutes");
+      scheduler.registerTask("Sync Blocks", syncBlocks, "7 seconds", true, {
+        id: "66fa2c48-8a7c-4245-81ac-a0493298f9de",
+        measureDuration: true
+      });
+      scheduler.registerTask("Sync AKT Market Data", marketDataProvider.fetchLatestData, "5 minutes", true, {
+        id: "23e94b00-940a-4b4a-8b61-c2167865fa2f",
+        measureDuration: true
+      });
+      scheduler.registerTask("Sync AKT Price History", syncPriceHistory, "1 hour", true, { id: "21a14234-8721-4477-a792-049f6c6104d8", measureDuration: true });
+      scheduler.registerTask("Sync Providers Info", syncProvidersInfo, "15 minutes", true, {
+        id: "98b40f97-b946-4d6b-a957-5a6e266a4a93",
+        measureDuration: true
+      });
       scheduler.start();
     } else {
       throw "Invalid execution mode";
