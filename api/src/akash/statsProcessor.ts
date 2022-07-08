@@ -63,25 +63,26 @@ async function getBlockByHeight(height) {
   return JSON.parse(content);
 }
 
-let deploymentIdCache = [];
-function addToDeploymentIdCache(owner, dseq, id) {
-  deploymentIdCache[owner + "_" + dseq] = id;
-}
-function getDeploymentIdFromCache(owner, dseq) {
-  return deploymentIdCache[owner + "_" + dseq];
-}
-
-let deploymentGroupIdCache = [];
-function addToDeploymentGroupIdCache(owner, dseq, gseq, id) {
-  deploymentGroupIdCache[owner + "_" + dseq + "_" + gseq] = id;
-}
-function getDeploymentGroupIdFromCache(owner, dseq, gseq) {
-  return deploymentGroupIdCache[owner + "_" + dseq + "_" + gseq];
-}
-
 class StatsProcessor {
   private totalLeaseCount = 0;
   private activeProviderCount = 0;
+  private deploymentIdCache: { [key: string]: string } = {};
+  private deploymentGroupIdCache: { [key: string]: string } = {};
+  private cacheInitialized: boolean = false;
+
+  private addToDeploymentIdCache(owner: string, dseq: number, id: string) {
+    this.deploymentIdCache[owner + "_" + dseq] = id;
+  }
+  private getDeploymentIdFromCache(owner: string, dseq: number) {
+    return this.deploymentIdCache[owner + "_" + dseq];
+  }
+
+  private addToDeploymentGroupIdCache(owner: string, dseq: number, gseq: number, id: string) {
+    this.deploymentGroupIdCache[owner + "_" + dseq + "_" + gseq] = id;
+  }
+  private getDeploymentGroupIdFromCache(owner: string, dseq: number, gseq: number): string {
+    return this.deploymentGroupIdCache[owner + "_" + dseq + "_" + gseq];
+  }
 
   public async rebuildStatsTables() {
     await Bid.drop();
@@ -124,25 +125,38 @@ class StatsProcessor {
     await this.processMessages();
   }
 
-  public async processMessages() {
-    processingStatus = "Processing messages";
-
+  @benchmark.measureMethodAsync
+  public async initCache() {
     console.log("Fetching deployment id cache...");
 
     const existingDeployments = await Deployment.findAll({
       attributes: ["id", "owner", "dseq"]
     });
 
-    existingDeployments.forEach((d) => addToDeploymentIdCache(d.owner, d.dseq, d.id));
+    existingDeployments.forEach((d) => this.addToDeploymentIdCache(d.owner, d.dseq, d.id));
 
     const existingDeploymentGroups = await DeploymentGroup.findAll({
       attributes: ["id", "owner", "dseq", "gseq"]
     });
-    existingDeploymentGroups.forEach((d) => addToDeploymentGroupIdCache(d.owner, d.dseq, d.gseq, d.id));
+
+    existingDeploymentGroups.forEach((d) => this.addToDeploymentGroupIdCache(d.owner, d.dseq, d.gseq, d.id));
+
+    this.cacheInitialized = true;
+  }
+
+  public async processMessages() {
+    processingStatus = "Processing messages";
+
+    if (!this.cacheInitialized) {
+      await this.initCache();
+    } else {
+      console.log("Cache already filled");
+    }
 
     console.log("Querying unprocessed messages...");
 
     const groupSize = 10_000;
+
     this.totalLeaseCount = await Lease.count();
     this.activeProviderCount = await Provider.count();
 
@@ -428,7 +442,7 @@ class StatsProcessor {
 
     msg.relatedDeploymentId = created.id;
 
-    addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
+    this.addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
 
     for (const group of decodedMessage.groups) {
       const createdGroup = await DeploymentGroup.create(
@@ -441,7 +455,7 @@ class StatsProcessor {
         },
         { transaction: blockGroupTransaction }
       );
-      addToDeploymentGroupIdCache(createdGroup.owner, createdGroup.dseq, createdGroup.gseq, createdGroup.id);
+      this.addToDeploymentGroupIdCache(createdGroup.owner, createdGroup.dseq, createdGroup.gseq, createdGroup.id);
 
       for (const groupResource of group.resources) {
         await DeploymentGroupResource.create(
@@ -478,7 +492,7 @@ class StatsProcessor {
 
     msg.relatedDeploymentId = created.id;
 
-    addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
+    this.addToDeploymentIdCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber(), created.id);
 
     for (const group of decodedMessage.groups) {
       const createdGroup = await DeploymentGroup.create(
@@ -491,7 +505,7 @@ class StatsProcessor {
         },
         { transaction: blockGroupTransaction }
       );
-      addToDeploymentGroupIdCache(createdGroup.owner, createdGroup.dseq, createdGroup.gseq, createdGroup.id);
+      this.addToDeploymentGroupIdCache(createdGroup.owner, createdGroup.dseq, createdGroup.gseq, createdGroup.id);
 
       for (const groupResource of group.resources) {
         await DeploymentGroupResource.create(
@@ -514,7 +528,7 @@ class StatsProcessor {
 
     const deployment = await Deployment.findOne({
       where: {
-        id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
+        id: this.getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
       },
       include: [{ model: Lease }],
       transaction: blockGroupTransaction
@@ -548,7 +562,11 @@ class StatsProcessor {
       transaction: blockGroupTransaction
     });
 
-    const deploymentGroupId = getDeploymentGroupIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber(), decodedMessage.bid_id.gseq);
+    const deploymentGroupId = this.getDeploymentGroupIdFromCache(
+      decodedMessage.bid_id.owner,
+      decodedMessage.bid_id.dseq.toNumber(),
+      decodedMessage.bid_id.gseq
+    );
     const deploymentGroups = await DeploymentGroupResource.findAll({
       attributes: ["count", "cpuUnits", "memoryQuantity", "storageQuantity"],
       where: {
@@ -557,7 +575,7 @@ class StatsProcessor {
       transaction: blockGroupTransaction
     });
 
-    const deploymentId = getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber());
+    const deploymentId = this.getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber());
 
     const deployment = await Deployment.findOne({
       where: {
@@ -605,7 +623,7 @@ class StatsProcessor {
 
     const deployment = await Deployment.findOne({
       where: {
-        id: getDeploymentIdFromCache(decodedMessage.lease_id.owner, decodedMessage.lease_id.dseq.toNumber())
+        id: this.getDeploymentIdFromCache(decodedMessage.lease_id.owner, decodedMessage.lease_id.dseq.toNumber())
       },
       include: [{ model: Lease }],
       transaction: blockGroupTransaction
@@ -649,7 +667,7 @@ class StatsProcessor {
       { transaction: blockGroupTransaction }
     );
 
-    msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
+    msg.relatedDeploymentId = this.getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
   }
 
   private async handleCreateBidV2(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
@@ -668,7 +686,7 @@ class StatsProcessor {
       { transaction: blockGroupTransaction }
     );
 
-    msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
+    msg.relatedDeploymentId = this.getDeploymentIdFromCache(decodedMessage.order_id.owner, decodedMessage.order_id.dseq.toNumber());
   }
 
   private async handleCloseBid(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
@@ -676,7 +694,7 @@ class StatsProcessor {
 
     const deployment = await Deployment.findOne({
       where: {
-        id: getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber())
+        id: this.getDeploymentIdFromCache(decodedMessage.bid_id.owner, decodedMessage.bid_id.dseq.toNumber())
       },
       include: [{ model: Lease }],
       transaction: blockGroupTransaction
@@ -720,7 +738,7 @@ class StatsProcessor {
 
     const deployment = await Deployment.findOne({
       where: {
-        id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
+        id: this.getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
       },
       include: [
         {
