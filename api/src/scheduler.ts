@@ -23,8 +23,19 @@ class TaskDef {
   }
 }
 
+interface SchedulerConfig {
+  errorHandler?: (task: TaskDef, error: Error) => void;
+}
+
 export class Scheduler {
   private tasks: Map<string, TaskDef> = new Map();
+  private config: SchedulerConfig = {};
+
+  constructor(config?: SchedulerConfig) {
+    this.config = {
+      errorHandler: config?.errorHandler || ((task, err) => console.error(`Task "${task.name}" failed: ${err}`))
+    };
+  }
 
   public registerTask(name: string, fn: () => Promise<void>, interval: number | string, runAtStart: boolean = true): void {
     if (this.tasks.has(name)) {
@@ -70,7 +81,7 @@ export class Scheduler {
         runningTask.successfulRunCount++;
       })
       .catch((err) => {
-        console.error(`Task "${runningTask.name}" failed: ${err}`);
+        this.config.errorHandler(runningTask, err);
         runningTask.failedRunCount++;
         runningTask.latestError = err;
       })

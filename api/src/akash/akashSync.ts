@@ -1,7 +1,7 @@
 import fs from "fs";
 import base64js from "base64-js";
 import { statsProcessor } from "./statsProcessor";
-import { blockHeightToKey, blocksDb, getCachedBlockByHeight, getCachedTxByHash, txsDb } from "./dataStore";
+import { blockHeightToKey, blocksDb, deleteCache, getCachedBlockByHeight, getCachedTxByHash, txsDb } from "./dataStore";
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day, sequelize } from "@src/db/schema";
 import * as benchmark from "../shared/utils/benchmark";
@@ -11,7 +11,6 @@ import { sha256 } from "js-sha256";
 import { isProd, lastBlockToSync } from "@src/shared/constants";
 import { isEqual } from "date-fns";
 
-export let isSyncing = false;
 export let syncingStatus = null;
 
 const nodeAccessor = createNodeAccessor();
@@ -60,7 +59,6 @@ async function saveLatestDownloadedTxHeight(height) {
 
 export async function syncBlocks() {
   try {
-    isSyncing = true;
     syncingStatus = "Fetching latest block";
 
     const status = await nodeAccessor.fetch("/status");
@@ -103,8 +101,11 @@ export async function syncBlocks() {
     console.error("Error while syncing", err);
     throw err;
   } finally {
-    isSyncing = false;
     syncingStatus = "Done";
+  }
+
+  if (isProd) {
+    await deleteCache();
   }
 }
 

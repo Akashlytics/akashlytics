@@ -3,9 +3,8 @@ import { Block, Transaction, Day } from "./schema";
 import { add, differenceInMinutes } from "date-fns";
 import { getTodayUTC } from "@src/shared/utils/date";
 import { round, uaktToAKT } from "@src/shared/utils/math";
-import { isSyncing, syncingStatus } from "@src/akash/akashSync";
+import { syncingStatus } from "@src/akash/akashSync";
 import { processingStatus } from "@src/akash/statsProcessor";
-import { sleep } from "@src/shared/utils/delay";
 
 let latestCalculateDate = null;
 
@@ -69,7 +68,6 @@ export const getStatus = async () => {
     latestBlockInDb,
     latestTx: latestTx.hash,
     latestCalculateDate,
-    isSyncing,
     syncingStatus,
     processingStatus
   };

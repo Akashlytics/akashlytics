@@ -4,8 +4,8 @@ import cache from "./caching/cacheMiddleware";
 import { getDbSize, initDatabase } from "./db/buildDatabase";
 import { getStatus, getWeb3IndexRevenue } from "./db/networkRevenueProvider";
 import { syncPriceHistory } from "./db/priceHistoryProvider";
-import { syncBlocks, isSyncing } from "./akash/akashSync";
-import { deleteCache, getCacheSize } from "./akash/dataStore";
+import { syncBlocks } from "./akash/akashSync";
+import { getCacheSize } from "./akash/dataStore";
 import { executionMode, ExecutionMode, isProd } from "./shared/constants";
 import { bytesToHumanReadableSize } from "./shared/utils/files";
 import * as Sentry from "@sentry/node";
@@ -30,8 +30,6 @@ app.use(
 
 const { PORT = 3080 } = process.env;
 
-let latestSyncingError = null;
-let latestSyncingErrorDate = null;
 let latestQueryingError = null;
 let latestQueryingErrorDate = null;
 
@@ -159,7 +157,7 @@ web3IndexRouter.get("/status", waitForInitMiddleware, async (req, res) => {
       external: bytesToHumanReadableSize(memoryInBytes.external)
     };
 
-    res.send({ ...debugInfos, latestSyncingError, latestSyncingErrorDate, latestQueryingError, latestQueryingErrorDate, ...cacheSize, dbSize, memory });
+    res.send({ ...debugInfos, latestQueryingError, latestQueryingErrorDate, ...cacheSize, dbSize, memory });
   } catch (err) {
     Sentry.captureException(err);
 
@@ -227,11 +225,16 @@ async function initApp() {
       await statsProcessor.rebuildStatsTables();
     } else if (executionMode === ExecutionMode.RebuildAll) {
       console.time("Rebuilding all");
-      await syncLatestBlocks();
+      await syncBlocks();
       console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
-      const scheduler = new Scheduler();
-      scheduler.registerTask("Sync Blocks", syncLatestBlocks, "7 seconds");
+      const scheduler = new Scheduler({
+        errorHandler: (task, error) => {
+          console.error(`Task "${task.name}" failed: ${error}`);
+          Sentry.captureException(error);
+        }
+      });
+      scheduler.registerTask("Sync Blocks", syncBlocks, "7 seconds");
       scheduler.registerTask("Sync AKT Market Data", marketDataProvider.fetchLatestData, "5 minutes");
       scheduler.registerTask("Sync AKT Price History", syncPriceHistory, "1 hour", false);
       scheduler.registerTask("Sync Providers Info", syncProvidersInfo, "15 minutes");
@@ -240,30 +243,9 @@ async function initApp() {
       throw "Invalid execution mode";
     }
   } catch (err) {
-    latestSyncingError = err;
-    latestSyncingErrorDate = new Date();
     console.error("Error while initializing app", err);
 
     Sentry.captureException(err);
-  }
-}
-
-async function syncLatestBlocks() {
-  try {
-    if (isSyncing) return;
-
-    await syncBlocks();
-
-    if (isProd) {
-      await deleteCache();
-    }
-  } catch (err) {
-    latestSyncingError = err;
-    latestSyncingErrorDate = new Date();
-
-    Sentry.captureException(err);
-
-    console.error(err);
   }
 }
 
