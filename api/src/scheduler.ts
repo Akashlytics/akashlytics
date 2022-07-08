@@ -85,8 +85,6 @@ export class Scheduler {
         this.runTask(runningTask);
       }, task.interval);
     }
-
-    setInterval(() => this.displayTaskStatus(), 5000);
   }
 
   private runTask(runningTask: TaskDef): void {
@@ -142,15 +140,17 @@ export class Scheduler {
     }
   }
 
-  public displayTaskStatus(): void {
-    console.table(
-      Array.from(this.tasks.values()).map((task) => ({
-        ...task,
-        interval: getPrettyTime(task.interval),
-        runCount: task.runCount,
-        latestError: task.latestError && (typeof task.latestError === "string" ? task.latestError : task.latestError.message),
-        healthchecksConfig: !!task.healthchecksConfig
-      }))
-    );
+  public getTasksStatus() {
+    return Array.from(this.tasks.values()).map((task) => ({
+      name: task.name,
+      isRunning: !!task.runningPromise,
+      function: task.function,
+      interval: getPrettyTime(task.interval),
+      runCount: task.runCount,
+      successfulRunCount: task.successfulRunCount,
+      failedRunCount: task.failedRunCount,
+      latestError: task.latestError && (typeof task.latestError === "string" ? task.latestError : task.latestError.message),
+      healthchecksConfig: !!task.healthchecksConfig
+    }));
   }
 }

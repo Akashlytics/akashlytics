@@ -54,6 +54,14 @@ Sentry.init({
   tracesSampleRate: 0.1
 });
 
+const scheduler = new Scheduler({
+  healthchecksEnabled: process.env.HealthchecksEnabled === "true",
+  errorHandler: (task, error) => {
+    console.error(`Task "${task.name}" failed: ${error}`);
+    Sentry.captureException(error);
+  }
+});
+
 // RequestHandler creates a separate execution context using domains, so that every
 // transaction/span/breadcrumb is attached to its own Hub instance
 app.use(Sentry.Handlers.requestHandler());
@@ -142,6 +150,16 @@ apiRouter.get("/getGraphData/:dataName", waitForInitMiddleware, async (req, res)
   }
 });
 
+apiRouter.get("/status", waitForInitMiddleware, async (req, res) => {
+  try {
+    const status = scheduler.getTasksStatus();
+    res.send(status);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
 web3IndexRouter.get("/status", waitForInitMiddleware, async (req, res) => {
   console.log("getting debug infos");
 
@@ -224,13 +242,6 @@ async function initApp() {
       await syncBlocks();
       console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
-      const scheduler = new Scheduler({
-        healthchecksEnabled: process.env.HealthchecksEnabled === "true",
-        errorHandler: (task, error) => {
-          console.error(`Task "${task.name}" failed: ${error}`);
-          Sentry.captureException(error);
-        }
-      });
       scheduler.registerTask("Sync Blocks", syncBlocks, "7 seconds", true, {
         id: "66fa2c48-8a7c-4245-81ac-a0493298f9de",
         measureDuration: true
