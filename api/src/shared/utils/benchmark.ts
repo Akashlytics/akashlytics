@@ -31,7 +31,7 @@ export function measureMethod(target: any, propertyKey: string, descriptor: Prop
 export function measureMethodAsync(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
 
-  descriptor.value = async (...args: any[]) => {
+  descriptor.value = async function (...args: any[]) {
     const timer = startTimer(`${target.constructor.name}.${propertyKey}`);
     const result = await originalMethod.apply(this, args);
     timer.end();
