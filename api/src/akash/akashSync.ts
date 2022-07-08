@@ -224,13 +224,6 @@ async function insertBlocks(startHeight, endHeight) {
       }
     }
   }
-
-  let totalBlockCount = await Block.count();
-  let totalTxCount = await Transaction.count();
-  let totalMsgCount = await Message.count();
-
-  console.log("Total: ");
-  console.table([{ totalBlockCount, totalTxCount, totalMsgCount }]);
 }
 
 async function downloadBlocks(startHeight: number, endHeight: number) {
