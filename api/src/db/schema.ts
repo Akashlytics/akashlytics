@@ -368,7 +368,8 @@ Block.init(
     modelName: "block",
     indexes: [
       { unique: false, fields: ["datetime"] },
-      { unique: false, fields: ["dayId"] }
+      { unique: false, fields: ["dayId"] },
+      { unique: false, fields: ["isProcessed"] }
     ],
     sequelize
   }
