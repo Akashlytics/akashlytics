@@ -159,8 +159,6 @@ web3IndexRouter.get("/status", waitForInitMiddleware, async (req, res) => {
 
     res.send({ ...debugInfos, latestQueryingError, latestQueryingErrorDate, ...cacheSize, dbSize, memory });
   } catch (err) {
-    Sentry.captureException(err);
-
     res.status(500).send(err);
   }
 });
@@ -176,8 +174,6 @@ web3IndexRouter.get("/revenue", waitForInitMiddleware, async (req, res) => {
     latestQueryingError = err;
     latestQueryingErrorDate = new Date();
     console.error(err);
-
-    Sentry.captureException(err);
 
     res.status(500).send("An error occured");
   }
