@@ -1,7 +1,6 @@
 import { isProd } from "@src/shared/constants";
 import { sleep } from "@src/shared/utils/delay";
-
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
 
 const rpcEndpoints = ["http://akash-node.akashlytics.com:26657"];
 
