@@ -231,7 +231,7 @@ async function initApp() {
       console.timeEnd("Rebuilding all");
     } else if (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.SyncOnly) {
       const scheduler = new Scheduler();
-      scheduler.registerTask("Sync Blocks", syncLatestBlocks, "15 minutes");
+      scheduler.registerTask("Sync Blocks", syncLatestBlocks, "7 seconds");
       scheduler.registerTask("Sync AKT Market Data", marketDataProvider.fetchLatestData, "5 minutes");
       scheduler.registerTask("Sync AKT Price History", syncPriceHistory, "1 hour", false);
       scheduler.registerTask("Sync Providers Info", syncProvidersInfo, "15 minutes");
