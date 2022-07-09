@@ -1,5 +1,6 @@
 import base64js from "base64-js";
-import { v1beta1, v1beta2 } from "../proto/akash";
+import * as v1beta1 from "../proto/akash/v1beta1";
+import * as v1beta2 from "../proto/akash/v1beta2";
 import * as uuid from "uuid";
 import { sha256 } from "js-sha256";
 import { blockHeightToKey, blocksDb, txsDb } from "@src/akash/dataStore";
@@ -22,7 +23,7 @@ import { AuthInfo, TxBody, TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import * as benchmark from "../shared/utils/benchmark";
 import { accountSettle } from "@src/shared/utils/akashPaymentSettle";
 import { lastBlockToSync } from "@src/shared/constants";
-import { uint8arrayToString } from "@src/shared/utils/protobuf";
+import { decodeAkashType, uint8arrayToString } from "@src/shared/utils/protobuf";
 
 export let processingStatus = null;
 
@@ -391,13 +392,12 @@ class StatsProcessor {
     }
 
     await benchmark.measureAsync(msg.type, async () => {
-      await this.messageHandlers[msg.type].bind(this)(encodedMessage, height, blockGroupTransaction, msg);
+      const decodedMessage = decodeAkashType(msg.type, encodedMessage);
+      await this.messageHandlers[msg.type].bind(this)(decodedMessage, height, blockGroupTransaction, msg);
     });
   }
 
-  private async handleCreateDeployment(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgCreateDeployment.decode(encodedMessage);
-
+  private async handleCreateDeployment(decodedMessage: v1beta1.MsgCreateDeployment, height: number, blockGroupTransaction, msg: Message) {
     const created = await Deployment.create(
       {
         id: uuid.v4(),
@@ -495,9 +495,7 @@ class StatsProcessor {
     }
   }
 
-  private async handleCloseDeployment(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgCloseDeployment.decode(encodedMessage);
-
+  private async handleCloseDeployment(decodedMessage: v1beta1.MsgCloseDeployment, height: number, blockGroupTransaction, msg: Message) {
     const deployment = await Deployment.findOne({
       where: {
         id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
@@ -521,8 +519,7 @@ class StatsProcessor {
     await deployment.save({ transaction: blockGroupTransaction });
   }
 
-  private async handleCreateLease(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgCreateLease.decode(encodedMessage);
+  private async handleCreateLease(decodedMessage: v1beta1.MsgCreateLease, height: number, blockGroupTransaction, msg: Message) {
     const bid = await Bid.findOne({
       where: {
         owner: decodedMessage.bidId.owner,
@@ -586,9 +583,7 @@ class StatsProcessor {
     this.totalLeaseCount++;
   }
 
-  private async handleCloseLease(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgCloseLease.decode(encodedMessage);
-
+  private async handleCloseLease(decodedMessage: v1beta1.MsgCloseLease, height: number, blockGroupTransaction, msg: Message) {
     const deployment = await Deployment.findOne({
       where: {
         id: getDeploymentIdFromCache(decodedMessage.leaseId.owner, decodedMessage.leaseId.dseq.toNumber())
@@ -619,9 +614,7 @@ class StatsProcessor {
     }
   }
 
-  private async handleCreateBid(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgCreateBid.decode(encodedMessage);
-
+  private async handleCreateBid(decodedMessage: v1beta1.MsgCreateBid, height: number, blockGroupTransaction, msg: Message) {
     await Bid.create(
       {
         owner: decodedMessage.order.owner,
@@ -638,9 +631,7 @@ class StatsProcessor {
     msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order.owner, decodedMessage.order.dseq.toNumber());
   }
 
-  private async handleCreateBidV2(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta2.MsgCreateBid.decode(encodedMessage);
-
+  private async handleCreateBidV2(decodedMessage: v1beta2.MsgCreateBid, height: number, blockGroupTransaction, msg: Message) {
     await Bid.create(
       {
         owner: decodedMessage.order.owner,
@@ -657,9 +648,7 @@ class StatsProcessor {
     msg.relatedDeploymentId = getDeploymentIdFromCache(decodedMessage.order.owner, decodedMessage.order.dseq.toNumber());
   }
 
-  private async handleCloseBid(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgCloseBid.decode(encodedMessage);
-
+  private async handleCloseBid(decodedMessage: v1beta1.MsgCloseBid, height: number, blockGroupTransaction, msg: Message) {
     const deployment = await Deployment.findOne({
       where: {
         id: getDeploymentIdFromCache(decodedMessage.bidId.owner, decodedMessage.bidId.dseq.toNumber())
@@ -701,9 +690,7 @@ class StatsProcessor {
     });
   }
 
-  private async handleDepositDeployment(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgDepositDeployment.decode(encodedMessage);
-
+  private async handleDepositDeployment(decodedMessage: v1beta1.MsgDepositDeployment, height: number, blockGroupTransaction, msg: Message) {
     const deployment = await Deployment.findOne({
       where: {
         id: getDeploymentIdFromCache(decodedMessage.id.owner, decodedMessage.id.dseq.toNumber())
@@ -733,9 +720,7 @@ class StatsProcessor {
     }
   }
 
-  private async handleWithdrawLease(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgWithdrawLease.decode(encodedMessage);
-
+  private async handleWithdrawLease(decodedMessage: v1beta1.MsgWithdrawLease, height: number, blockGroupTransaction, msg: Message) {
     const owner = decodedMessage.bidId.owner;
     const dseq = decodedMessage.bidId.dseq.toNumber();
     const gseq = decodedMessage.bidId.gseq;
@@ -762,9 +747,7 @@ class StatsProcessor {
     msg.relatedDeploymentId = deployment.id;
   }
 
-  private async handleCreateProvider(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgCreateProvider.decode(encodedMessage);
-
+  private async handleCreateProvider(decodedMessage: v1beta1.MsgCreateProvider, height: number, blockGroupTransaction, msg: Message) {
     await Provider.create(
       {
         owner: decodedMessage.owner,
@@ -788,9 +771,7 @@ class StatsProcessor {
     this.activeProviderCount++;
   }
 
-  private async handleUpdateProvider(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgUpdateProvider.decode(encodedMessage);
-
+  private async handleUpdateProvider(decodedMessage: v1beta1.MsgUpdateProvider, height: number, blockGroupTransaction, msg: Message) {
     await Provider.update(
       {
         hostUri: decodedMessage.hostUri,
@@ -822,9 +803,7 @@ class StatsProcessor {
     );
   }
 
-  private async handleDeleteProvider(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgDeleteProvider.decode(encodedMessage);
-
+  private async handleDeleteProvider(decodedMessage: v1beta1.MsgDeleteProvider, height: number, blockGroupTransaction, msg: Message) {
     await Provider.update(
       {
         deletedHeight: height
@@ -879,9 +858,7 @@ class StatsProcessor {
     }
   }
 
-  private async handleDeleteSignProviderAttributes(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgDeleteProviderAttributes.decode(encodedMessage);
-
+  private async handleDeleteSignProviderAttributes(decodedMessage: v1beta1.MsgDeleteProviderAttributes, height: number, blockGroupTransaction, msg: Message) {
     await ProviderAttributeSignature.destroy({
       where: {
         provider: decodedMessage.owner,
