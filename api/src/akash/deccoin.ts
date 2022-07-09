@@ -1,7 +1,7 @@
 import { Type, Writer, Reader } from "protobufjs";
 import { Decimal } from "@cosmjs/math";
 
-export const DecCoin = new Type("DecCoin");
+export const DecCoin = new Type("DecCoin") as any;
 DecCoin.ctor = function (...args) {
   console.log("ctor: ", args);
 };
