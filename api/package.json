@@ -19,10 +19,10 @@
   },
   "homepage": "https://github.com/mbeauchamp7/akashlytics#readme",
   "dependencies": {
-    "@akashnetwork/akashjs": "0.0.20",
-    "@cosmjs/math": "^0.28.4",
+    "@akashnetwork/akashjs": "^0.0.28",
     "@cosmjs/crypto": "^0.28.0",
     "@cosmjs/encoding": "^0.28.0",
+    "@cosmjs/math": "^0.28.4",
     "@cosmjs/proto-signing": "^0.28.4",
     "@cosmjs/stargate": "^0.28.4",
     "@octokit/rest": "^18.12.0",
