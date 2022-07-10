@@ -1,6 +1,10 @@
-import { Registry, isTsProtoGeneratedType } from "@cosmjs/proto-signing";
+import { Registry, isTsProtoGeneratedType, GeneratedType } from "@cosmjs/proto-signing";
 import { defaultRegistryTypes } from "@cosmjs/stargate";
-import { akashTypes } from "../../proto/akash/types";
+
+import * as v1beta1 from "../../proto/akash/v1beta1";
+import * as v1beta2 from "../../proto/akash/v1beta2";
+
+const akashTypes: ReadonlyArray<[string, GeneratedType]> = [...Object.values(v1beta1), ...Object.values(v1beta2)].map((x) => ["/" + x.$type, x]);
 
 export function decodeAkashType(type: string, msg) {
   const myRegistry = new Registry(akashTypes);
