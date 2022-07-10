@@ -12,7 +12,7 @@ export enum ExecutionMode {
 }
 
 export const executionMode: ExecutionMode = isProd ? ExecutionMode.DownloadAndSync : ExecutionMode.DoNotSync;
-export const lastBlockToSync = 1_000_000;//Number.POSITIVE_INFINITY;
+export const lastBlockToSync = Number.POSITIVE_INFINITY;
 
 export const mainNet = "https://raw.githubusercontent.com/ovrclk/net/master/mainnet";
 export const testNet = "https://raw.githubusercontent.com/ovrclk/net/master/testnet";
