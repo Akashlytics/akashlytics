@@ -377,7 +377,8 @@ Block.init(
     modelName: "block",
     indexes: [
       { unique: false, fields: ["datetime"] },
-      { unique: false, fields: ["dayId"] }
+      { unique: false, fields: ["dayId"] },
+      { unique: false, fields: ["height", "isProcessed"] }
     ],
     sequelize
   }
@@ -427,7 +428,10 @@ Transaction.init(
   {
     tableName: "transaction",
     modelName: "transaction",
-    indexes: [{ unique: false, fields: ["height"] }],
+    indexes: [
+      { unique: false, fields: ["height"] },
+      { unique: false, fields: ["height", "isProcessed", "hasProcessingError"] }
+    ],
     sequelize
   }
 );
@@ -483,7 +487,8 @@ Message.init(
     indexes: [
       { unique: false, fields: ["txId"] },
       { unique: false, fields: ["relatedDeploymentId"] },
-      { unique: false, fields: ["height"] }
+      { unique: false, fields: ["height"] },
+      { unique: false, fields: ["txId", "isProcessed", "isInterestingType"] }
     ],
     sequelize
   }

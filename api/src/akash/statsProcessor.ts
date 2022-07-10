@@ -71,6 +71,32 @@ class StatsProcessor {
   private activeProviderCount = 0;
 
   public async rebuildStatsTables() {
+    console.log("Disabling foreign key checks");
+
+    await sequelize.query("PRAGMA foreign_keys=0");
+
+    console.log('Setting "isProcessed" to false');
+    await Message.update(
+      {
+        isProcessed: false,
+        relatedDeploymentId: null
+      },
+      { where: { isProcessed: true } }
+    );
+    await Transaction.update(
+      {
+        isProcessed: false
+      },
+      { where: { isProcessed: true } }
+    );
+    await Block.update(
+      {
+        isProcessed: false
+      },
+      { where: { isProcessed: true } }
+    );
+
+    console.log("Rebuilding stats tables...");
     await Bid.drop();
     await Lease.drop();
     await Provider.drop();
@@ -88,25 +114,8 @@ class StatsProcessor {
     await Lease.sync({ force: true });
     await Bid.sync({ force: true });
 
-    console.log('Setting "isProcessed" to false');
-    await Message.update(
-      {
-        isProcessed: false
-      },
-      { where: {} }
-    );
-    await Transaction.update(
-      {
-        isProcessed: false
-      },
-      { where: {} }
-    );
-    await Block.update(
-      {
-        isProcessed: false
-      },
-      { where: {} }
-    );
+    console.log("Enabling foreign key checks");
+    await sequelize.query("PRAGMA foreign_keys=0");
 
     await this.processMessages();
   }
@@ -445,9 +454,7 @@ class StatsProcessor {
     }
   }
 
-  private async handleCreateDeploymentV2(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta2.MsgCreateDeployment.decode(encodedMessage);
-
+  private async handleCreateDeploymentV2(decodedMessage: v1beta2.MsgCreateDeployment, height: number, blockGroupTransaction, msg: Message) {
     const created = await Deployment.create(
       {
         id: uuid.v4(),
@@ -817,9 +824,7 @@ class StatsProcessor {
     this.activeProviderCount--;
   }
 
-  private async handleSignProviderAttributes(encodedMessage, height: number, blockGroupTransaction, msg: Message) {
-    const decodedMessage = v1beta1.MsgSignProviderAttributes.decode(encodedMessage);
-
+  private async handleSignProviderAttributes(decodedMessage: v1beta1.MsgSignProviderAttributes, height: number, blockGroupTransaction, msg: Message) {
     const provider = await Provider.findOne({ where: { owner: decodedMessage.owner }, transaction: blockGroupTransaction });
 
     if (!provider) {
