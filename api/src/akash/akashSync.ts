@@ -15,13 +15,16 @@ export let syncingStatus = null;
 const nodeAccessor = createNodeAccessor();
 
 async function getLatestDownloadedHeight() {
-  const keyStr = await blocksDb.keys({ reverse: true }).next();
-
-  if (keyStr) {
-    return parseInt(keyStr);
+  if (fs.existsSync(dataFolderPath + "/latestDownloadedHeight.txt")) {
+    const fileContent = await fs.promises.readFile(dataFolderPath + "/latestDownloadedHeight.txt", { encoding: "utf-8" });
+    return parseInt(fileContent);
   } else {
     return 0;
   }
+}
+
+async function saveLatestDownloadedHeight(height) {
+  await fs.promises.writeFile(dataFolderPath + "/latestDownloadedHeight.txt", height.toString(), { encoding: "utf-8" });
 }
 
 async function getLatestDownloadedTxHeight() {
@@ -250,6 +253,8 @@ async function downloadBlocks(startHeight: number, endHeight: number) {
   syncingStatus = "Saving latest downloaded height";
 
   if (shouldStop) throw shouldStop;
+
+  saveLatestDownloadedHeight(endHeight);
 }
 
 async function downloadTransactions() {
