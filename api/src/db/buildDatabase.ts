@@ -28,7 +28,7 @@ export const initDatabase = async () => {
   const databaseFileExists = fs.existsSync(sqliteDatabasePath);
   if (databaseFileExists && (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.RebuildAll)) {
     console.log("Deleting existing database files.");
-    await Promise.all([fs.promises.rm(sqliteDatabasePath, { force: true }), fs.promises.rm(dataFolderPath + "/latestDownloadedTxHeight.txt", { force: true })]);
+    await fs.promises.rm(sqliteDatabasePath, { force: true });
   }
 
   if (executionMode === ExecutionMode.DownloadAndSync) {
