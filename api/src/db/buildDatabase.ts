@@ -32,19 +32,17 @@ export const initDatabase = async () => {
   }
 
   if (executionMode === ExecutionMode.DownloadAndSync) {
-    console.log("Downloading backup files...");
-    const localArchivePath = dataFolderPath + "/backup.rar";
+    console.log("Downloading database files...");
+    const localArchivePath = dataFolderPath + "/database.rar";
     await download("https://storage.googleapis.com/akashlytics-deploy-public/database.rar", localArchivePath);
-    console.log("Backup downloaded");
+    console.log("Database downloaded");
 
     console.log("Extracting files...");
-    console.time("Extract");
     const extractor = await createExtractorFromFile({ filepath: localArchivePath, targetPath: dataFolderPath });
     const { files } = extractor.extract();
     for (const file of files) {
       await file.extraction;
     }
-    console.timeEnd("Extract");
     console.log("Deleting archive...");
     fs.promises
       .rm(localArchivePath, { force: true })
