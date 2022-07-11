@@ -1,0 +1,21 @@
+diff --git a/node_modules/@akashnetwork/akashjs/build/protobuf/cosmos/base/v1beta1/coin.js b/node_modules/@akashnetwork/akashjs/build/protobuf/cosmos/base/v1beta1/coin.js
+index 8bd8342..0c8f7d6 100644
+--- a/node_modules/@akashnetwork/akashjs/build/protobuf/cosmos/base/v1beta1/coin.js
++++ b/node_modules/@akashnetwork/akashjs/build/protobuf/cosmos/base/v1beta1/coin.js
+@@ -8,6 +8,7 @@ exports.DecProto = exports.IntProto = exports.DecCoin = exports.Coin = exports.p
+ const typeRegistry_1 = require("../../../typeRegistry");
+ const long_1 = __importDefault(require("long"));
+ const minimal_1 = __importDefault(require("protobufjs/minimal"));
++const math_1 = require("@cosmjs/math");
+ exports.protobufPackage = "cosmos.base.v1beta1";
+ function createBaseCoin() {
+     return { $type: "cosmos.base.v1beta1.Coin", denom: "", amount: "" };
+@@ -90,7 +91,7 @@ exports.DecCoin = {
+                     message.denom = reader.string();
+                     break;
+                 case 2:
+-                    message.amount = reader.string();
++                    message.amount = math_1.Decimal.fromAtomics(reader.string(), 18).toString();
+                     break;
+                 default:
+                     reader.skipType(tag & 7);
