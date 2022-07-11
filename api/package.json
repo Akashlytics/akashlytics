@@ -42,6 +42,7 @@
     "markdown-to-text": "^0.1.1",
     "memory-cache": "^0.2.0",
     "node-fetch": "^2.6.1",
+    "node-unrar-js": "^2.0.0",
     "protobufjs": "^6.11.2",
     "sequelize": "^6.6.2",
     "sqlite3": "^5.0.2"

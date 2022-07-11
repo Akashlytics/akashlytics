@@ -4,7 +4,7 @@ import { blockHeightToKey, blocksDb, deleteCache, getCachedBlockByHeight, getCac
 import { createNodeAccessor } from "./nodeAccessor";
 import { Block, Transaction, Message, Op, Day, sequelize } from "@src/db/schema";
 import { sha256 } from "js-sha256";
-import { isProd, lastBlockToSync } from "@src/shared/constants";
+import { dataFolderPath, isProd, lastBlockToSync } from "@src/shared/constants";
 import { isEqual } from "date-fns";
 import { decodeTxRaw, fromBase64 } from "@src/shared/utils/types";
 import * as benchmark from "../shared/utils/benchmark";
@@ -25,8 +25,8 @@ async function getLatestDownloadedHeight() {
 }
 
 async function getLatestDownloadedTxHeight() {
-  if (fs.existsSync("./data/latestDownloadedTxHeight.txt")) {
-    const fileContent = await fs.promises.readFile("./data/latestDownloadedTxHeight.txt", { encoding: "utf-8" });
+  if (fs.existsSync(dataFolderPath + "/latestDownloadedTxHeight.txt")) {
+    const fileContent = await fs.promises.readFile(dataFolderPath + "/latestDownloadedTxHeight.txt", { encoding: "utf-8" });
     return parseInt(fileContent);
   } else {
     return 0;
@@ -34,7 +34,7 @@ async function getLatestDownloadedTxHeight() {
 }
 
 async function saveLatestDownloadedTxHeight(height) {
-  await fs.promises.writeFile("./data/latestDownloadedTxHeight.txt", height.toString(), { encoding: "utf-8" });
+  await fs.promises.writeFile(dataFolderPath + "/latestDownloadedTxHeight.txt", height.toString(), { encoding: "utf-8" });
 }
 
 export async function syncBlocks() {
@@ -194,7 +194,7 @@ async function insertBlocks(startHeight, endHeight) {
 
     blocksToAdd.push(blockEntry);
 
-    if (blocksToAdd.length >= 1_000 || i === endHeight) {
+    if (blocksToAdd.length >= 1 || i === endHeight) {
       await Block.bulkCreate(blocksToAdd);
       await Transaction.bulkCreate(txsToAdd);
       await Message.bulkCreate(msgsToAdd);

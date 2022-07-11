@@ -1,6 +1,7 @@
+import { dataFolderPath } from "@src/shared/constants";
 import { Sequelize, DataTypes, UUIDV4, Model, Association } from "sequelize";
 
-export const sqliteDatabasePath = "./data/database.sqlite";
+export const sqliteDatabasePath = dataFolderPath + "/database.sqlite";
 
 export const sequelize = new Sequelize({
   dialect: "sqlite",

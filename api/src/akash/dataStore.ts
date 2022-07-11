@@ -1,13 +1,14 @@
 import { Level } from "level";
 import fs from "fs";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
+import { dataFolderPath } from "@src/shared/constants";
 
 const path = require("path");
 
 const LevelNotFoundCode = "LEVEL_NOT_FOUND";
 
-if (!fs.existsSync("./data/")) {
-  fs.mkdirSync("./data/");
+if (!fs.existsSync(dataFolderPath)) {
+  fs.mkdirSync(dataFolderPath);
 }
 
 export const blockHeightToKey = (height: number) => height.toString().padStart(10, "0");
@@ -17,8 +18,8 @@ export const txsDb = new Level("data/txs.db");
 
 export const getCacheSize = async function () {
   console.time("size");
-  const blocksSize = await getTotalSize("./data/blocks.db");
-  const txsSize = await getTotalSize("./data/txs.db");
+  const blocksSize = await getTotalSize(dataFolderPath + "/blocks.db");
+  const txsSize = await getTotalSize(dataFolderPath + "/txs.db");
   console.timeEnd("size");
   return { blocksSize: blocksSize, txsSize: txsSize };
 };

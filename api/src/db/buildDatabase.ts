@@ -1,6 +1,7 @@
-import { executionMode, ExecutionMode } from "@src/shared/constants";
+import { dataFolderPath, executionMode, ExecutionMode } from "@src/shared/constants";
 import { download } from "@src/shared/utils/download";
 import { bytesToHumanReadableSize } from "@src/shared/utils/files";
+import { createExtractorFromFile } from "node-unrar-js";
 import fs from "fs";
 import {
   Bid,
@@ -27,19 +28,32 @@ export const initDatabase = async () => {
   const databaseFileExists = fs.existsSync(sqliteDatabasePath);
   if (databaseFileExists && (executionMode === ExecutionMode.DownloadAndSync || executionMode === ExecutionMode.RebuildAll)) {
     console.log("Deleting existing database files.");
-    await Promise.all([
-      fs.promises.rm(sqliteDatabasePath, { force: true }),
-      fs.promises.rm("./data/latestDownloadedTxHeight.txt", { force: true })
-    ]);
+    await Promise.all([fs.promises.rm(sqliteDatabasePath, { force: true }), fs.promises.rm(dataFolderPath + "/latestDownloadedTxHeight.txt", { force: true })]);
   }
 
   if (executionMode === ExecutionMode.DownloadAndSync) {
-    console.log("Downloading database files...");
-    await Promise.all([
-      download("https://storage.googleapis.com/akashlytics-deploy-public/database.sqlite", sqliteDatabasePath),
-      download("https://storage.googleapis.com/akashlytics-deploy-public/latestDownloadedTxHeight.txt", "./data/latestDownloadedTxHeight.txt")
-    ]);
-    console.log("Database downloaded");
+    console.log("Downloading backup files...");
+    const localArchivePath = dataFolderPath + "/backup.rar";
+    await download("https://storage.googleapis.com/akashlytics-deploy-public/database.rar", localArchivePath);
+    console.log("Backup downloaded");
+
+    console.log("Extracting files...");
+    console.time("Extract");
+    const extractor = await createExtractorFromFile({ filepath: localArchivePath, targetPath: dataFolderPath });
+    const { files } = extractor.extract();
+    for (const file of files) {
+      await file.extraction;
+    }
+    console.timeEnd("Extract");
+    console.log("Deleting archive...");
+    fs.promises
+      .rm(localArchivePath, { force: true })
+      .then(() => {
+        console.log("Archive deleted");
+      })
+      .catch((err) => {
+        console.error("Error deleting archive", err);
+      });
   }
 
   try {
@@ -80,6 +94,6 @@ export const initDatabase = async () => {
 };
 
 export async function getDbSize() {
-  const dbSize = await fs.promises.stat("./data/database.sqlite");
+  const dbSize = await fs.promises.stat(dataFolderPath + "/database.sqlite");
   return bytesToHumanReadableSize(dbSize.size);
 }
