@@ -194,7 +194,7 @@ async function insertBlocks(startHeight, endHeight) {
 
     blocksToAdd.push(blockEntry);
 
-    if (blocksToAdd.length >= 1 || i === endHeight) {
+    if (blocksToAdd.length >= 1_000 || i === endHeight) {
       await Block.bulkCreate(blocksToAdd);
       await Transaction.bulkCreate(txsToAdd);
       await Message.bulkCreate(msgsToAdd);
