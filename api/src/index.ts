@@ -20,6 +20,7 @@ import { Scheduler } from "./scheduler";
 import { getDeployment } from "./db/explorerProvider";
 import { getBlock, getBlocks } from "./db/blocksProvider";
 import { getTransaction, getTransactions } from "./db/transactionsProvider";
+import { getAddressBalance } from "./providers/apiNodeProvider";
 
 require("dotenv").config();
 
@@ -142,6 +143,19 @@ apiRouter.get("/transactions/:hash", async (req, res) => {
     } else {
       res.status(404).send("Tx not found");
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/addresses/:address", async (req, res) => {
+  try {
+    console.time("getAddressBalance");
+    const balances = await getAddressBalance(req.params.address);
+
+    console.timeEnd("getAddressBalance");
+    res.send(balances);
   } catch (err) {
     console.error(err);
     res.status(500).send(err?.message || err);
