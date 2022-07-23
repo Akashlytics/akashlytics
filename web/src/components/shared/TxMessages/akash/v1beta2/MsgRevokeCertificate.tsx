@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../../MessageLabelValue";
 
@@ -12,7 +13,7 @@ export const MsgRevokeCertificate: React.FunctionComponent<TxMessageProps> = ({ 
       <MessageLabelValue
         label="Owner"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.id?.owner)}>
             <a>{message?.data?.id?.owner}</a>
           </Link>
         }

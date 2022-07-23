@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import { useTheme } from "@mui/material/styles";
 import DashboardIcon from "@mui/icons-material/Dashboard";
+import DnsIcon from "@mui/icons-material/Dns";
 import { ReactNode } from "react";
 import { ColorModeSwitch } from "./ColorModeSwitch";
 import Image from "next/image";
@@ -82,6 +83,11 @@ export const Sidebar: React.FunctionComponent<Props> = ({ isMobileOpen, handleDr
       title: "Transactions",
       icon: props => <ReceiptIcon {...props} />,
       url: UrlService.transactions()
+    },
+    {
+      title: "Validators",
+      icon: props => <DnsIcon {...props} />,
+      url: UrlService.validators()
     }
   ];
 

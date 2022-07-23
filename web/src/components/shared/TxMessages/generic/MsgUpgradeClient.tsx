@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../MessageLabelValue";
 
@@ -13,7 +14,7 @@ export const MsgUpgradeClient: React.FunctionComponent<TxMessageProps> = ({ mess
   return (
     <>
       <MessageLabelValue label="@type" value={message?.data?.consensusState?.typeUrl} />
-      <MessageLabelValue label="Client Id" value={"TODO"} />
+      {/* <MessageLabelValue label="Client Id" value={"TODO"} />
       <MessageLabelValue label="Chain Id" value={"TODO"} />
       <MessageLabelValue label="Numerator" value={"TODO"} />
       <MessageLabelValue label="Denominator" value={"TODO"} />
@@ -28,13 +29,13 @@ export const MsgUpgradeClient: React.FunctionComponent<TxMessageProps> = ({ mess
       <MessageLabelValue label="Allow Update After Misbehaviour" value={"TODO"} />
       <MessageLabelValue label="Timestamp" value={"TODO"} />
       <MessageLabelValue label="Hash" value={"TODO"} />
-      <MessageLabelValue label="Next Validators Hash" value={"TODO"} />
+      <MessageLabelValue label="Next Validators Hash" value={"TODO"} /> */}
       <MessageLabelValue label="Proof Upgrade Client" value={message?.data?.proofUpgradeClient} />
       <MessageLabelValue label="Proof Upgrade Consensus State" value={message?.data?.proofUpgradeConsensusState} />
       <MessageLabelValue
         label="Signer"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }

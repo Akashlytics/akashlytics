@@ -1,5 +1,6 @@
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -13,6 +14,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
   // TODO minSelftDelegation as a coin
   // TODO commissions DecCoin
   // ###################
+  console.log(message);
   return (
     <>
       <MessageLabelValue
@@ -28,7 +30,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
       <MessageLabelValue
         label="Delegator Address"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.delegatorAddress)}>
             <a>{message?.data?.delegatorAddress}</a>
           </Link>
         }
@@ -36,7 +38,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
       <MessageLabelValue
         label="Validator Address"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.validator(message?.data?.validatorAddress)}>
             <a>{message?.data?.validatorAddress}</a>
           </Link>
         }
@@ -55,7 +57,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
       <MessageLabelValue
         label="Website"
         value={
-          <a href={message?.data?.description?.website} target="_noblank">
+          <a href={message?.data?.description?.website} target="_blank">
             {message?.data?.description?.website}
           </a>
         }
@@ -65,7 +67,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
       <MessageLabelValue label="Commission Rate" value={message?.data?.commission?.rate} />
       <MessageLabelValue label="Commission Max Rate" value={message?.data?.commission?.maxRate} />
       <MessageLabelValue label="Commission Max Change Rate" value={message?.data?.commission?.maxChangeRate} />
-      <MessageLabelValue label="Public Key" value={message?.data?.pubKey?.value} />
+      <MessageLabelValue label="Public Key" value={message?.data?.pubkey?.value} />
     </>
   );
 };

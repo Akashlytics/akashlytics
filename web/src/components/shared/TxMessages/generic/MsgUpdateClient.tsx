@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../MessageLabelValue";
 
@@ -15,13 +16,13 @@ export const MsgUpdateClient: React.FunctionComponent<TxMessageProps> = ({ messa
       <MessageLabelValue
         label="Signer"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }
       />
       <MessageLabelValue label="Client Id" value={message?.data?.clientId} />
-      <MessageLabelValue label="Block" value={message?.data?.channel?.state} />
+      {/* <MessageLabelValue label="Block" value={message?.data?.channel?.state} />
       <MessageLabelValue label="App" value={message?.data?.channel?.ordering} />
       <MessageLabelValue label="Chain Id" value={message?.data?.channel?.counterparty?.channelId} />
       <MessageLabelValue label="Height" value={message?.data?.height} />
@@ -36,7 +37,7 @@ export const MsgUpdateClient: React.FunctionComponent<TxMessageProps> = ({ messa
       <MessageLabelValue label="App Hash" value={message?.data?.channel?.version} />
       <MessageLabelValue label="Last Results Hash" value={message?.data?.channel?.version} />
       <MessageLabelValue label="Evidence Hash" value={message?.data?.channel?.version} />
-      <MessageLabelValue label="Proposer Address" value={message?.data?.channel?.version} />
+      <MessageLabelValue label="Proposer Address" value={message?.data?.channel?.version} /> */}
     </>
   );
 };

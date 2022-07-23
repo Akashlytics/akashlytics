@@ -1,5 +1,5 @@
 import { TransactionMessage } from "@src/types";
-import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -12,14 +12,14 @@ export const MsgRecvPacket: React.FunctionComponent<TxMessageProps> = ({ message
   // ###################
   // TODO missing amount, originAmount, originDenom, receiver, sender, effected
   // ###################
+
   return (
     <>
       <MessageLabelValue label="Sequence" value={message?.data?.packet?.sequence} />
-      <MessageLabelValue
+      {/* <MessageLabelValue
         label="Amount"
         value={
           <>
-            {/* {coinsToAmount([message?.data?.amount], "uakt", 6)}&nbsp; */}
             TODO
             <AKTLabel />
           </>
@@ -29,7 +29,6 @@ export const MsgRecvPacket: React.FunctionComponent<TxMessageProps> = ({ message
         label="Origin Amount"
         value={
           <>
-            {/* {coinsToAmount([message?.data?.amount], "uakt", 6)}&nbsp; */}
             TODO
             <AKTLabel />
           </>
@@ -39,12 +38,11 @@ export const MsgRecvPacket: React.FunctionComponent<TxMessageProps> = ({ message
         label="Origin Denom"
         value={
           <>
-            {/* {coinsToAmount([message?.data?.amount], "uakt", 6)}&nbsp; */}
             TODO
             <AKTLabel />
           </>
         }
-      />
+      /> */}
       <MessageLabelValue label="Source Port" value={message?.data?.packet?.sourcePort} />
       <MessageLabelValue label="Source Channel" value={message?.data?.packet?.sourceChannel} />
       <MessageLabelValue label="Destination Port" value={message?.data?.packet?.destinationPort} />
@@ -52,15 +50,15 @@ export const MsgRecvPacket: React.FunctionComponent<TxMessageProps> = ({ message
       <MessageLabelValue
         label="Signer"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }
       />
-      <MessageLabelValue
+      {/* <MessageLabelValue
         label="Receiver"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }
@@ -68,11 +66,11 @@ export const MsgRecvPacket: React.FunctionComponent<TxMessageProps> = ({ message
       <MessageLabelValue
         label="Sender"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }
-      />
+      /> */}
       <MessageLabelValue label="Effected" value={message?.data?.effected} />
     </>
   );

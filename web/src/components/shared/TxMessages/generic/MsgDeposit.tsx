@@ -1,5 +1,6 @@
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -14,19 +15,13 @@ export const MsgDeposit: React.FunctionComponent<TxMessageProps> = ({ message })
   // ###################
   return (
     <>
-      <MessageLabelValue
-        label="Proposal Id"
-        value={
-          <Link href="TODO">
-            <a>{message?.data?.proposalId}</a>
-          </Link>
-        }
-      />
+      <MessageLabelValue label="Proposal Id" value={message?.data?.proposalId} />
+      {/* TODO: Add link to proposal page */}
       <MessageLabelValue
         label="Depositor Address"
         value={
-          <Link href="TODO">
-            <a>{message?.data?.depositor} (TODO VALIDATOR)</a>
+          <Link href={UrlService.address(message?.data?.depositor)}>
+            <a>{message?.data?.depositor}</a>
           </Link>
         }
       />

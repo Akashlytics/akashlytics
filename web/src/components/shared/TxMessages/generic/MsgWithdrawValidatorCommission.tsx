@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../MessageLabelValue";
 
@@ -15,12 +16,12 @@ export const MsgWithdrawValidatorCommission: React.FunctionComponent<TxMessagePr
       <MessageLabelValue
         label="Validator Address"
         value={
-          <Link href="TODO">
-            <a>{message?.data?.validatorAddress} (TODO VALIDATOR)</a>
+          <Link href={UrlService.validator(message?.data?.validatorAddress)}>
+            <a>{message?.data?.validatorAddress}</a>
           </Link>
         }
       />
-      <MessageLabelValue label="Amount" value={"TODO"} />
+      {/* <MessageLabelValue label="Amount" value={"TODO"} /> */}
     </>
   );
 };

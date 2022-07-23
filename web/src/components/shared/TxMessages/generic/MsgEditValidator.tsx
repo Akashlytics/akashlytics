@@ -1,5 +1,6 @@
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -12,12 +13,13 @@ export const MsgEditValidator: React.FunctionComponent<TxMessageProps> = ({ mess
   // ###################
   // TODO missing commissionRate, minSelfDelegation
   // ###################
+
   return (
     <>
       <MessageLabelValue
         label="Validator Address"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.validator(message?.data?.validatorAddress)}>
             <a>{message?.data?.validatorAddress}</a>
           </Link>
         }
@@ -27,9 +29,13 @@ export const MsgEditValidator: React.FunctionComponent<TxMessageProps> = ({ mess
       <MessageLabelValue
         label="Website"
         value={
-          <a href={message?.data?.description?.website} target="_noblank">
-            {message?.data?.description?.website}
-          </a>
+          message?.data?.description?.website && message?.data?.description?.website !== "[do-not-modify]" ? (
+            <a href={message?.data?.description?.website} target="_blank">
+              {message?.data?.description?.website}
+            </a>
+          ) : (
+            <>{message?.data?.description?.website}</>
+          )
         }
       />
       <MessageLabelValue label="Identity" value={message?.data?.description?.identity} />
@@ -39,9 +45,12 @@ export const MsgEditValidator: React.FunctionComponent<TxMessageProps> = ({ mess
         label="Min Self Delegation"
         value={
           <>
-            {/* {coinsToAmount([message?.data?.minSelfDelegation], "uakt", 6)}&nbsp; */}
-            {message?.data?.minSelfDelegation}&nbsp;
-            <AKTLabel />
+            {typeof message?.data?.minSelfDelegation === "number" && (
+              <>
+                {message?.data?.minSelfDelegation}&nbsp;
+                <AKTLabel />
+              </>
+            )}
           </>
         }
       />

@@ -2,6 +2,7 @@ import { AKTLabel } from "@src/components/shared/AKTLabel";
 import { DynamicReactJson } from "@src/components/shared/DynamicJsonView";
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../../MessageLabelValue";
 
@@ -18,24 +19,18 @@ export const MsgCreateDeployment: React.FunctionComponent<TxMessageProps> = ({ m
       <MessageLabelValue
         label="Owner"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.id?.owner)}>
             <a>{message?.data?.id?.owner}</a>
           </Link>
         }
       />
-      <MessageLabelValue
-        label="dseq"
-        value={
-          <Link href="TODO">
-            <a>{message?.data?.id?.dseq}</a>
-          </Link>
-        }
-      />
+      <MessageLabelValue label="dseq" value={message?.data?.id?.dseq} />
+      {/* TODO: Add link to deployment page */}
       <MessageLabelValue label="Version" value={message?.data?.version} />
       <MessageLabelValue
-        label="dseq"
+        label="Depositor"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.depositor)}>
             <a>{message?.data?.depositor}</a>
           </Link>
         }

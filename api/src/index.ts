@@ -20,6 +20,7 @@ import { Scheduler } from "./scheduler";
 import { getDeployment } from "./db/explorerProvider";
 import { getBlock, getBlocks } from "./db/blocksProvider";
 import { getTransaction, getTransactions } from "./db/transactionsProvider";
+import { getAddressBalance, getValidator, getValidators } from "./providers/apiNodeProvider";
 
 require("dotenv").config();
 
@@ -101,7 +102,6 @@ apiRouter.get("/blocks", async (req, res) => {
 });
 
 apiRouter.get("/blocks/:height", async (req, res) => {
-  console.log("hello");
   try {
     const heightInt = parseInt(req.params.height);
     const blockInfo = await getBlock(heightInt);
@@ -142,6 +142,37 @@ apiRouter.get("/transactions/:hash", async (req, res) => {
     } else {
       res.status(404).send("Tx not found");
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/addresses/:address", async (req, res) => {
+  try {
+    const balances = await getAddressBalance(req.params.address);
+    res.send(balances);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/validators", async (req, res) => {
+  try {
+    const validators = await getValidators();
+    res.send(validators);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err?.message || err);
+  }
+});
+
+apiRouter.get("/validators/:address", async (req, res) => {
+  try {
+    const validator = await getValidator(req.params.address);
+
+    res.send(validator);
   } catch (err) {
     console.error(err);
     res.status(500).send(err?.message || err);
