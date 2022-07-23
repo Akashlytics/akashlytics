@@ -129,7 +129,7 @@ const AddressDetailPage: React.FunctionComponent<Props> = ({ address, addressDet
 
                 <TableBody>
                   {addressDetail.assets.map(asset => (
-                    <TableRow>
+                    <TableRow key={asset.denom}>
                       <TableCell>{asset.denom}</TableCell>
                       <TableCell align="center">{asset.amount}</TableCell>
                     </TableRow>
@@ -158,7 +158,7 @@ const AddressDetailPage: React.FunctionComponent<Props> = ({ address, addressDet
 
                 <TableBody>
                   {addressDetail.delegations.map(delegation => (
-                    <TableRow>
+                    <TableRow key={delegation.validator}>
                       <TableCell>
                         {delegation.validator}
                         {/* TODO: add link to validator page + name */}
