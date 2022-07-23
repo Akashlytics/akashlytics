@@ -14,7 +14,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
   // TODO minSelftDelegation as a coin
   // TODO commissions DecCoin
   // ###################
-
+  console.log(message);
   return (
     <>
       <MessageLabelValue
@@ -35,8 +35,14 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
           </Link>
         }
       />
-      <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
-      {/* TODO: Add link to validator page */}
+      <MessageLabelValue
+        label="Validator Address"
+        value={
+          <Link href={UrlService.validator(message?.data?.validatorAddress)}>
+            <a>{message?.data?.validatorAddress}</a>
+          </Link>
+        }
+      />
       <MessageLabelValue
         label="Value"
         value={
@@ -61,7 +67,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
       <MessageLabelValue label="Commission Rate" value={message?.data?.commission?.rate} />
       <MessageLabelValue label="Commission Max Rate" value={message?.data?.commission?.maxRate} />
       <MessageLabelValue label="Commission Max Change Rate" value={message?.data?.commission?.maxChangeRate} />
-      <MessageLabelValue label="Public Key" value={message?.data?.pubKey?.value} />
+      <MessageLabelValue label="Public Key" value={message?.data?.pubkey?.value} />
     </>
   );
 };

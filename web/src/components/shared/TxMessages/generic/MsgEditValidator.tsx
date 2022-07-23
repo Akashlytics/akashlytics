@@ -16,16 +16,26 @@ export const MsgEditValidator: React.FunctionComponent<TxMessageProps> = ({ mess
 
   return (
     <>
-      <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
-      {/* TODO: Add link to validator page + name */}
+      <MessageLabelValue
+        label="Validator Address"
+        value={
+          <Link href={UrlService.validator(message?.data?.validatorAddress)}>
+            <a>{message?.data?.validatorAddress}</a>
+          </Link>
+        }
+      />
       <MessageLabelValue label="Details" value={message?.data?.description?.details} />
       <MessageLabelValue label="Moniker" value={message?.data?.description?.moniker} />
       <MessageLabelValue
         label="Website"
         value={
-          <a href={message?.data?.description?.website} target="_blank">
-            {message?.data?.description?.website}
-          </a>
+          message?.data?.description?.website && message?.data?.description?.website !== "[do-not-modify]" ? (
+            <a href={message?.data?.description?.website} target="_blank">
+              {message?.data?.description?.website}
+            </a>
+          ) : (
+            <>{message?.data?.description?.website}</>
+          )
         }
       />
       <MessageLabelValue label="Identity" value={message?.data?.description?.identity} />

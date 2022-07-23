@@ -23,8 +23,14 @@ export const MsgUndelegate: React.FunctionComponent<TxMessageProps> = ({ message
           </Link>
         }
       />
-      <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
-      {/* TODO: Add link to validator page */}
+      <MessageLabelValue
+        label="Validator Address"
+        value={
+          <Link href={UrlService.validator(message?.data?.validatorAddress)}>
+            <a>{message?.data?.validatorAddress}</a>
+          </Link>
+        }
+      />
       <MessageLabelValue
         label="Amount"
         value={

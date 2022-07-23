@@ -21,9 +21,15 @@ export const MsgWithdrawDelegatorReward: React.FunctionComponent<TxMessageProps>
           </Link>
         }
       />
-      <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
-      {/* TODO: Add link to validator page + name*/}
-      <MessageLabelValue label="Amount" value={"TODO"} />
+      <MessageLabelValue
+        label="Validator Address"
+        value={
+          <Link href={UrlService.validator(message?.data?.validatorAddress)}>
+            <a>{message?.data?.validatorAddress}</a>
+          </Link>
+        }
+      />
+      {/* <MessageLabelValue label="Amount" value={"TODO"} /> */}
     </>
   );
 };

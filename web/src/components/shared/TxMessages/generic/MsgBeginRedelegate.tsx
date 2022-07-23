@@ -23,10 +23,22 @@ export const MsgBeginRedelegate: React.FunctionComponent<TxMessageProps> = ({ me
           </Link>
         }
       />
-      <MessageLabelValue label="Source Validator Address" value={message?.data?.validatorSrcAddress} />
-      {/* TODO: Add link to validator page */}
-      <MessageLabelValue label="Destination Validator Address" value={message?.data?.validatorDstAddress} />
-      {/* TODO: Add link to validator page */}
+      <MessageLabelValue
+        label="Source Validator Address"
+        value={
+          <Link href={UrlService.validator(message?.data?.validatorSrcAddress)}>
+            <a>{message?.data?.validatorSrcAddress}</a>
+          </Link>
+        }
+      />
+      <MessageLabelValue
+        label="Destination Validator Address"
+        value={
+          <Link href={UrlService.validator(message?.data?.validatorDstAddress)}>
+            <a>{message?.data?.validatorDstAddress}</a>
+          </Link>
+        }
+      />
       <MessageLabelValue
         label="Amount"
         value={
