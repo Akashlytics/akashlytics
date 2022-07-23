@@ -43,7 +43,7 @@ const useStyles = makeStyles()(theme => ({
   titleSmall: {
     fontSize: "1.1rem"
   },
-  blockInfoRow: {
+  addressInfoRow: {
     display: "flex",
     alignItems: "center",
     marginBottom: "1rem",
@@ -78,15 +78,67 @@ const AddressDetailPage: React.FunctionComponent<Props> = ({ address, addressDet
         </Typography>
 
         <Paper sx={{ padding: 2 }}>
-          <div className={classes.blockInfoRow}>
+          <div className={classes.addressInfoRow}>
             <div className={classes.label}>Address</div>
             <div className={classes.value}>{address}</div>
           </div>
-          <div className={classes.blockInfoRow}>
+          <div className={classes.addressInfoRow}>
+            <div className={classes.label}>Available</div>
+            <div className={classes.value}>
+              {udenomToDemom(addressDetail.available)}&nbsp;
+              <AKTLabel />
+            </div>
+          </div>
+          <div className={classes.addressInfoRow}>
+            <div className={classes.label}>Delegated</div>
+            <div className={classes.value}>
+              {udenomToDemom(addressDetail.delegated)}&nbsp;
+              <AKTLabel />
+            </div>
+          </div>
+          <div className={classes.addressInfoRow}>
+            <div className={classes.label}>Rewards</div>
+            <div className={classes.value}>
+              {udenomToDemom(addressDetail.rewards)}&nbsp;
+              <AKTLabel />
+            </div>
+          </div>
+          <div className={classes.addressInfoRow}>
             <div className={classes.label}>Total Balance</div>
-            <div className={classes.value}>{udenomToDemom(addressDetail.total)}&nbsp;<AKTLabel /></div>
+            <div className={classes.value}>
+              {udenomToDemom(addressDetail.total)}&nbsp;
+              <AKTLabel />
+            </div>
           </div>
         </Paper>
+
+        <Box sx={{ mt: "1rem" }}>
+          <Typography variant="h3" sx={{ fontSize: "1.5rem", mb: "1rem", fontWeight: "bold", marginLeft: ".5rem" }}>
+            Assets
+          </Typography>
+
+          <Paper sx={{ padding: 2 }}>
+            <TableContainer sx={{ mb: 4 }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell align="center">Amount</TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {addressDetail.assets.map(asset => (
+                    <TableRow>
+                      <TableCell>{asset.denom}</TableCell>
+                      <TableCell align="center">{asset.amount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Box>
 
         <Box sx={{ mt: "1rem" }}>
           <Typography variant="h3" sx={{ fontSize: "1.5rem", mb: "1rem", fontWeight: "bold", marginLeft: ".5rem" }}>
@@ -111,8 +163,14 @@ const AddressDetailPage: React.FunctionComponent<Props> = ({ address, addressDet
                         {delegation.validator}
                         {/* TODO: add link to validator page + name */}
                       </TableCell>
-                      <TableCell align="center">{udenomToDemom(delegation.amount, 6)}&nbsp;<AKTLabel /></TableCell>
-                      <TableCell align="center">{udenomToDemom(delegation.reward, 6)}&nbsp;<AKTLabel /></TableCell>
+                      <TableCell align="center">
+                        {udenomToDemom(delegation.amount, 6)}&nbsp;
+                        <AKTLabel />
+                      </TableCell>
+                      <TableCell align="center">
+                        {udenomToDemom(delegation.reward, 6)}&nbsp;
+                        <AKTLabel />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

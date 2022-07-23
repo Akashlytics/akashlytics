@@ -5,7 +5,7 @@ export interface AddressDetail {
   available: number;
   delegated: number;
   rewards: number;
-  assets: Coin;
+  assets: Coin[];
   delegations: DelegationDetail[];
   redelegations: RedelegationDetail[];
 }
