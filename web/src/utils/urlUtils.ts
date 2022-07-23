@@ -4,6 +4,7 @@ export class UrlService {
   static block = (height: number) => `/blocks/${height}`;
   static transactions = () => "/transactions";
   static transaction = (hash: string) => `/transactions/${hash}`;
+  static address = (address: string) => `/addresses/${address}`;
 }
 
 export function appendSearchParams(params) {
