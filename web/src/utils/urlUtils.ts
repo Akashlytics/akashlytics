@@ -5,6 +5,8 @@ export class UrlService {
   static transactions = () => "/transactions";
   static transaction = (hash: string) => `/transactions/${hash}`;
   static address = (address: string) => `/addresses/${address}`;
+  static validators = () => "/validators";
+  static validator = (address: string) => `/validators/${address}`;
 }
 
 export function appendSearchParams(params) {

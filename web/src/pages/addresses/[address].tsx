@@ -10,7 +10,6 @@ import PageContainer from "@src/components/shared/PageContainer";
 import { BASE_API_URL } from "@src/utils/constants";
 import axios from "axios";
 import Error from "@src/components/shared/Error";
-import { FormattedDate, FormattedRelativeTime } from "react-intl";
 import TableContainer from "@mui/material/TableContainer";
 import TableBody from "@mui/material/TableBody";
 import TableRow from "@mui/material/TableRow";
@@ -18,7 +17,6 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import Table from "@mui/material/Table";
 import { AddressDetail } from "@src/types/address";
-import { UrlService } from "@src/utils/urlUtils";
 import { udenomToDemom } from "@src/utils/mathHelpers";
 import { AKTLabel } from "@src/components/shared/AKTLabel";
 

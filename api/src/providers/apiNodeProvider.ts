@@ -64,3 +64,45 @@ export async function getAddressBalance(address: string) {
     redelegations: redelegations
   };
 }
+
+export async function getValidators() {
+  const response = await fetch(`${apiNodeUrl}/cosmos/staking/v1beta1/validators?status=BOND_STATUS_BONDED&pagination.limit=1000`);
+  const data = await response.json();
+
+  const validators = data.validators.map((x) => ({
+    operatorAddress: x.operator_address,
+    moniker: x.description.moniker,
+    votingPower: parseInt(x.tokens),
+    commission: parseFloat(x.commission.commission_rates.rate),
+    identity: x.description.identity
+  }));
+
+  const totalVotingPower = validators.reduce((acc, cur) => acc + cur.votingPower, 0);
+
+  const sortedValidators = validators
+    .sort((a, b) => b.votingPower - a.votingPower)
+    .map((x, i) => ({
+      ...x,
+      votingPowerRatio: x.votingPower / totalVotingPower,
+      rank: i + 1
+    }));
+
+  return sortedValidators;
+}
+
+export async function getValidator(address: string) {
+  const response = await fetch(`${apiNodeUrl}/cosmos/staking/v1beta1/validators/${address}`);
+  const data = await response.json();
+
+  return {
+    operatorAddress: data.validator.operator_address,
+    moniker: data.validator.description.moniker,
+    votingPower: parseInt(data.validator.tokens),
+    commission: parseFloat(data.validator.commission.commission_rates.rate),
+    maxCommission: parseFloat(data.validator.commission.commission_rates.max_rate),
+    maxCommissionChange: parseFloat(data.validator.commission.commission_rates.max_change_rate),
+    identity: data.validator.description.identity,
+    description: data.validator.description.details,
+    website: data.validator.description.website
+  };
+}
