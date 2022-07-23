@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../MessageLabelValue";
 
@@ -37,7 +38,7 @@ export const MsgConnectionOpenTry: React.FunctionComponent<TxMessageProps> = ({ 
       <MessageLabelValue
         label="Signer"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }

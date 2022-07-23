@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../MessageLabelValue";
 
@@ -13,11 +14,11 @@ export const MsgAcknowledgement: React.FunctionComponent<TxMessageProps> = ({ me
   return (
     <>
       <MessageLabelValue label="Sequence" value={message?.data?.packet?.sequence} />
-      <MessageLabelValue label="Amount" value={"TODO"} />
+      {/* <MessageLabelValue label="Amount" value={"TODO"} />
       <MessageLabelValue label="Origin Amount" value={"TODO"} />
       <MessageLabelValue label="Origin Denom" value={"TODO"} />
       <MessageLabelValue label="Receiver" value={"TODO"} />
-      <MessageLabelValue label="Sender" value={"TODO"} />
+      <MessageLabelValue label="Sender" value={"TODO"} /> */}
       <MessageLabelValue label="Source Port" value={message?.data?.packet?.sourcePort} />
       <MessageLabelValue label="Source Channel" value={message?.data?.packet?.sourceChannel} />
       <MessageLabelValue label="Destination Port" value={message?.data?.packet?.destinationPort} />
@@ -25,7 +26,7 @@ export const MsgAcknowledgement: React.FunctionComponent<TxMessageProps> = ({ me
       <MessageLabelValue
         label="Signer"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }

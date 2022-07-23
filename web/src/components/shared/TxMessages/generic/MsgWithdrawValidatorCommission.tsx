@@ -12,15 +12,9 @@ export const MsgWithdrawValidatorCommission: React.FunctionComponent<TxMessagePr
   // ###################
   return (
     <>
-      <MessageLabelValue
-        label="Validator Address"
-        value={
-          <Link href="TODO">
-            <a>{message?.data?.validatorAddress} (TODO VALIDATOR)</a>
-          </Link>
-        }
-      />
-      <MessageLabelValue label="Amount" value={"TODO"} />
+      <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
+      {/* TODO: Add link to validator page + name*/}
+      {/* <MessageLabelValue label="Amount" value={"TODO"} /> */}
     </>
   );
 };

@@ -1,5 +1,6 @@
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -17,19 +18,13 @@ export const MsgUndelegate: React.FunctionComponent<TxMessageProps> = ({ message
       <MessageLabelValue
         label="Delegator Address"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.delegatorAddress)}>
             <a>{message?.data?.delegatorAddress}</a>
           </Link>
         }
       />
-      <MessageLabelValue
-        label="Validator Address"
-        value={
-          <Link href="TODO">
-            <a>{message?.data?.validatorAddress}</a>
-          </Link>
-        }
-      />
+      <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
+      {/* TODO: Add link to validator page */}
       <MessageLabelValue
         label="Amount"
         value={

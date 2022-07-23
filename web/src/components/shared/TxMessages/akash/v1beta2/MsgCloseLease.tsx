@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../../MessageLabelValue";
 
@@ -12,29 +13,24 @@ export const MsgCloseLease: React.FunctionComponent<TxMessageProps> = ({ message
       <MessageLabelValue
         label="Owner"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.leaseId?.owner)}>
             <a>{message?.data?.leaseId?.owner}</a>
           </Link>
         }
       />
+      <MessageLabelValue label="dseq" value={message?.data?.leaseId?.dseq} />
+      {/* TODO: Add link to deployment page */}
+      <MessageLabelValue label="gseq" value={message?.data?.leaseId?.gseq} />
+      <MessageLabelValue label="oseq" value={message?.data?.leaseId?.oseq} />
       <MessageLabelValue
-        label="dseq"
+        label="Provider"
         value={
-          <Link href="TODO">
-            <a>{message?.data?.leaseId?.dseq}</a>
+          <Link href={UrlService.address(message?.data?.leaseId?.provider)}>
+            <a>{message?.data?.leaseId?.provider}</a>
           </Link>
         }
       />
-      <MessageLabelValue label="gseq" value={message?.data?.leaseId?.gseq} />
-      <MessageLabelValue label="oseq" value={message?.data?.leaseId?.oseq} />
-        <MessageLabelValue
-          label="Provider"
-          value={
-            <Link href="TODO">
-              <a>{message?.data?.leaseId?.provider}</a>
-            </Link>
-          }
-        />
+      {/* TODO: Add link to provider page */}
     </>
   );
 };

@@ -1,5 +1,6 @@
 import { DynamicReactJson } from "@src/components/shared/DynamicJsonView";
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { MessageLabelValue } from "../../MessageLabelValue";
 
@@ -11,17 +12,18 @@ export const MsgSignProviderAttributes: React.FunctionComponent<TxMessageProps> 
   return (
     <>
       <MessageLabelValue
-        label="Owner"
+        label="Provider"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.owner)}>
             <a>{message?.data?.owner}</a>
           </Link>
         }
       />
+      {/* TODO: Add link to provider page */}
       <MessageLabelValue
-        label="Owner"
+        label="Auditor"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.auditor)}>
             <a>{message?.data?.auditor}</a>
           </Link>
         }

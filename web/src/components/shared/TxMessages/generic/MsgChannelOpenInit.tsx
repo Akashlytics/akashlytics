@@ -1,4 +1,5 @@
 import { TransactionMessage } from "@src/types";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { DynamicReactJson } from "../../DynamicJsonView";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -19,7 +20,7 @@ export const MsgChannelOpenInit: React.FunctionComponent<TxMessageProps> = ({ me
       <MessageLabelValue
         label="Signer"
         value={
-          <Link href="TODO">
+          <Link href={UrlService.address(message?.data?.signer)}>
             <a>{message?.data?.signer}</a>
           </Link>
         }

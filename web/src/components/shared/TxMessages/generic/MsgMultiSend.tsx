@@ -1,6 +1,7 @@
 import Typography from "@mui/material/Typography";
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -12,7 +13,7 @@ type TxMessageProps = {
 export const MsgMultiSend: React.FunctionComponent<TxMessageProps> = ({ message }) => {
   const senders = message.data?.inputs.map(input => (
     <div key={input.address}>
-      <Link href="TODO">
+      <Link href={UrlService.address(input.address)}>
         <a>{input.address}</a>
       </Link>
       &nbsp;
@@ -24,7 +25,7 @@ export const MsgMultiSend: React.FunctionComponent<TxMessageProps> = ({ message 
   ));
   const receivers = message.data?.outputs.map(input => (
     <div key={input.address}>
-      <Link href="TODO">
+      <Link href={UrlService.address(input.address)}>
         <a>{input.address}</a>
       </Link>
       &nbsp;

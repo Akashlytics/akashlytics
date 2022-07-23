@@ -1,5 +1,6 @@
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
 import { MessageLabelValue } from "../MessageLabelValue";
@@ -12,22 +13,17 @@ export const MsgEditValidator: React.FunctionComponent<TxMessageProps> = ({ mess
   // ###################
   // TODO missing commissionRate, minSelfDelegation
   // ###################
+  console.log(message);
   return (
     <>
-      <MessageLabelValue
-        label="Validator Address"
-        value={
-          <Link href="TODO">
-            <a>{message?.data?.validatorAddress}</a>
-          </Link>
-        }
-      />
+      <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
+      {/* TODO: Add link to validator page + name */}
       <MessageLabelValue label="Details" value={message?.data?.description?.details} />
       <MessageLabelValue label="Moniker" value={message?.data?.description?.moniker} />
       <MessageLabelValue
         label="Website"
         value={
-          <a href={message?.data?.description?.website} target="_noblank">
+          <a href={message?.data?.description?.website} target="_blank">
             {message?.data?.description?.website}
           </a>
         }
@@ -39,9 +35,12 @@ export const MsgEditValidator: React.FunctionComponent<TxMessageProps> = ({ mess
         label="Min Self Delegation"
         value={
           <>
-            {/* {coinsToAmount([message?.data?.minSelfDelegation], "uakt", 6)}&nbsp; */}
-            {message?.data?.minSelfDelegation}&nbsp;
-            <AKTLabel />
+            {typeof message?.data?.minSelfDelegation === "number" && (
+              <>
+                {message?.data?.minSelfDelegation}&nbsp;
+                <AKTLabel />
+              </>
+            )}
           </>
         }
       />
