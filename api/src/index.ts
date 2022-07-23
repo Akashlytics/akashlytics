@@ -163,10 +163,7 @@ apiRouter.get("/addresses/:address", async (req, res) => {
 
 apiRouter.get("/validators", async (req, res) => {
   try {
-    console.time("getValidators");
     const validators = await getValidators();
-
-    console.timeEnd("getValidators");
     res.send(validators);
   } catch (err) {
     console.error(err);
@@ -176,10 +173,8 @@ apiRouter.get("/validators", async (req, res) => {
 
 apiRouter.get("/validators/:address", async (req, res) => {
   try {
-    console.time("getValidator");
     const validator = await getValidator(req.params.address);
 
-    console.timeEnd("getValidator");
     res.send(validator);
   } catch (err) {
     console.error(err);
