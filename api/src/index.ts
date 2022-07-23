@@ -102,7 +102,6 @@ apiRouter.get("/blocks", async (req, res) => {
 });
 
 apiRouter.get("/blocks/:height", async (req, res) => {
-  console.log("hello");
   try {
     const heightInt = parseInt(req.params.height);
     const blockInfo = await getBlock(heightInt);
