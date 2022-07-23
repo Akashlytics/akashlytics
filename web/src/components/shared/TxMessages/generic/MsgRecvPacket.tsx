@@ -12,7 +12,7 @@ export const MsgRecvPacket: React.FunctionComponent<TxMessageProps> = ({ message
   // ###################
   // TODO missing amount, originAmount, originDenom, receiver, sender, effected
   // ###################
-  console.log(message);
+
   return (
     <>
       <MessageLabelValue label="Sequence" value={message?.data?.packet?.sequence} />

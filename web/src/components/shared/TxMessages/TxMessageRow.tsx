@@ -94,8 +94,6 @@ export const TxMessageRow: React.FunctionComponent<Props> = ({ message }) => {
   const { classes } = useStyles();
   const friendlyType = useFriendlyMessageType(message.type);
 
-  console.log(message.data);
-
   return (
     <Box>
       <div className={classes.messageType}>{friendlyType}</div>

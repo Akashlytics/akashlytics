@@ -14,7 +14,7 @@ export const MsgCreateValidator: React.FunctionComponent<TxMessageProps> = ({ me
   // TODO minSelftDelegation as a coin
   // TODO commissions DecCoin
   // ###################
-  console.log(message);
+
   return (
     <>
       <MessageLabelValue

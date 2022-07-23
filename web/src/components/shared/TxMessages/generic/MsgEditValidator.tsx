@@ -13,7 +13,7 @@ export const MsgEditValidator: React.FunctionComponent<TxMessageProps> = ({ mess
   // ###################
   // TODO missing commissionRate, minSelfDelegation
   // ###################
-  console.log(message);
+
   return (
     <>
       <MessageLabelValue label="Validator Address" value={message?.data?.validatorAddress} />
