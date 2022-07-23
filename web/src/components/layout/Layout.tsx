@@ -13,6 +13,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { drawerWidth } from "@src/utils/constants";
 import Image from "next/image";
 import Link from "next/link";
+import SearchBar from "./SearchBar";
 
 type Props = {
   children?: ReactNode;
@@ -74,6 +75,7 @@ const LayoutApp: React.FunctionComponent<Props> = ({ children, title }) => {
           height: "100%"
         }}
       >
+        <SearchBar />
         <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
       </Box>
     </Box>
