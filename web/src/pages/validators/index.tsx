@@ -42,9 +42,7 @@ const ValidatorsPage: React.FunctionComponent<Props> = ({}) => {
   const { classes } = useStyles();
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down("sm"));
-  const { data: validators, isLoading } = useValidators({
-    refetchInterval: 7000
-  });
+  const { data: validators, isLoading } = useValidators();
 
   return (
     <Layout title="Validators" appendGenericTitle>
