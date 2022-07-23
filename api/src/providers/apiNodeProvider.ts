@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 const apiNodeUrl = "http://akash-node.akashlytics.com:1317";
 
 export async function getAddressBalance(address: string) {
-  const balancesQuery = fetch(`${apiNodeUrl}/cosmos/bank/v1beta1/balances/${address}`);
+  const balancesQuery = fetch(`${apiNodeUrl}/cosmos/bank/v1beta1/balances/${address}?pagination.limit=1000`);
   const delegationsQuery = fetch(`${apiNodeUrl}/cosmos/staking/v1beta1/delegations/${address}?pagination.limit=1000`);
   const rewardsQuery = fetch(`${apiNodeUrl}/cosmos/distribution/v1beta1/delegators/${address}/rewards`);
   const redelegationsQuery = fetch(`${apiNodeUrl}/cosmos/staking/v1beta1/delegators/${address}/redelegations?pagination.limit=1000`);
@@ -45,7 +45,7 @@ export async function getAddressBalance(address: string) {
 
   const available = assets.filter((x) => x.denom === "uakt").reduce((acc, cur) => acc + cur.amount, 0);
   const delegated = delegations.reduce((acc, cur) => acc + cur.amount, 0);
-  const rewards = parseInt(rewardsData.total.find((x) => x.denom === "uakt").amount);
+  const rewards = rewardsData.total.lenght > 0 ? parseInt(rewardsData.total.find((x) => x.denom === "uakt").amount) : 0;
   const redelegations = redelegationsData.redelegation_responses.map((x) => ({
     srcAddress: x.redelegation.validator_src_address,
     dstAddress: x.redelegation.validator_dst_address,
