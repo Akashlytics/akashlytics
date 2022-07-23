@@ -1,5 +1,6 @@
 import { TransactionMessage } from "@src/types";
 import { coinsToAmount } from "@src/utils/mathHelpers";
+import { getFriendlyProposalType } from "@src/utils/proposals";
 import { UrlService } from "@src/utils/urlUtils";
 import Link from "next/link";
 import { AKTLabel } from "../../AKTLabel";
@@ -40,7 +41,7 @@ export const MsgSubmitProposal: React.FunctionComponent<TxMessageProps> = ({ mes
           </Link>
         }
       /> */}
-      <MessageLabelValue label="Proposal Type" value={message?.data?.content.typeUrl.split(".").at(-1).split("Proposal")[0]} />
+      <MessageLabelValue label="Proposal Type" value={getFriendlyProposalType(message?.data?.content.typeUrl)} />
       {/* <MessageLabelValue label="Title" value={"TODO"} /> */}
     </>
   );

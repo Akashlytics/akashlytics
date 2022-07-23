@@ -150,10 +150,7 @@ apiRouter.get("/transactions/:hash", async (req, res) => {
 
 apiRouter.get("/addresses/:address", async (req, res) => {
   try {
-    console.time("getAddressBalance");
     const balances = await getAddressBalance(req.params.address);
-
-    console.timeEnd("getAddressBalance");
     res.send(balances);
   } catch (err) {
     console.error(err);

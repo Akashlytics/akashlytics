@@ -57,7 +57,7 @@ const useStyles = makeStyles()(theme => ({
   }
 }));
 
-const AddressDetailPage: React.FunctionComponent<Props> = ({ address, validator, errors }) => {
+const ValidatorDetailPage: React.FunctionComponent<Props> = ({ address, validator, errors }) => {
   const [identity, setIdentity] = useState(null);
 
   if (errors) return <Error errors={errors} />;
@@ -70,9 +70,7 @@ const AddressDetailPage: React.FunctionComponent<Props> = ({ address, validator,
     axios
       .get(`https://keybase.io/_/api/1.0/user/lookup.json?key_suffix=${validator.identity}`)
       .then(res => {
-        console.log("re", res);
         if (res.data.status.name === "OK" && res.data.them.length > 0) {
-          console.log("tyest");
           setIdentity({
             profileUrl: res.data.them[0].basics?.username && `https://keybase.io/${res.data.them[0].basics.username}`,
             avatarUrl: res.data.them[0].pictures?.primary?.url
@@ -161,7 +159,7 @@ const AddressDetailPage: React.FunctionComponent<Props> = ({ address, validator,
   );
 };
 
-export default AddressDetailPage;
+export default ValidatorDetailPage;
 
 export async function getServerSideProps({ params }) {
   const validator = await fetchValidatorData(params?.address);
